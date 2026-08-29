@@ -1,0 +1,22 @@
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Python compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local Database & Keys
+db.sqlite3
+.env
+
+# Media uploads & static files generated during development
+media/
+staticfiles/
+
+# System / IDE files
+.DS_Store
+.vscode/
+.idea/
