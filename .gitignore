@@ -16,7 +16,14 @@ db.sqlite3
 media/
 staticfiles/
 
+/static/css/dist/
+
 # System / IDE files
 .DS_Store
 .vscode/
 .idea/
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd

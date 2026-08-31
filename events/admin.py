@@ -1,3 +1,23 @@
 from django.contrib import admin
+from .models import Event, Guest
 
-# Register your models here.
+
+class GuestInline(admin.TabularInline):
+    model = Guest
+    extra = 1
+
+
+@admin.register(Event)
+class EventAdmin(admin.ModelAdmin):
+    list_display = ('title', 'host', 'event_date', 'slug', 'created_at')
+    search_fields = ('title', 'host__username', 'slug')
+    prepopulated_fields = {'slug': ('title',)}
+    inlines = [GuestInline]
+
+
+@admin.register(Guest)
+class GuestAdmin(admin.ModelAdmin):
+    list_display = ('first_name', 'last_name', 'email', 'event', 'status', 'plus_ones_count')
+    list_filter = ('status', 'event')
+    search_fields = ('first_name', 'last_name', 'email', 'event__title')
+    list_per_page = 25

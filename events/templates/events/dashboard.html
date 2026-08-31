@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard | Manage My Event{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-8">
+  <!--  -->
+  <!--  -->
+  
+  <!-- Header Bar -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between pb-6 mb-8 border-b border-slate-200 gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Host Dashboard</h1>
+      <p class="text-sm text-slate-500 mt-1">Manage your active events, track RSVPs, and export attendee lists.</p>
+    </div>
+    <!-- Line 14 in events/templates/events/dashboard.html -->
+    <a href="{% url 'events:create_event' %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg shadow-sm transition inline-flex items-center gap-2">
+        <span>+</span> Create Event
+    </a>
+  </div>
+
+  <!-- Key Metrics Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+      <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Events</p>
+      <p class="text-3xl font-bold text-slate-900 mt-2">{{ total_events }}</p>
+    </div>
+    
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+      <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Guests Invited</p>
+      <p class="text-3xl font-bold text-slate-900 mt-2">{{ total_guests }}</p>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+      <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Attending Guests</p>
+      <p class="text-3xl font-bold text-emerald-600 mt-2">{{ attending_guests }}</p>
+    </div>
+  </div>
+
+  <!-- Events List Section -->
+  <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+      <h2 class="text-lg font-bold text-slate-900">Your Events</h2>
+      <span class="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">{{ total_events }} Active</span>
+    </div>
+
+    {% if events %}
+      <div class="divide-y divide-slate-100">
+        {% for event in events %}
+          <div class="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50/50 transition">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 text-[11px] font-semibold bg-blue-50 text-blue-600 rounded-md">
+                  {{ event.event_date|date:"M d, Y @ h:i A" }}
+                </span>
+              </div>
+              <h3 class="text-lg font-bold text-slate-900">{{ event.title }}</h3>
+              <p class="text-xs text-slate-500 flex items-center gap-1">
+                📍 {{ event.location_name }}
+              </p>
+            </div>
+
+            <div class="flex items-center gap-3 pt-2 md:pt-0">
+              <a href="{% url 'events:event_detail' slug=event.slug %}" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition">
+                View Event Page
+              </a>
+              <a href="{% url 'events:event_guests_management' event.slug %}" class="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-semibold hover:bg-blue-100 transition">
+                  Guest Management
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <!-- Empty State -->
+      <div class="text-center py-12 px-4">
+        <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-4 font-bold text-xl">
+          📅
+        </div>
+        <h3 class="text-slate-900 font-semibold text-base">No events created yet</h3>
+        <p class="text-slate-500 text-sm max-w-sm mx-auto mt-1 mb-6">
+          Get started by creating your first event page and sharing it with your guests.
+        </p>
+        <a href="{% url 'create_event' %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg shadow-sm transition inline-flex items-center gap-2">
+            <span>+</span> Create Event
+        </a>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

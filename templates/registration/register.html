@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Register | Manage My Event{% endblock %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-16rem)] flex items-center justify-center px-4 py-12">
+    <div class="max-w-md w-full bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+        
+        <div class="text-center">
+            <h2 class="text-2xl font-bold text-slate-900 tracking-tight">Create an Account</h2>
+            <p class="text-sm text-slate-500 mt-1">Start hosting and managing your events</p>
+        </div>
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+
+            {% if form.errors %}
+                <div class="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">
+                    Please correct the errors below.
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                <div class="space-y-1">
+                    <label for="{{ field.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                        {{ field.label }}
+                    </label>
+                    
+                    <input type="{{ field.widget_type }}" 
+                        name="{{ field.name }}" 
+                        id="{{ field.id_for_label }}" 
+                        required 
+                        class="w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    
+                    {% if field.errors %}
+                        <p class="text-xs text-red-600 mt-1">{{ field.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg shadow-sm transition mt-4">
+                Create Account
+            </button>
+        </form>
+
+        <p class="text-xs text-center text-slate-500">
+            Already have an account? 
+            <a href="{% url 'login' %}" class="font-medium text-blue-600 hover:text-blue-500">Sign in here</a>
+        </p>
+
+    </div>
+</div>
+{% endblock %}

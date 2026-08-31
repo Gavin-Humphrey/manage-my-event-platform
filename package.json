@@ -1,0 +1,25 @@
+{
+  "name": "manage-my-event-platform",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "tailwind": "tailwindcss -i ./static/css/src/input.css -o ./static/css/dist/styles.css --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gavin-Humphrey/manage-my-event-platform.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Gavin-Humphrey/manage-my-event-platform/issues"
+  },
+  "homepage": "https://github.com/Gavin-Humphrey/manage-my-event-platform#readme",
+  "devDependencies": {
+    "autoprefixer": "^10.5.4",
+    "postcss": "^8.5.26",
+    "tailwindcss": "^3.4.19"
+  }
+}

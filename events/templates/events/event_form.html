@@ -1,0 +1,349 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if form.instance.pk %}Edit{% else %}Create{% endif %} Event | Manage My Event{% endblock %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-70px)] py-12 px-4 flex justify-center items-center">
+    <div class="max-w-xl w-full bg-white rounded-2xl shadow-xl border border-slate-100 p-8">
+        
+        <!-- Header -->
+        <div class="mb-6 border-b border-slate-100 pb-4">
+            <h1 class="text-2xl font-bold text-slate-900">
+                {% if form.instance.pk %}Edit Event{% else %}Create New Event{% endif %}
+            </h1>
+            <p class="text-slate-500 text-sm mt-1">Fill out the form below to publish or update your event page.</p>
+        </div>
+
+        <!-- Form Body -->
+        <form method="POST" enctype="multipart/form-data" class="space-y-8">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="p-4 rounded-xl bg-red-50 text-red-800 border border-red-200 text-sm font-medium">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <!-- Section 1: Event Details -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <h2 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3">1. Event Details</h2>
+
+                <div>
+                    <label for="{{ form.title.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">Title *</label>
+                    {{ form.title }}
+                    {% if form.title.errors %}<p class="text-xs text-red-600 mt-1">{{ form.title.errors.0 }}</p>{% endif %}
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="{{ form.event_date.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">Date & Time *</label>
+                        {{ form.event_date }}
+                        {% if form.event_date.errors %}<p class="text-xs text-red-600 mt-1">{{ form.event_date.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.location_name.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">Location / Venue *</label>
+                        {{ form.location_name }}
+                        {% if form.location_name.errors %}<p class="text-xs text-red-600 mt-1">{{ form.location_name.errors.0 }}</p>{% endif %}
+                    </div>
+                </div>
+
+                <div>
+                    <label for="{{ form.address.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">Address</label>
+                    {{ form.address }}
+                    {% if form.address.errors %}<p class="text-xs text-red-600 mt-1">{{ form.address.errors.0 }}</p>{% endif %}
+                </div>
+            </div>
+
+            <!-- Section 2: Visual Customization & Theme -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                <h2 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3">
+                    2. Theme & Custom Design Options
+                </h2>
+
+                <!-- Hero Image Upload -->
+                <div class="space-y-1">
+                    <label for="{{ form.hero_image.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                        Upload Hero Header Image
+                    </label>
+                    {{ form.hero_image }}
+                    {% if form.hero_image.errors %}
+                        <p class="text-xs text-red-600 mt-1">{{ form.hero_image.errors.0 }}</p>
+                    {% endif %}
+
+                    {% if form.instance.pk and form.instance.theme_settings.hero_image_url %}
+                        <div class="mt-2 flex items-center gap-3 p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+                            <img src="{{ form.instance.theme_settings.hero_image_url }}" alt="Hero Preview" class="w-10 h-10 rounded-md object-cover border border-slate-200 flex-shrink-0">
+                            <div class="truncate">
+                                <span class="block text-[10px] font-bold text-slate-500 uppercase">Current Hero Header</span>
+                                <span class="font-mono text-[11px] text-slate-700 truncate block" title="{{ form.instance.theme_settings.hero_image_url }}">
+                                    {{ form.instance.theme_settings.hero_image_url }}
+                                </span>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Color Palette & Background Controls -->
+                <div class="space-y-3 pt-2 border-t border-slate-100">
+                    <span class="block text-xs font-bold text-slate-600 uppercase tracking-wide">Color & Background Theme</span>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Primary Accent Color Picker -->
+                        <div class="space-y-1">
+                            <label for="{{ form.theme_color.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                                Primary Accent
+                            </label>
+                            <div class="flex items-center gap-3">
+                                {{ form.theme_color }}
+                                <span class="text-xs text-slate-500 font-mono" id="theme_color_hex_display">
+                                    {{ form.theme_color.value|default:'#3b82f6' }}
+                                </span>
+                            </div>
+                            {% if form.theme_color.errors %}
+                                <p class="text-xs text-red-600 mt-1">{{ form.theme_color.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Page Background Dropdown -->
+                        <div class="space-y-1">
+                            <label for="{{ form.page_bg_color.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                                Page Background
+                            </label>
+                            {{ form.page_bg_color }}
+                            {% if form.page_bg_color.errors %}
+                                <p class="text-xs text-red-600 mt-1">{{ form.page_bg_color.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Section / Card Background Dropdown -->
+                        <div class="space-y-1">
+                            <label for="{{ form.section_bg_color.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                                Section / Card Color
+                            </label>
+                            {{ form.section_bg_color }}
+                            {% if form.section_bg_color.errors %}
+                                <p class="text-xs text-red-600 mt-1">{{ form.section_bg_color.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Typography Color Controls -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3">
+                        <div class="space-y-1">
+                            <label for="{{ form.heading_color.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                                Heading Color
+                            </label>
+                            {{ form.heading_color }}
+                            {% if form.heading_color.errors %}
+                                <p class="text-xs text-red-600 mt-1">{{ form.heading_color.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="space-y-1">
+                            <label for="{{ form.body_color.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                                Body Text Color
+                            </label>
+                            {{ form.body_color }}
+                            {% if form.body_color.errors %}
+                                <p class="text-xs text-red-600 mt-1">{{ form.body_color.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="space-y-1">
+                            <label for="{{ form.muted_color.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                                Muted Text Color
+                            </label>
+                            {{ form.muted_color }}
+                            {% if form.muted_color.errors %}
+                                <p class="text-xs text-red-600 mt-1">{{ form.muted_color.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Layout & Typography Selection -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+                    <!-- Font Family Dropdown -->
+                    <div class="space-y-1">
+                        <label for="{{ form.font_family.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                            Typography Style
+                        </label>
+                        {{ form.font_family }}
+                        {% if form.font_family.errors %}
+                            <p class="text-xs text-red-600 mt-1">{{ form.font_family.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Layout Style Dropdown -->
+                    <div class="space-y-1">
+                        <label for="{{ form.layout_style.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                            Layout Structure
+                        </label>
+                        {{ form.layout_style }}
+                        {% if form.layout_style.errors %}
+                            <p class="text-xs text-red-600 mt-1">{{ form.layout_style.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Photo Gallery Upload -->
+                <div class="space-y-3 pt-2 border-t border-slate-100">
+                    <label for="{{ form.gallery_files.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                        Upload Photo Gallery Images
+                    </label>
+                    
+                    {{ form.gallery_files }}
+                    <p class="text-[11px] text-slate-400 mt-1">Select up to 10 photos total (max 5MB per file).</p>
+
+                    {% if form.gallery_files.errors %}
+                        <p class="text-xs text-red-600 mt-1">{{ form.gallery_files.errors.0 }}</p>
+                    {% endif %}
+
+                    <!-- Existing Saved Gallery Images -->
+                    {% if form.instance.pk and form.instance.theme_settings.gallery_images %}
+                        <div class="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                                    Saved Gallery Photos ({{ form.instance.theme_settings.gallery_images|length }}/10)
+                                </span>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                {% for img_path in form.instance.theme_settings.gallery_images %}
+                                    <div class="relative group rounded-lg overflow-hidden border border-slate-200 bg-white aspect-square">
+                                        <img src="{{ img_path }}" alt="Gallery Item" class="w-full h-full object-cover">
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Dynamic JS List Preview for Newly Selected Files -->
+                    <div id="newly-selected-files-container" class="mt-3 p-3 bg-blue-50/70 rounded-xl border border-blue-200 space-y-2 hidden">
+                        <span class="block text-xs font-bold text-blue-900 uppercase tracking-wide">
+                            Files Ready to Upload:
+                        </span>
+                        <ul id="newly-selected-files-list" class="space-y-1 text-xs text-blue-800 font-mono text-[11px]"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="w-full py-3.5 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition cursor-pointer">
+                {% if form.instance.pk %}Update Event Details{% else %}Save Event & Publish Page{% endif %}
+            </button>
+        </form>
+
+        <!-- Footer / Navigation -->
+        <div class="mt-6 pt-4 border-t border-slate-100 text-center">
+            <a href="{% url 'events:dashboard' %}" class="inline-flex items-center text-sm font-semibold text-slate-600 hover:text-blue-600 transition">
+                ← Back to Dashboard
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const galleryInput = document.querySelector('input[name="gallery_files"]');
+        const container = document.getElementById('newly-selected-files-container');
+        const fileList = document.getElementById('newly-selected-files-list');
+        const colorInput = document.querySelector('input[name="theme_color"]');
+        const hexDisplay = document.getElementById('theme_color_hex_display');
+        
+        // Update color hex code text dynamically when selected
+        if (colorInput && hexDisplay) {
+            colorInput.addEventListener('input', function(e) {
+                hexDisplay.textContent = e.target.value;
+            });
+        }
+
+        // Use DataTransfer to hold files across multiple selections
+        let dataTransfer = new DataTransfer();
+
+        if (galleryInput) {
+            galleryInput.addEventListener('change', function (event) {
+                const newFiles = Array.from(event.target.files);
+
+                newFiles.forEach(file => {
+                    const exists = Array.from(dataTransfer.files).some(
+                        f => f.name === file.name && f.size === file.size
+                    );
+                    if (!exists) {
+                        dataTransfer.items.add(file);
+                    }
+                });
+
+                galleryInput.files = dataTransfer.files;
+                renderFileList();
+            });
+        }
+
+        function renderFileList() {
+            fileList.innerHTML = '';
+            const files = Array.from(dataTransfer.files);
+
+            if (files.length > 0) {
+                if (files.length > 10) {
+                    alert("You can select a maximum of 10 photos total.");
+                    while (dataTransfer.files.length > 10) {
+                        dataTransfer.items.remove(dataTransfer.files.length - 1);
+                    }
+                    galleryInput.files = dataTransfer.files;
+                    renderFileList();
+                    return;
+                }
+
+                container.classList.remove('hidden');
+
+                files.forEach((file, index) => {
+                    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                    const isOverSize = file.size > 5 * 1024 * 1024;
+                    
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center justify-between gap-2 py-1 border-b border-blue-100 last:border-0';
+                    li.innerHTML = `
+                        <div class="flex items-center gap-1.5 truncate">
+                            <span class="${isOverSize ? 'text-red-500' : 'text-blue-500'}">📁</span>
+                            <span class="truncate font-medium ${isOverSize ? 'text-red-600' : ''}">
+                                ${file.name}
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                            <span class="text-[10px] ${isOverSize ? 'text-red-600 font-bold' : 'text-blue-600'}">
+                                (${fileSizeMB} MB) ${isOverSize ? '⚠️ Exceeds 5MB' : ''}
+                            </span>
+                            <button type="button" data-index="${index}" class="remove-file text-red-500 hover:text-red-700 font-bold px-1">✕</button>
+                        </div>
+                    `;
+                    fileList.appendChild(li);
+                });
+
+                document.querySelectorAll('.remove-file').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const idx = parseInt(this.getAttribute('data-index'));
+                        const dt = new DataTransfer();
+                        const currentFiles = Array.from(dataTransfer.files);
+                        
+                        currentFiles.forEach((file, i) => {
+                            if (i !== idx) dt.items.add(file);
+                        });
+
+                        dataTransfer = dt;
+                        galleryInput.files = dataTransfer.files;
+                        renderFileList();
+
+                        if (dataTransfer.files.length === 0) {
+                            container.classList.add('hidden');
+                        }
+                    });
+                });
+
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+    });
+</script>
+{% endblock %}
