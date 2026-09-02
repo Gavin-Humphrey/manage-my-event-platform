@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<main class="max-w-2xl mx-auto px-4 py-8">
+  <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-6">
+    
+    <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+      <div>
+        <h1 class="text-xl font-bold text-slate-900">{{ rsvp.first_name }} {{ rsvp.last_name }}</h1>
+        <p class="text-sm text-slate-500 mt-0.5">{{ rsvp.email|default:"No email provided" }}</p>
+        <p class="text-sm text-slate-500 mt-0.5">{{ rsvp.phone|default:"No phone provided" }}</p> 
+      </div>
+      <span class="px-3 py-1 text-xs font-semibold rounded-full 
+        {% if rsvp.status == 'ATTENDING' %}bg-emerald-50 text-emerald-700 border border-emerald-200
+        {% elif rsvp.status == 'DECLINED' %}bg-rose-50 text-rose-700 border border-rose-200
+        {% else %}bg-amber-50 text-amber-700 border border-amber-200{% endif %}">
+        {{ rsvp.get_status_display }}
+      </span>
+    </div>
+
+    <!-- Dietary Restrictions / Notes -->
+    {% if rsvp.dietary_restrictions %}
+    <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+      <span class="block text-xs font-bold uppercase text-slate-400 mb-1">Dietary Restrictions / Notes</span>
+      <p class="text-sm text-slate-700">{{ rsvp.dietary_restrictions }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Plus-Ones Section -->
+    {% if event.allow_plus_ones %}
+      <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+        <p class="block text-xs font-bold uppercase text-slate-400 mb-1">
+            Additional Guests: <span class="font-bold text-green-bold">{{ rsvp.plus_ones.count }}</span>
+        </p>
+        {% if rsvp.plus_ones.all %}
+        <ul class="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden">
+            {% for plus_one in rsvp.plus_ones.all %}
+              <li class="p-3.5 bg-white text-sm text-slate-800 flex items-center justify-between">
+                <span class="font-medium">#{{ forloop.counter }} - {{ plus_one.full_name }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-sm text-slate-400 italic">No plus-ones added for this RSVP.</p>
+        {% endif %}
+      </div>
+    {% endif %} 
+    <!--  -->
+    {% if rsvp.about_text %}
+    <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+      <span class="block text-xs font-bold uppercase text-slate-400 mb-1">MESSAGE</span>
+      <p class="text-sm text-slate-400 italic">{{rsvp.about_text}}</p>
+    </div>
+    {% endif %}
+
+    <!-- Action Buttons -->
+    <div class="pt-4 border-t border-slate-100 flex items-center space-x-3">
+      <a href="{% url 'events:edit_rsvp' event.slug rsvp.pk %}" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">Edit RSVP</a>
+      <a href="{% url 'events:event_rsvps_management' event.slug %}" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200">Back to List</a>
+    </div>
+
+  </div>
+</main>
+{% endblock %}

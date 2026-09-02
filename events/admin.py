@@ -1,9 +1,9 @@
 from django.contrib import admin
-from .models import Event, Guest
+from .models import Event, RSVP, RSVPGuest
 
 
 class GuestInline(admin.TabularInline):
-    model = Guest
+    model = RSVP
     extra = 1
 
 
@@ -14,10 +14,9 @@ class EventAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('title',)}
     inlines = [GuestInline]
 
-
-@admin.register(Guest)
+@admin.register(RSVP)
 class GuestAdmin(admin.ModelAdmin):
-    list_display = ('first_name', 'last_name', 'email', 'event', 'status', 'plus_ones_count')
+    list_display = ('full_name', 'email', 'event', 'status', 'plus_ones_count', 'dietary_restrictions', 'about_text')
     list_filter = ('status', 'event')
     search_fields = ('first_name', 'last_name', 'email', 'event__title')
     list_per_page = 25

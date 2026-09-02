@@ -22,6 +22,21 @@ class Event(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    allow_plus_ones = models.BooleanField(
+        default=False, 
+        help_text="Allow guests to bring plus-ones"
+    )
+    max_plus_ones_per_guest = models.PositiveIntegerField(
+        default=0, 
+        help_text="Maximum number of plus-ones allowed per RSVP"
+    )
+
+    # Add this new field
+    allow_guest_messages = models.BooleanField(
+        default=False, 
+        help_text="Allow guests to leave a special message for the celebrant"
+    )
+
     def save(self, *args, **kwargs):
         if not self.slug:
             base_slug = slugify(self.title) or 'event'
@@ -37,14 +52,14 @@ class Event(models.Model):
         return f"{self.title} ({self.host.username})"
 
 
-class Guest(models.Model):
+class RSVP(models.Model):
     STATUS_CHOICES = [
         ('PENDING', 'Pending'),
         ('ATTENDING', 'Attending'),
         ('DECLINED', 'Declined'),
     ]
 
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='guests')
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='rsvps')
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField(blank=True, null=True)
@@ -53,10 +68,26 @@ class Guest(models.Model):
     plus_ones_allowed = models.IntegerField(default=0)
     plus_ones_count = models.IntegerField(default=0)
     dietary_restrictions = models.TextField(blank=True, null=True)
+    about_text = models.TextField(blank=True, null=True)  # Added for celebrant messages
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ('event', 'email')
 
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
     def __str__(self):
-        return f"{self.first_name} {self.last_name} - {self.event.title}"
+        return f"{self.full_name} - {self.event.title}"
+
+
+
+class RSVPGuest(models.Model):
+    rsvp = models.ForeignKey(RSVP, on_delete=models.CASCADE, related_name='plus_ones')
+    full_name = models.CharField(max_length=255)
+    dietary_restrictions = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.full_name} (Guest of {self.rsvp.first_name} {self.rsvp.last_name})"

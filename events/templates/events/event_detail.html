@@ -10,8 +10,7 @@
 {% with theme=event.theme_settings %}
 {% with style_primary=theme.primary_color|default:'#3b82f6' style_page_bg=theme.page_bg_color|default:'#f8fafc' style_section_bg=theme.section_bg_color|default:'#ffffff' style_heading=theme.heading_color|default:'#0f172a' style_body=theme.body_color|default:'#475569' style_muted=theme.muted_color|default:'#94a3b8' %}
 
-<div class="min-h-screen pb-16 font-{{ theme.font_family|default:'sans' }}" 
-     style="background-color: {{ style_page_bg }} !important;">
+<div class="min-h-screen pb-16 font-{{ theme.font_family|default:'sans' }}" style="background-color: {{ style_page_bg }} !important;">
 
     <!-- Messages / Alert Banner -->
     {% if messages %}
@@ -24,7 +23,7 @@
         </div>
     {% endif %}
 
-    <!-- ================= SHARE GUEST LINK BANNER ================= -->
+    <!-- Share Guest Link Banner -->
     <div class="max-w-6xl mx-auto pt-6 px-4">
         <div class="p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3" style="background-color: {{ style_section_bg }} !important;">
             <div class="flex items-center justify-between">
@@ -68,18 +67,25 @@
                     <span id="copyBtnText">Copy Link</span>
                 </button>
             </div>
+
+            {% if request.user == event.host %}
+            <div class="mt-2">
+                <a href="{% url 'events:edit_event' slug=event.slug %}" class="text-xs font-semibold hover:opacity-80 inline-flex items-center gap-1" style="color: {{ style_primary }} !important;">
+                    Edit Event
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002-2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                </a>
+            </div>
+            {% endif %}
         </div>
     </div>
 
     <!-- ================= LAYOUT CONDITIONALS ================= -->
-
     {% if theme.layout_style == 'split' %}
         <!-- SPLIT TWO-COLUMN LAYOUT -->
         <div class="max-w-6xl mx-auto px-4 py-8 md:py-12 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            
-            <!-- Left Column: Hero & Event Details -->
             <div class="lg:col-span-6 space-y-6">
-                <!-- Hero Image Card -->
                 <div class="relative w-full rounded-2xl overflow-hidden border border-slate-200 shadow-lg bg-slate-900 aspect-[16/9] md:aspect-[4/3] lg:aspect-[4/5] lg:min-h-[480px]">
                     {% if theme.hero_image_url %}
                         <img src="{{ theme.hero_image_url }}" alt="{{ event.title }}" class="w-full h-full object-cover">
@@ -90,15 +96,11 @@
                     {% endif %}
                 </div>
 
-                <!-- Event Details Box -->
                 <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4" style="background-color: {{ style_section_bg }} !important;">
                     <span class="inline-block px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white rounded-full" style="background-color: {{ style_primary }} !important;">
                         {{ event.event_date|date:"F j, Y @ g:i A" }}
                     </span>
-                    <h1 class="text-3xl font-extrabold tracking-tight" style="color: {{ style_heading }} !important;">
-                        {{ event.title }}
-                    </h1>
-
+                    <h1 class="text-3xl font-extrabold tracking-tight" style="color: {{ style_heading }} !important;">{{ event.title }}</h1>
                     <div class="pt-4 border-t border-slate-100 space-y-3 text-sm">
                         <div>
                             <strong class="block text-xs uppercase tracking-wider" style="color: {{ style_muted }} !important;">Date & Time</strong>
@@ -107,18 +109,21 @@
                         <div>
                             <strong class="block text-xs uppercase tracking-wider" style="color: {{ style_muted }} !important;">Location</strong>
                             <p class="mt-0.5 font-medium" style="color: {{ style_body }} !important;">{{ event.location_name }}</p>
-                            {% if event.address %}
-                                <p class="text-xs mt-0.5" style="color: {{ style_muted }} !important;">{{ event.address }}</p>
-                            {% endif %}
+                            {% if event.address %}<p class="text-xs mt-0.5" style="color: {{ style_muted }} !important;">{{ event.address }}</p>{% endif %}
                         </div>
                     </div>
                 </div>
 
-                <!-- Gallery Carousel in Left Column -->
+                {% if event.description %}
+                <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-3" style="background-color: {{ style_section_bg }} !important;">
+                    <h2 class="text-lg font-bold border-b border-slate-100 pb-2" style="color: {{ style_heading }} !important;">About This Event</h2>
+                    <div class="text-sm leading-relaxed whitespace-pre-line" style="color: {{ style_body }} !important;">{{ event.description }}</div>
+                </div>
+                {% endif %}
+
                 {% if theme.gallery_images %}
                     <div class="p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4" style="background-color: {{ style_section_bg }} !important;">
                         <h2 class="text-lg font-bold border-b border-slate-100 pb-2" style="color: {{ style_heading }} !important;">Photo Gallery</h2>
-                        
                         <div class="swiper gallery-swiper-split rounded-xl overflow-hidden relative aspect-video w-full">
                             <div class="swiper-wrapper h-full">
                                 {% for img_url in theme.gallery_images %}
@@ -139,19 +144,16 @@
             <div class="lg:col-span-6 sticky top-8">
                 <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-xl space-y-5" style="background-color: {{ style_section_bg }} !important;">
                     <h2 class="text-xl font-bold border-b border-slate-100 pb-3" style="color: {{ style_heading }} !important;">RSVP For This Event</h2>
-                    
-                    <form method="post" action="{% url 'events:submit_rsvp' slug=event.slug %}" class="space-y-4">
+                    <form method="post" action="{% url 'events:submit_rsvp' slug=event.slug %}" class="space-y-4" id="rsvpFormSplit">
                         {% csrf_token %}
                         <div>
                             <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Full Name *</label>
                             <input type="text" name="full_name" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
                         </div>
-
                         <div>
                             <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Email Address *</label>
                             <input type="email" name="email" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
                         </div>
-
                         <div>
                             <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Attendance Status *</label>
                             <select name="status" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
@@ -159,40 +161,42 @@
                                 <option value="DECLINED">Sorry, I cannot make it</option>
                             </select>
                         </div>
-
+                        {% if event.allow_plus_ones and event.max_plus_ones_per_guest > 0 %}
+                            <div>
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Number of Additional Guests (Max: {{ event.max_plus_ones_per_guest }})</label>
+                                <input type="number" name="guest_count" id="id_guest_count_split" min="0" max="{{ event.max_plus_ones_per_guest }}" value="0" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                            </div>
+                            <div id="guest-name-container-split" class="space-y-2 hidden pt-2 border-t border-dashed border-slate-200"></div>
+                        {% else %}
+                            <input type="hidden" name="guest_count" value="0">
+                        {% endif %}
                         <div>
-                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Number of Guests (Plus Ones)</label>
-                            <input type="number" name="guest_count" min="1" value="1" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                            <!-- <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Dietary Restrictions / Notes</label> -->
+                             <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">Dietary Restrictions / Notes</label>
+                            <textarea name="dietary_restrictions" rows="2" placeholder="Dietary notes or special requests..." class="w-full px-3.5 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important; border-color: {{ style_muted }}60 !important;"></textarea>
                         </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Dietary Restrictions or Notes</label>
-                            <textarea name="notes" rows="3" placeholder="Vegetarian, allergies, special requests..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;"></textarea>
-                        </div>
-
-                        <button type="submit" style="background-color: {{ style_primary }} !important;" class="w-full py-3.5 text-white font-semibold text-sm rounded-xl shadow-md transition hover:opacity-95 focus:ring-4 focus:ring-blue-200 cursor-pointer">
-                            Confirm RSVP
-                        </button>
+                        {% if event.allow_guest_messages %}
+                            <div class="space-y-4 pt-4 border-t border-slate-200">
+                                <!-- <h3 class="text-sm font-semibold uppercase tracking-wider" style="color: {{ style_heading }} !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</h3> -->
+                                <div>
+                                    <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</label>
+                                    <textarea name="about_text" rows="3" placeholder="Write a short message or note..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;"></textarea>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <button type="submit" style="background-color: {{ style_primary }} !important;" class="w-full py-3.5 text-white font-semibold text-sm rounded-xl shadow-md transition hover:opacity-95 focus:ring-4 focus:ring-blue-200 cursor-pointer">Confirm RSVP</button>
                     </form>
                 </div>
             </div>
-
         </div>
 
     {% elif theme.layout_style == 'minimal' %}
         <!-- MINIMALIST CLEAN LAYOUT -->
         <div class="max-w-3xl mx-auto px-4 py-12 space-y-8">
-            
             <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-3 text-center" style="background-color: {{ style_section_bg }} !important;">
-                <span class="inline-block px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white rounded-full" style="background-color: {{ style_primary }} !important;">
-                    {{ event.event_date|date:"F j, Y @ g:i A" }}
-                </span>
-                <h1 class="text-4xl font-black tracking-tight" style="color: {{ style_heading }} !important;">
-                    {{ event.title }}
-                </h1>
-                <p class="text-sm font-medium" style="color: {{ style_body }} !important;">
-                    📍 {{ event.location_name }}{% if event.address %} — {{ event.address }}{% endif %}
-                </p>
+                <span class="inline-block px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white rounded-full" style="background-color: {{ style_primary }} !important;">{{ event.event_date|date:"F j, Y @ g:i A" }}</span>
+                <h1 class="text-4xl font-black tracking-tight" style="color: {{ style_heading }} !important;">{{ event.title }}</h1>
+                <p class="text-sm font-medium" style="color: {{ style_body }} !important;">📍 {{ event.location_name }}{% if event.address %} — {{ event.address }}{% endif %}</p>
             </div>
 
             {% if theme.hero_image_url %}
@@ -201,11 +205,16 @@
                 </div>
             {% endif %}
 
-            <!-- Minimal Single-Card Carousel -->
+            {% if event.description %}
+            <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-3" style="background-color: {{ style_section_bg }} !important;">
+                <h2 class="text-sm font-bold uppercase tracking-wider" style="color: {{ style_muted }} !important;">About</h2>
+                <div class="text-sm leading-relaxed whitespace-pre-line" style="color: {{ style_body }} !important;">{{ event.description }}</div>
+            </div>
+            {% endif %}
+
             {% if theme.gallery_images %}
                 <div class="p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3" style="background-color: {{ style_section_bg }} !important;">
                     <h2 class="text-sm font-bold uppercase tracking-wider" style="color: {{ style_muted }} !important;">Gallery</h2>
-                    
                     <div class="swiper gallery-swiper-minimal rounded-xl overflow-hidden relative aspect-video w-full">
                         <div class="swiper-wrapper h-full">
                             {% for img_url in theme.gallery_images %}
@@ -221,48 +230,57 @@
                 </div>
             {% endif %}
 
-            <!-- Minimalist RSVP Form -->
             <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6" style="background-color: {{ style_section_bg }} !important;">
                 <h2 class="text-xl font-bold border-b border-slate-100 pb-3" style="color: {{ style_heading }} !important;">Will you be attending?</h2>
-                
-                <form method="post" action="{% url 'events:submit_rsvp' slug=event.slug %}" class="space-y-4">
+                <form method="post" action="{% url 'events:submit_rsvp' slug=event.slug %}" class="space-y-4" id="rsvpFormMinimal">
                     {% csrf_token %}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Full Name *</label>
+                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">Full Name *</label>
                             <input type="text" name="full_name" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Email Address *</label>
+                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">Email Address *</label>
                             <input type="email" name="email" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
                         </div>
                     </div>
-
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Attendance Status *</label>
+                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">Attendance Status *</label>
                             <select name="status" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
                                 <option value="ATTENDING">Yes, attending</option>
                                 <option value="DECLINED">Cannot attend</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Guests</label>
-                            <input type="number" name="guest_count" min="1" value="1" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
-                        </div>
+                        {% if event.allow_plus_ones and event.max_plus_ones_per_guest > 0 %}
+                            <div>
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">Guests (Max: {{ event.max_plus_ones_per_guest }})</label>
+                                <input type="number" name="guest_count" id="id_guest_count_minimal" min="0" max="{{ event.max_plus_ones_per_guest }}" value="0" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                            </div>
+                        {% else %}
+                            <input type="hidden" name="guest_count" value="0">
+                        {% endif %}
                     </div>
-
+                    {% if event.allow_plus_ones and event.max_plus_ones_per_guest > 0 %}
+                        <div id="guest-name-container-minimal" class="space-y-2 hidden pt-2 border-t border-dashed border-slate-200"></div>
+                    {% endif %}
                     <div>
-                        <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Notes</label>
-                        <textarea name="notes" rows="2" placeholder="Dietary notes or special requests..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;"></textarea>
+                        <!-- <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Dietary Restrictions / Notes</label> -->
+                        <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">Dietary Restrictions / Notes</label>
+                        <textarea name="dietary_restrictions" rows="2" placeholder="Dietary notes or special requests..." class="w-full px-3.5 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important; border-color: {{ style_muted }}60 !important;"></textarea>
                     </div>
-
-                    <button type="submit" style="background-color: {{ style_primary }} !important;" class="w-full py-3 text-white font-semibold text-sm rounded-lg shadow transition hover:opacity-95 cursor-pointer">
-                        Submit RSVP
-                    </button>
+                    {% if event.allow_guest_messages %}
+                        <div class="space-y-4 pt-4 border-t border-slate-200">
+                            <!-- <h3 class="text-sm font-semibold uppercase tracking-wider" style="color: {{ style_heading }} !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</h3> -->
+                            <div>
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</label>
+                                <textarea name="about_text" rows="3" placeholder="Write a short message or note..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;"></textarea>
+                            </div>
+                        </div>
+                    {% endif %}
+                    <button type="submit" style="background-color: {{ style_primary }} !important;" class="w-full py-3 text-white font-semibold text-sm rounded-lg shadow transition hover:opacity-95 cursor-pointer">Submit RSVP</button>
                 </form>
             </div>
-
         </div>
 
     {% else %}
@@ -273,27 +291,17 @@
             {% else %}
                 <div class="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 opacity-90"></div>
             {% endif %}
-            
             <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/40 to-black/30 z-10"></div>
-
             <div class="relative z-20 text-center px-4 max-w-3xl mt-auto pb-6">
-                <span class="inline-block px-3 py-1 mb-3 text-xs font-semibold uppercase tracking-wider text-white bg-black/50 backdrop-blur-md rounded-full border border-white/20 shadow-sm">
-                    {{ event.event_date|date:"F j, Y @ g:i A" }}
-                </span>
-                <h1 class="text-3xl md:text-5xl font-extrabold text-white tracking-tight drop-shadow-lg">
-                    {{ event.title }}
-                </h1>
-                <p class="text-sm md:text-base text-slate-200 mt-2 flex items-center justify-center gap-2 drop-shadow">
-                    📍 {{ event.location_name }}
-                </p>
+                <span class="inline-block px-3 py-1 mb-3 text-xs font-semibold uppercase tracking-wider text-white bg-black/50 backdrop-blur-md rounded-full border border-white/20 shadow-sm">{{ event.event_date|date:"F j, Y @ g:i A" }}</span>
+                <h1 class="text-3xl md:text-5xl font-extrabold text-white tracking-tight drop-shadow-lg">{{ event.title }}</h1>
+                <p class="text-sm md:text-base text-slate-200 mt-2 flex items-center justify-center gap-2 drop-shadow">📍 {{ event.location_name }}</p>
             </div>
         </div>
 
         <div class="max-w-3xl mx-auto px-4 -mt-8 relative z-30 space-y-8">
-
             <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-xl space-y-4" style="background-color: {{ style_section_bg }} !important;">
                 <h2 class="text-xl font-bold border-b border-slate-100 pb-3" style="color: {{ style_heading }} !important;">Event Overview</h2>
-                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
                     <div>
                         <strong class="block text-xs uppercase tracking-wider" style="color: {{ style_muted }} !important;">Date & Time</strong>
@@ -302,18 +310,21 @@
                     <div>
                         <strong class="block text-xs uppercase tracking-wider" style="color: {{ style_muted }} !important;">Location</strong>
                         <p class="mt-1 font-medium" style="color: {{ style_body }} !important;">{{ event.location_name }}</p>
-                        {% if event.address %}
-                            <p class="text-xs mt-0.5" style="color: {{ style_muted }} !important;">{{ event.address }}</p>
-                        {% endif %}
+                        {% if event.address %}<p class="text-xs mt-0.5" style="color: {{ style_muted }} !important;">{{ event.address }}</p>{% endif %}
                     </div>
                 </div>
             </div>
 
+            {% if event.description %}
+            <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-xl space-y-4" style="background-color: {{ style_section_bg }} !important;">
+                <h2 class="text-xl font-bold border-b border-slate-100 pb-3" style="color: {{ style_heading }} !important;">About This Event</h2>
+                <div class="text-sm leading-relaxed whitespace-pre-line" style="color: {{ style_body }} !important;">{{ event.description }}</div>
+            </div>
+            {% endif %}
+
             {% if theme.gallery_images %}
                 <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-xl space-y-4" style="background-color: {{ style_section_bg }} !important;">
                     <h2 class="text-xl font-bold border-b border-slate-100 pb-3" style="color: {{ style_heading }} !important;">Event Gallery</h2>
-
-                    <!-- Centered Layout Fixed Height Carousel Container -->
                     <div class="swiper gallery-swiper-centered rounded-xl overflow-hidden relative w-full h-[320px] md:h-[400px]">
                         <div class="swiper-wrapper h-full">
                             {% for img_url in theme.gallery_images %}
@@ -322,7 +333,6 @@
                                 </div>
                             {% endfor %}
                         </div>
-
                         <div class="swiper-pagination"></div>
                         <div class="swiper-button-prev text-white bg-black/40 p-3 rounded-full hover:bg-black/60 transition !w-8 !h-8 after:!text-xs"></div>
                         <div class="swiper-button-next text-white bg-black/40 p-3 rounded-full hover:bg-black/60 transition !w-8 !h-8 after:!text-xs"></div>
@@ -330,11 +340,9 @@
                 </div>
             {% endif %}
 
-            <!-- RSVP Form Section -->
             <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-xl space-y-4" style="background-color: {{ style_section_bg }} !important;">
                 <h2 class="text-xl font-bold border-b border-slate-100 pb-3" style="color: {{ style_heading }} !important;">RSVP For This Event</h2>
-                
-                <form method="post" action="{% url 'events:submit_rsvp' slug=event.slug %}" class="space-y-4">
+                <form method="post" action="{% url 'events:submit_rsvp' slug=event.slug %}" class="space-y-4" id="rsvpFormDefault">
                     {% csrf_token %}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -346,91 +354,129 @@
                             <input type="email" name="email" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
                         </div>
                     </div>
-
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Attendance Status *</label>
                             <select name="status" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
-                                <option value="ATTENDING">Yes, I will be attending</option>
-                                <option value="DECLINED">Sorry, I cannot make it</option>
+                                <option value="ATTENDING">Yes, attending</option>
+                                <option value="DECLINED">Cannot attend</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Number of Guests</label>
-                            <input type="number" name="guest_count" min="1" value="1" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
-                        </div>
+                        {% if event.allow_plus_ones and event.max_plus_ones_per_guest > 0 %}
+                            <div>
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Guests (Max: {{ event.max_plus_ones_per_guest }})</label>
+                                <input type="number" name="guest_count" id="id_guest_count_default" min="0" max="{{ event.max_plus_ones_per_guest }}" value="0" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                            </div>
+                        {% else %}
+                            <input type="hidden" name="guest_count" value="0">
+                        {% endif %}
                     </div>
-
+                    {% if event.allow_plus_ones and event.max_plus_ones_per_guest > 0 %}
+                        <div id="guest-name-container-default" class="space-y-2 hidden pt-2 border-t border-dashed border-slate-200"></div>
+                    {% endif %}
                     <div>
-                        <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Dietary Restrictions / Special Notes</label>
-                        <textarea name="notes" rows="3" placeholder="Let the host know about dietary restrictions or comments..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;"></textarea>
+                        <!-- <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Dietary Restrictions / Notes</label> -->
+                        <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">Dietary Restrictions / Notes</label>
+                        <textarea name="dietary_restrictions" rows="2" placeholder="Dietary notes or special requests..." class="w-full px-3.5 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important; border-color: {{ style_muted }}60 !important;"></textarea>
                     </div>
-
-                    <button type="submit" style="background-color: {{ style_primary }} !important;" class="w-full py-3.5 text-white font-semibold text-sm rounded-xl shadow-md transition hover:opacity-95 focus:ring-4 focus:ring-blue-200 cursor-pointer">
-                        Confirm RSVP
-                    </button>
+                    {% if event.allow_guest_messages %}
+                        <div class="space-y-4 pt-4 border-t border-slate-200">
+                            <!-- <h3 class="text-sm font-semibold uppercase tracking-wider" style="color: {{ style_heading }} !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</h3> -->
+                            <div>
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading } } !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</label>
+                                <textarea name="about_text" rows="3" placeholder="Write a short message or note..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;"></textarea>
+                            </div>
+                        </div>
+                    {% endif %}
+                    <button type="submit" style="background-color: {{ style_primary }} !important;" class="w-full py-3 text-white font-semibold text-sm rounded-lg shadow transition hover:opacity-95 cursor-pointer">Submit RSVP</button>
                 </form>
             </div>
+        </div>
+    {% endif %}
 
+    <!-- ================= GUEST MESSAGES CAROUSEL ================= -->
+    {% if guest_messages %}
+        <div class="max-w-3xl lg:max-w-6xl mx-auto px-4 mt-12">
+            <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4" style="background-color: {{ style_section_bg }} !important;">
+                <h2 class="text-xl font-bold border-b border-slate-100 pb-3" style="color: {{ style_heading }} !important;">Messages from Guests</h2>
+                
+                <div class="swiper messages-swiper rounded-xl overflow-hidden relative w-full py-2">
+                    <div class="swiper-wrapper">
+                        {% for msg in guest_messages %}
+                            <div class="swiper-slide p-6 rounded-xl border border-slate-100 flex flex-col justify-between" style="background-color: {{ style_page_bg }} !important;">
+                                <p class="text-sm italic mb-4" style="color: {{ style_body }} !important;">"{{ msg.about_text }}"</p>
+                                <span class="text-xs font-bold uppercase tracking-wider" style="color: {{ style_primary }} !important;">— {{ msg.full_name }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="swiper-pagination !relative !mt-4"></div>
+                </div>
+            </div>
         </div>
     {% endif %}
 
 </div>
+
 {% endwith %}
 {% endwith %}
 
-<!-- JavaScript for Copy Functionality and Swiper -->
 <script>
-    function copyRsvpLink() {
-        const input = document.getElementById('publicRsvpUrl');
-        const btnText = document.getElementById('copyBtnText');
-        
-        if (!input) return;
-
-        input.select();
-        input.setSelectionRange(0, 99999);
-        
-        navigator.clipboard.writeText(input.value).then(() => {
-            if (btnText) {
-                btnText.innerText = 'Copied!';
-                setTimeout(() => {
-                    btnText.innerText = 'Copy Link';
-                }, 2000);
-            }
-        }).catch(() => {
-            alert('Failed to copy. URL: ' + input.value);
-        });
-    }
-
     document.addEventListener("DOMContentLoaded", function () {
-        const swiperConfig = {
-            loop: true,
-            slidesPerView: 1,
-            spaceBetween: 0,
-            autoHeight: false,
-            autoplay: {
-                delay: 3500,
-                disableOnInteraction: false,
-            },
-            pagination: {
-                el: '.swiper-pagination',
-                clickable: true,
-            },
-            navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
-            },
-        };
+        // Initialize Swiper for Guest Messages
+        if (typeof Swiper !== 'undefined' && document.querySelector('.messages-swiper')) {
+            new Swiper('.messages-swiper', {
+                slidesPerView: 1,
+                loop: true,
+                autoplay: { 
+                    delay: 5000,
+                    disableOnInteraction: false 
+                },
+                pagination: { 
+                    el: '.swiper-pagination', 
+                    clickable: true 
+                },
+            });
+        }
 
-        if (document.querySelector('.gallery-swiper-centered')) {
-            new Swiper('.gallery-swiper-centered', swiperConfig);
-        }
-        if (document.querySelector('.gallery-swiper-split')) {
-            new Swiper('.gallery-swiper-split', swiperConfig);
-        }
-        if (document.querySelector('.gallery-swiper-minimal')) {
-            new Swiper('.gallery-swiper-minimal', swiperConfig);
-        }
+        // Dynamic Plus-One Guest Name Field Injector for all layouts
+        ['split', 'minimal', 'default'].forEach(layout => {
+            const countInput = document.getElementById(`id_guest_count_${layout}`);
+            const container = document.getElementById(`guest-name-container-${layout}`);
+
+            if (countInput && container) {
+                countInput.addEventListener('input', function () {
+                    const count = parseInt(this.value) || 0;
+                    container.innerHTML = '';
+
+                    if (count > 0) {
+                        container.classList.remove('hidden');
+                        const labelTitle = document.createElement('label');
+                        labelTitle.className = 'block text-xs font-semibold uppercase mb-1';
+                        labelTitle.style.color = '{{ style_muted }}';
+                        labelTitle.innerText = 'Additional Guest Name(s)';
+                        container.appendChild(labelTitle);
+
+                        for (let i = 1; i <= count; i++) {
+                            const inputWrapper = document.createElement('div');
+                            inputWrapper.className = 'flex items-center gap-2 mb-2';
+                            
+                            const nameInput = document.createElement('input');
+                            nameInput.type = 'text';
+                            nameInput.name = `guest_name_${i}`;
+                            nameInput.placeholder = `Guest ${i} Full Name *`;
+                            nameInput.required = true;
+                            nameInput.className = 'w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none';
+                            nameInput.style.cssText = `color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;`;
+                            
+                            inputWrapper.appendChild(nameInput);
+                            container.appendChild(inputWrapper);
+                        }
+                    } else {
+                        container.classList.add('hidden');
+                    }
+                });
+            }
+        });
     });
 </script>
 {% endblock %}

@@ -3,8 +3,8 @@ from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from .models import Event, Guest
-from .forms import EventForm, GuestForm
+from .models import Event, RSVP, RSVPGuest
+from .forms import EventForm, RSVPForm, RSVPGuestForm
 from django.utils.text import slugify
 from django.db.models import Q, Sum
 
@@ -18,7 +18,9 @@ def home(request):
 
 def event_detail(request, slug):
     event = get_object_or_404(Event, slug=slug)
-    return render(request, 'events/event_detail.html', {'event': event})
+    # Query RSVPs that contain a message for the carousel
+    guest_messages = event.rsvps.exclude(about_text__isnull=True).exclude(about_text__exact='')
+    return render(request, 'events/event_detail.html', {'event': event, 'guest_messages': guest_messages,})
 
 def submit_rsvp(request, slug):
     event = get_object_or_404(Event, slug=slug)
@@ -31,7 +33,7 @@ def submit_rsvp(request, slug):
         plus_ones_count = int(request.POST.get('plus_ones_count', 0))
         dietary = request.POST.get('dietary_restrictions', '')
 
-        guest, created = Guest.objects.update_or_create(
+        guest, created = RSVP.objects.update_or_create(
             event=event,
             email=email,
             defaults={
@@ -54,7 +56,8 @@ def submit_rsvp(request, slug):
 
 def register_host(request):
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        #return redirect('dashboard')
+        return redirect('events:dashboard')
         
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
@@ -62,7 +65,8 @@ def register_host(request):
             user = form.save()
             login(request, user)
             messages.success(request, "Account created successfully! Welcome to your dashboard.")
-            return redirect('dashboard')
+            #return redirect('dashboard')
+            return redirect('events:dashboard')
     else:
         form = UserCreationForm()
     return render(request, 'registration/register.html', {'form': form})
@@ -100,8 +104,8 @@ def dashboard(request):
     
     # Global metrics across all events hosted by this user
     total_events = events.count()
-    total_guests = Guest.objects.filter(event__host=request.user).count()
-    attending_guests = Guest.objects.filter(event__host=request.user, status='ATTENDING').count()
+    total_guests = RSVP.objects.filter(event__host=request.user).count()
+    attending_guests = RSVP.objects.filter(event__host=request.user, status='ATTENDING').count()
 
     context = {
         'events': events,
@@ -127,16 +131,36 @@ def create_event(request):
     return render(request, 'events/event_form.html', {'form': form, 'action': 'Create'})
 
 
+# @login_required
+# def edit_event(request, slug=None):
+#     event = get_object_or_404(Event, slug=slug)
+
+#     if request.method == 'POST':
+#         form = EventForm(request.POST, request.FILES, instance=event)
+#         if form.is_valid():
+#             saved_event = form.save()
+#             messages.success(request, f"Event '{saved_event.title}' updated successfully!")
+#             return redirect('event_detail', slug=saved_event.slug)
+#     else:
+#         form = EventForm(instance=event)
+
+#     return render(request, 'events/event_form.html', {'form': form, 'action': 'Edit'})
+
 @login_required
 def edit_event(request, slug=None):
     event = get_object_or_404(Event, slug=slug)
+
+    # Security check: ensure only the host can edit this event
+    if event.host != request.user:
+        messages.error(request, "You do not have permission to edit this event.")
+        return redirect('events:dashboard')
 
     if request.method == 'POST':
         form = EventForm(request.POST, request.FILES, instance=event)
         if form.is_valid():
             saved_event = form.save()
             messages.success(request, f"Event '{saved_event.title}' updated successfully!")
-            return redirect('event_detail', slug=saved_event.slug)
+            return redirect('events:event_detail', slug=saved_event.slug)
     else:
         form = EventForm(instance=event)
 
@@ -164,35 +188,9 @@ def event_form_view(request, pk=None):
 def public_rsvp(request, slug):
     event = get_object_or_404(Event, slug=slug)
     
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        full_name = request.POST.get('full_name', '').strip()
-        status = request.POST.get('status', 'attending')
-        
-        # Split full name into first and last name parts
-        name_parts = full_name.split(' ', 1)
-        first_name = name_parts[0] if name_parts else ''
-        last_name = name_parts[1] if len(name_parts) > 1 else ''
-        
-        if email and first_name:
-            Guest.objects.update_or_create(
-                event=event,
-                email=email,
-                defaults={
-                    'first_name': first_name,
-                    'last_name': last_name,
-                    'status': status,
-                }
-            )
-            messages.success(request, "Your RSVP has been recorded successfully!")
-            return redirect('events:public_rsvp', slug=event.slug)
-        else:
-            messages.error(request, "Email and Full Name are required fields.")
-
     # Safely retrieve theme settings
     raw_theme = event.theme_settings() if callable(getattr(event, 'theme_settings', None)) else getattr(event, 'theme_settings', None)
     
-    # Normalize dictionary structure to provide safe default key fallbacks
     theme = {}
     if isinstance(raw_theme, dict):
         theme = raw_theme.copy()
@@ -200,12 +198,15 @@ def public_rsvp(request, slug):
     elif raw_theme is not None:
         theme = raw_theme
 
+    # Query RSVPs that contain a message for the carousel
+    guest_messages = event.rsvps.exclude(about_text__isnull=True).exclude(about_text__exact='')
+
     context = {
         'event': event,
         'theme': theme,
+        'guest_messages': guest_messages,
     }
     return render(request, 'events/public_rsvp.html', context)
-
 
 def submit_rsvp(request, slug):
     event = get_object_or_404(Event, slug=slug)
@@ -213,7 +214,9 @@ def submit_rsvp(request, slug):
     if request.method == 'POST':
         email = request.POST.get('email')
         full_name = request.POST.get('full_name', '').strip()
-        status = request.POST.get('status', 'attending')
+        status = request.POST.get('status', 'ATTENDING').upper()
+        about_text = request.POST.get('about_text', '').strip() # Capture celebrant message
+        dietary_restrictions = request.POST.get('dietary_restrictions', '').strip()
         
         # Split full name into first and last name components
         name_parts = full_name.split(' ', 1)
@@ -221,30 +224,55 @@ def submit_rsvp(request, slug):
         last_name = name_parts[1] if len(name_parts) > 1 else ''
         
         if email and first_name:
-            Guest.objects.update_or_create(
+            plus_ones_count = 0
+            if status == 'ATTENDING' and event.allow_plus_ones:
+                try:
+                    plus_ones_count = int(request.POST.get('guest_count', 0))
+                    plus_ones_count = min(plus_ones_count, event.max_plus_ones_per_guest)
+                except ValueError:
+                    plus_ones_count = 0
+
+            rsvp, created = RSVP.objects.update_or_create(
                 event=event,
                 email=email,
                 defaults={
                     'first_name': first_name,
                     'last_name': last_name,
                     'status': status,
+                    'plus_ones_allowed': getattr(event, 'max_plus_ones_per_guest', 0),
+                    'plus_ones_count': plus_ones_count,
+                    'about_text': about_text, # Save the message here
+                    'dietary_restrictions': dietary_restrictions,
                 }
             )
+
+            # Clear old plus-ones if updating, then insert fresh individual names
+            if hasattr(rsvp, 'plus_ones'):
+                rsvp.plus_ones.all().delete()
+                if status == 'ATTENDING' and event.allow_plus_ones:
+                    for i in range(1, plus_ones_count + 1):
+                        # Match HTML template loop name: 'guest_name_i'
+                        guest_name = request.POST.get(f'guest_name_{i}')
+                        if guest_name:
+                            RSVPGuest.objects.create(
+                                rsvp=rsvp,
+                                full_name=guest_name
+                            )
+
             messages.success(request, "Your RSVP has been recorded successfully!")
         else:
             messages.error(request, "Email and Full Name are required fields.")
             
     return redirect('events:public_rsvp', slug=event.slug)
 
-
 @login_required
-def event_guests_management(request, slug):
+def event_rsvps_management(request, slug):
     event = get_object_or_404(Event, slug=slug, host=request.user)
-    guests = event.guests.all()
+    rsvps = event.rsvps.all()
     
     search_query = request.GET.get('q', '').strip()
     if search_query:
-        guests = guests.filter(
+        rsvps = rsvps.filter(
             Q(first_name__icontains=search_query) |
             Q(last_name__icontains=search_query) |
             Q(email__icontains=search_query)
@@ -252,57 +280,82 @@ def event_guests_management(request, slug):
         
     status_filter = request.GET.get('status', '').strip()
     if status_filter:
-        guests = guests.filter(status=status_filter)
+        rsvps = rsvps.filter(status=status_filter)
 
-    total_rsvps = event.guests.count()
-    attending_count = event.guests.filter(status='ATTENDING').count()
+    total_rsvps = event.rsvps.count()
+    attending_count = event.rsvps.filter(status='ATTENDING').count()
     
+    # Calculate total headcount including primary RSVPs plus their plus-ones
     total_headcount = attending_count
-    if hasattr(Guest, 'plus_ones_count'):
-        extra = event.guests.filter(status='attending').aggregate(
-            total=Sum('plus_ones_count', default=0)
-        )['total']
-        total_headcount += (extra or 0)
+    extra = event.rsvps.filter(status='ATTENDING').aggregate(
+        total=Sum('plus_ones_count', default=0)
+    )['total']
+    total_headcount += (extra or 0)
 
     context = {
         'event': event,
-        'guests': guests,
+        'rsvps': rsvps,
         'search_query': search_query,
         'status_filter': status_filter,
         'total_rsvps': total_rsvps,
         'attending_count': attending_count,
         'total_headcount': total_headcount,
     }
-    return render(request, 'events/event_rsvp_management.html', context)
+    return render(request, 'events/event_rsvps_management.html', context)
 
 
-def view_rsvp_guest(request, slug, pk):
+def view_rsvp_detail(request, slug, pk):
     event = get_object_or_404(Event, slug=slug)
-    guest = get_object_or_404(Guest, pk=pk, event=event)
+    rsvp = get_object_or_404(RSVP, pk=pk, event=event)
     
     context = {
         'event': event,
-        'guest': guest,
-        'additional_guests': getattr(guest, 'additional_guests', None),
+        'rsvp': rsvp,
+        'additional_guests': rsvp.plus_ones.all(),
     }
-    return render(request, 'events/view_rsvp_guest.html', context)
+    return render(request, 'events/view_rsvp_detail.html', context)
 
 
-def edit_rsvp_guest(request, slug, pk):
+def edit_rsvp(request, slug, pk):
     event = get_object_or_404(Event, slug=slug)
-    guest = get_object_or_404(Guest, pk=pk, event=event)
+    rsvp = get_object_or_404(RSVP, pk=pk, event=event)
     
     if request.method == 'POST':
-        form = GuestForm(request.POST, instance=guest)
+        form = RSVPForm(request.POST, instance=rsvp)
         if form.is_valid():
-            form.save()
-            return redirect('events:view_rsvp_guest', slug=event.slug, pk=guest.pk)
+            updated_rsvp = form.save(commit=False)
+            
+            # Handle guest count & dynamic plus-one names correctly using RSVPGuest
+            if event.allow_plus_ones and event.max_plus_ones_per_guest > 0:
+                try:
+                    guest_count = int(request.POST.get('guest_count', 0))
+                except ValueError:
+                    guest_count = 0
+                
+                if guest_count > event.max_plus_ones_per_guest:
+                    guest_count = event.max_plus_ones_per_guest
+                if guest_count < 0:
+                    guest_count = 0
+                
+                updated_rsvp.plus_ones_count = guest_count
+                updated_rsvp.save()
+                
+                # Clear and recreate plus-ones using RSVPGuest model
+                rsvp.plus_ones.all().delete()
+                for i in range(1, guest_count + 1):
+                    guest_name = request.POST.get(f'plus_one_name_{i}')
+                    if guest_name:
+                        RSVPGuest.objects.create(rsvp=updated_rsvp, full_name=guest_name)
+            else:
+                updated_rsvp.save()
+                
+            return redirect('events:view_rsvp_detail', slug=event.slug, pk=rsvp.pk)
     else:
-        form = GuestForm(instance=guest)
+        form = RSVPForm(instance=rsvp)
         
     context = {
         'event': event,
-        'guest': guest,
+        'rsvp': rsvp,
         'form': form,
     }
-    return render(request, 'events/edit_rsvp_guest.html', context)
+    return render(request, 'events/edit_rsvp.html', context)

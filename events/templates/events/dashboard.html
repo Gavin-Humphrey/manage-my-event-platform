@@ -64,7 +64,7 @@
               <a href="{% url 'events:event_detail' slug=event.slug %}" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg transition">
                 View Event Page
               </a>
-              <a href="{% url 'events:event_guests_management' event.slug %}" class="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-semibold hover:bg-blue-100 transition">
+              <a href="{% url 'events:event_rsvps_management' slug=event.slug %}" class="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-semibold hover:bg-blue-100 transition">
                   Guest Management
               </a>
             </div>
@@ -81,7 +81,8 @@
         <p class="text-slate-500 text-sm max-w-sm mx-auto mt-1 mb-6">
           Get started by creating your first event page and sharing it with your guests.
         </p>
-        <a href="{% url 'create_event' %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg shadow-sm transition inline-flex items-center gap-2">
+        
+        <a href="{% url 'events:create_event' %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg shadow-sm transition inline-flex items-center gap-2">
             <span>+</span> Create Event
         </a>
       </div>
