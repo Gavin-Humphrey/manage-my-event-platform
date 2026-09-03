@@ -22,6 +22,23 @@ class Event(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # ###############
+    show_about_section = models.BooleanField(
+        default=False,
+        help_text="Display the host bio and story section on the public event page"
+    )
+    about_title = models.CharField(
+        max_length=150,
+        blank=True,
+        default="About the Host",
+        help_text="Heading title for the bio section"
+    )
+    about_text = models.TextField(
+        blank=True,
+        help_text="Detailed host biography or background story"
+    )
+    #################
+
     allow_plus_ones = models.BooleanField(
         default=False, 
         help_text="Allow guests to bring plus-ones"
@@ -31,11 +48,45 @@ class Event(models.Model):
         help_text="Maximum number of plus-ones allowed per RSVP"
     )
 
-    # Add this new field
     allow_guest_messages = models.BooleanField(
         default=False, 
         help_text="Allow guests to leave a special message for the celebrant"
     )
+    @property
+    def normalized_gallery(self):
+        gallery = self.theme_settings.get('gallery_images', [])
+        normalized = []
+        for item in gallery:
+            if isinstance(item, str):
+                normalized.append({'url': item, 'caption': ''})
+            elif isinstance(item, dict):
+                # Find URL from common keys
+                url = item.get('url') or item.get('image') or item.get('file') or item.get('src') or ''
+                if not url and len(item) > 0:
+                    # Fallback: grab the first value that looks like a URL/path
+                    for v in item.values():
+                        if isinstance(v, str) and ('/' in v or '.' in v):
+                            url = v
+                            break
+
+                # Find caption/description from ANY key matching text fields
+                caption = ''
+                for k, v in item.items():
+                    if any(key_word in k.lower() for key_word in ['caption', 'desc', 'text', 'title', 'note', 'comment']):
+                        if v and isinstance(v, str):
+                            caption = v
+                            break
+                
+                # Ultimate fallback if no specific key matched
+                if not caption:
+                    for v in item.values():
+                        if isinstance(v, str) and v != url and len(v.strip()) > 0:
+                            caption = v
+                            break
+
+                if url:
+                    normalized.append({'url': url, 'caption': caption})
+        return normalized
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -68,7 +119,7 @@ class RSVP(models.Model):
     plus_ones_allowed = models.IntegerField(default=0)
     plus_ones_count = models.IntegerField(default=0)
     dietary_restrictions = models.TextField(blank=True, null=True)
-    about_text = models.TextField(blank=True, null=True)  # Added for celebrant messages
+    guest_message = models.TextField(blank=True, null=True)  # Added for celebrant messages
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

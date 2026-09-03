@@ -16,11 +16,41 @@ from django.db.models import Q, Sum
 def home(request):
     return render(request, 'events/home.html')
 
+
 def event_detail(request, slug):
     event = get_object_or_404(Event, slug=slug)
-    # Query RSVPs that contain a message for the carousel
-    guest_messages = event.rsvps.exclude(about_text__isnull=True).exclude(about_text__exact='')
-    return render(request, 'events/event_detail.html', {'event': event, 'guest_messages': guest_messages,})
+    
+    # Safely retrieve theme settings
+    raw_theme = event.theme_settings() if callable(getattr(event, 'theme_settings', None)) else getattr(event, 'theme_settings', None)
+    
+    theme = {}
+    if isinstance(raw_theme, dict):
+        theme = raw_theme.copy()
+        theme['theme_color'] = theme.get('theme_color') or theme.get('primary_color') or '#3b82f6'
+    elif raw_theme is not None:
+        theme = raw_theme
+
+    # Normalize gallery slides and descriptions
+    raw_gallery = theme.get('gallery_slides') or theme.get('gallery_images', [])
+    normalized_gallery = []
+    for item in raw_gallery:
+        if isinstance(item, str):
+            normalized_gallery.append({'url': item, 'caption': ''})
+        elif isinstance(item, dict):
+            url = item.get('url') or item.get('image') or ''
+            caption = item.get('description') or item.get('caption') or item.get('text') or ''
+            if url:
+                normalized_gallery.append({'url': url, 'caption': caption})
+                
+    guest_messages = event.rsvps.exclude(guest_message__isnull=True).exclude(guest_message__exact='')
+    
+    return render(request, 'events/event_detail.html', {
+        'event': event, 
+        'theme': theme,
+        'guest_messages': guest_messages,
+        'normalized_gallery': normalized_gallery,
+    })
+
 
 def submit_rsvp(request, slug):
     event = get_object_or_404(Event, slug=slug)
@@ -131,21 +161,6 @@ def create_event(request):
     return render(request, 'events/event_form.html', {'form': form, 'action': 'Create'})
 
 
-# @login_required
-# def edit_event(request, slug=None):
-#     event = get_object_or_404(Event, slug=slug)
-
-#     if request.method == 'POST':
-#         form = EventForm(request.POST, request.FILES, instance=event)
-#         if form.is_valid():
-#             saved_event = form.save()
-#             messages.success(request, f"Event '{saved_event.title}' updated successfully!")
-#             return redirect('event_detail', slug=saved_event.slug)
-#     else:
-#         form = EventForm(instance=event)
-
-#     return render(request, 'events/event_form.html', {'form': form, 'action': 'Edit'})
-
 @login_required
 def edit_event(request, slug=None):
     event = get_object_or_404(Event, slug=slug)
@@ -198,13 +213,26 @@ def public_rsvp(request, slug):
     elif raw_theme is not None:
         theme = raw_theme
 
-    # Query RSVPs that contain a message for the carousel
-    guest_messages = event.rsvps.exclude(about_text__isnull=True).exclude(about_text__exact='')
+    # Normalize gallery slides and descriptions
+    raw_gallery = theme.get('gallery_slides') or theme.get('gallery_images', [])
+    normalized_gallery = []
+    for item in raw_gallery:
+        if isinstance(item, str):
+            normalized_gallery.append({'url': item, 'caption': ''})
+        elif isinstance(item, dict):
+            url = item.get('url') or item.get('image') or ''
+            caption = item.get('description') or item.get('caption') or item.get('text') or ''
+            if url:
+                normalized_gallery.append({'url': url, 'caption': caption})
+
+    # Query RSVPs that contain a message for the carousel 
+    guest_messages = event.rsvps.exclude(guest_message__isnull=True).exclude(guest_message__exact='')
 
     context = {
         'event': event,
         'theme': theme,
         'guest_messages': guest_messages,
+        'normalized_gallery': normalized_gallery,
     }
     return render(request, 'events/public_rsvp.html', context)
 
@@ -215,7 +243,7 @@ def submit_rsvp(request, slug):
         email = request.POST.get('email')
         full_name = request.POST.get('full_name', '').strip()
         status = request.POST.get('status', 'ATTENDING').upper()
-        about_text = request.POST.get('about_text', '').strip() # Capture celebrant message
+        guest_message = request.POST.get('guest_message', '').strip() # Capture celebrant message
         dietary_restrictions = request.POST.get('dietary_restrictions', '').strip()
         
         # Split full name into first and last name components
@@ -241,7 +269,7 @@ def submit_rsvp(request, slug):
                     'status': status,
                     'plus_ones_allowed': getattr(event, 'max_plus_ones_per_guest', 0),
                     'plus_ones_count': plus_ones_count,
-                    'about_text': about_text, # Save the message here
+                    'guest_message': guest_message, # Save the message here
                     'dietary_restrictions': dietary_restrictions,
                 }
             )

@@ -16,7 +16,7 @@ class EventAdmin(admin.ModelAdmin):
 
 @admin.register(RSVP)
 class GuestAdmin(admin.ModelAdmin):
-    list_display = ('full_name', 'email', 'event', 'status', 'plus_ones_count', 'dietary_restrictions', 'about_text')
+    list_display = ('full_name', 'email', 'event', 'status', 'plus_ones_count', 'dietary_restrictions', 'guest_message')
     list_filter = ('status', 'event')
     search_fields = ('first_name', 'last_name', 'email', 'event__title')
     list_per_page = 25

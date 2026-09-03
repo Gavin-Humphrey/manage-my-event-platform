@@ -344,15 +344,15 @@ class EventForm(forms.ModelForm):
         })
     )
 
-    about_title = forms.CharField(
-        required=False,
-        initial="About the Host",
-        max_length=100,
-        widget=forms.TextInput(attrs={
-            'class': 'w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500'
-        })
-    )
-    about_text = forms.CharField(
+    # about_title = forms.CharField(
+    #     required=False,
+    #     initial="About the Host",
+    #     max_length=100,
+    #     widget=forms.TextInput(attrs={
+    #         'class': 'w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500'
+    #     })
+    # )
+    guest_message = forms.CharField(
         required=False,
         widget=forms.Textarea(attrs={
             'rows': 3,
@@ -372,7 +372,7 @@ class EventForm(forms.ModelForm):
     class Meta:
         model = Event
         fields = [
-            'title', 'event_date', 'location_name', 'address',
+            'title', 'event_date', 'location_name', 'address','show_about_section', 'about_title', 'about_text',
             'allow_plus_ones', 'max_plus_ones_per_guest', 'allow_guest_messages', 'theme_settings'
         ]
         widgets = {
@@ -392,20 +392,10 @@ class EventForm(forms.ModelForm):
             self.fields['muted_color'].initial = theme.get('muted_color', '#94a3b8')
             self.fields['font_family'].initial = theme.get('font_family', 'sans-serif')
             self.fields['layout_style'].initial = theme.get('layout_style', 'centered')
-            ########
             self.fields['show_about_section'].initial = theme.get('show_about_section', False)
-            self.fields['about_title'].initial = theme.get('about_title', 'About the Host')
-            self.fields['about_text'].initial = theme.get('about_text', '')
-            ############
+            # self.fields['about_title'].initial = theme.get('about_title', 'About the Host')
+            self.fields['guest_message'].initial = theme.get('guest_message', '')
         file_classes = 'block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer'
-        
-        # for name, field in self.fields.items():
-        #     if name in ['hero_image', 'gallery_files']:
-        #         field.widget.attrs.update({'class': file_classes})
-        #     elif name == 'theme_color':
-        #         field.widget.attrs.update({'class': 'h-10 w-20 p-1 border border-slate-300 rounded-lg cursor-pointer'})
-        #     else:
-        #         field.widget.attrs.update({'class': 'w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'})
 
         for name, field in self.fields.items():
             if name in ['hero_image', 'gallery_files']:
@@ -418,7 +408,6 @@ class EventForm(forms.ModelForm):
                 field.widget.attrs.update({'class': 'w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'})
             else:
                 field.widget.attrs.update({'class': 'w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'})
-        ##########
 
     def clean_gallery_files(self):
         """Validate max photo count and individual file sizes."""
@@ -443,61 +432,125 @@ class EventForm(forms.ModelForm):
 
         return uploaded_files
 
-    def save(self, commit=True):
-        instance = super().save(commit=False)
-        theme = instance.theme_settings or {}
+    # def save(self, commit=True):
+    #     instance = super().save(commit=False)
+    #     theme = instance.theme_settings or {}
         
-        existing_gallery_urls = list(theme.get('gallery_images', []))
+    #     existing_gallery_urls = list(theme.get('gallery_images', []))
 
-        hero_file = self.cleaned_data.get('hero_image')
-        if hero_file:
-            path = default_storage.save(f"event_heroes/{hero_file.name}", hero_file)
-            theme['hero_image_url'] = f"/media/{path}"
+    #     hero_file = self.cleaned_data.get('hero_image')
+    #     if hero_file:
+    #         path = default_storage.save(f"event_heroes/{hero_file.name}", hero_file)
+    #         theme['hero_image_url'] = f"/media/{path}"
 
-        uploaded_gallery_files = self.cleaned_data.get('gallery_files') or []
-        if not isinstance(uploaded_gallery_files, (list, tuple)):
-            uploaded_gallery_files = [uploaded_gallery_files]
+    #     uploaded_gallery_files = self.cleaned_data.get('gallery_files') or []
+    #     if not isinstance(uploaded_gallery_files, (list, tuple)):
+    #         uploaded_gallery_files = [uploaded_gallery_files]
 
-        for gallery_file in uploaded_gallery_files:
-            if gallery_file:
-                path = default_storage.save(f"event_galleries/{gallery_file.name}", gallery_file)
-                media_path = f"/media/{path}"
-                if media_path not in existing_gallery_urls:
-                    existing_gallery_urls.append(media_path)
+    #     for gallery_file in uploaded_gallery_files:
+    #         if gallery_file:
+    #             path = default_storage.save(f"event_galleries/{gallery_file.name}", gallery_file)
+    #             media_path = f"/media/{path}"
+    #             if media_path not in existing_gallery_urls:
+    #                 existing_gallery_urls.append(media_path)
 
-        gallery_slides = []
-        for index, url in enumerate(existing_gallery_urls):
-            desc = ""
-            if hasattr(self, 'data') and self.data:
-                desc = self.data.get(f'gallery_desc_{index}', '')
-            else:
-                old_slides = theme.get('gallery_slides', [])
-                if index < len(old_slides):
-                    desc = old_slides[index].get('description', '')
+    #     gallery_slides = []
+    #     for index, url in enumerate(existing_gallery_urls):
+    #         desc = ""
+    #         if hasattr(self, 'data') and self.data:
+    #             desc = self.data.get(f'gallery_desc_{index}', '')
+    #         else:
+    #             old_slides = theme.get('gallery_slides', [])
+    #             if index < len(old_slides):
+    #                 desc = old_slides[index].get('description', '')
 
-            gallery_slides.append({
-                'url': url,
-                'description': desc
-            })
+    #         gallery_slides.append({
+    #             'url': url,
+    #             'description': desc
+    #         })
 
-        theme['gallery_images'] = existing_gallery_urls
-        theme['gallery_slides'] = gallery_slides
-        theme['primary_color'] = self.cleaned_data.get('theme_color', '#3b82f6')
-        theme['page_bg_color'] = self.cleaned_data.get('page_bg_color', '#f8fafc')
-        theme['section_bg_color'] = self.cleaned_data.get('section_bg_color', '#ffffff')
-        theme['heading_color'] = self.cleaned_data.get('heading_color', '#0f172a')
-        theme['body_color'] = self.cleaned_data.get('body_color', '#475569')
-        theme['muted_color'] = self.cleaned_data.get('muted_color', '#94a3b8')
-        theme['font_family'] = self.cleaned_data.get('font_family', 'sans-serif')
-        theme['layout_style'] = self.cleaned_data.get('layout_style', 'centered')
-        theme['show_about_section'] = self.cleaned_data.get('show_about_section', False)
-        theme['about_title'] = self.cleaned_data.get('about_title', 'About the Host')
-        theme['about_text'] = self.cleaned_data.get('about_text', '')
+    #     theme['gallery_images'] = existing_gallery_urls
+    #     theme['gallery_slides'] = gallery_slides
+    #     theme['primary_color'] = self.cleaned_data.get('theme_color', '#3b82f6')
+    #     theme['page_bg_color'] = self.cleaned_data.get('page_bg_color', '#f8fafc')
+    #     theme['section_bg_color'] = self.cleaned_data.get('section_bg_color', '#ffffff')
+    #     theme['heading_color'] = self.cleaned_data.get('heading_color', '#0f172a')
+    #     theme['body_color'] = self.cleaned_data.get('body_color', '#475569')
+    #     theme['muted_color'] = self.cleaned_data.get('muted_color', '#94a3b8')
+    #     theme['font_family'] = self.cleaned_data.get('font_family', 'sans-serif')
+    #     theme['layout_style'] = self.cleaned_data.get('layout_style', 'centered')
+    #     theme['show_about_section'] = self.cleaned_data.get('show_about_section', False)
+    #     # theme['about_title'] = self.cleaned_data.get('about_title', 'About the Host')
+    #     theme['guest_message'] = self.cleaned_data.get('guest_message', '')
 
-        instance.theme_settings = theme
-        if commit:
-            instance.save()
-        return instance
+    #     instance.theme_settings = theme
+    #     if commit:
+    #         instance.save()
+    #     return instance
+
+
+    def save(self, commit=True):
+            instance = super().save(commit=False)
+            theme = instance.theme_settings or {}
+            
+            existing_gallery_urls = list(theme.get('gallery_images', []))
+
+            hero_file = self.cleaned_data.get('hero_image')
+            if hero_file:
+                path = default_storage.save(f"event_heroes/{hero_file.name}", hero_file)
+                theme['hero_image_url'] = f"/media/{path}"
+
+            uploaded_gallery_files = self.cleaned_data.get('gallery_files') or []
+            if not isinstance(uploaded_gallery_files, (list, tuple)):
+                uploaded_gallery_files = [uploaded_gallery_files]
+
+            for gallery_file in uploaded_gallery_files:
+                if gallery_file:
+                    path = default_storage.save(f"event_galleries/{gallery_file.name}", gallery_file)
+                    media_path = f"/media/{path}"
+                    if media_path not in existing_gallery_urls:
+                        existing_gallery_urls.append(media_path)
+
+            gallery_slides = []
+            for index, url in enumerate(existing_gallery_urls):
+                desc = ""
+                if hasattr(self, 'data') and self.data:
+                    desc = self.data.get(f'gallery_desc_{index}', '')
+                else:
+                    old_slides = theme.get('gallery_slides', [])
+                    if index < len(old_slides):
+                        desc = old_slides[index].get('description', '')
+
+                gallery_slides.append({
+                    'url': url,
+                    'description': desc
+                })
+
+            theme['gallery_images'] = existing_gallery_urls
+            theme['gallery_slides'] = gallery_slides
+            theme['primary_color'] = self.cleaned_data.get('theme_color', '#3b82f6')
+            theme['page_bg_color'] = self.cleaned_data.get('page_bg_color', '#f8fafc')
+            theme['section_bg_color'] = self.cleaned_data.get('section_bg_color', '#ffffff')
+            theme['heading_color'] = self.cleaned_data.get('heading_color', '#0f172a')
+            theme['body_color'] = self.cleaned_data.get('body_color', '#475569')
+            theme['muted_color'] = self.cleaned_data.get('muted_color', '#94a3b8')
+            theme['font_family'] = self.cleaned_data.get('font_family', 'sans-serif')
+            theme['layout_style'] = self.cleaned_data.get('layout_style', 'centered')
+            theme['show_about_section'] = self.cleaned_data.get('show_about_section', False)
+            theme['guest_message'] = self.cleaned_data.get('guest_message', '')
+
+            # Capture organizer footer contact inputs
+            existing_contacts = theme.get('organizer_contacts', {})
+            theme['organizer_contacts'] = {
+                'name': self.data.get('organizer_name', existing_contacts.get('name', '')) if hasattr(self, 'data') and self.data else existing_contacts.get('name', ''),
+                'phone': self.data.get('organizer_phone', existing_contacts.get('phone', '')) if hasattr(self, 'data') and self.data else existing_contacts.get('phone', ''),
+                'whatsapp': self.data.get('organizer_whatsapp', existing_contacts.get('whatsapp', '')) if hasattr(self, 'data') and self.data else existing_contacts.get('whatsapp', ''),
+            }
+
+            instance.theme_settings = theme
+            if commit:
+                instance.save()
+            return instance
 
 class RSVPForm(forms.ModelForm):
     class Meta:
