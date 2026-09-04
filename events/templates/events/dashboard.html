@@ -3,8 +3,6 @@
 {% block title %}Dashboard | Manage My Event{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto px-4 py-8">
-  <!--  -->
   <!--  -->
   
   <!-- Header Bar -->
@@ -17,6 +15,7 @@
     <a href="{% url 'events:create_event' %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg shadow-sm transition inline-flex items-center gap-2">
         <span>+</span> Create Event
     </a>
+
   </div>
 
   <!-- Key Metrics Grid -->
@@ -67,6 +66,13 @@
               <a href="{% url 'events:event_rsvps_management' slug=event.slug %}" class="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-semibold hover:bg-blue-100 transition">
                   Guest Management
               </a>
+              <!-- Clone Event Form Placed Correctly Inside the Loop -->
+            <form action="{% url 'events:clone_event' event.slug %}" method="POST" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition" style="background-color: #ecfdf5; color: #047857;" onmouseover="this.style.backgroundColor='#d1fae5'" onmouseout="this.style.backgroundColor='#ecfdf5'">
+                    Clone Event
+                </button>
+            </form>
             </div>
           </div>
         {% endfor %}

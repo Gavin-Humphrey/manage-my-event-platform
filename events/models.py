@@ -1,7 +1,9 @@
 import uuid
 from django.db import models
+from django.utils import timezone
 from django.contrib.auth.models import User
 from django.utils.text import slugify
+from urllib.parse import urlencode
 
 
 class Event(models.Model):
@@ -22,7 +24,6 @@ class Event(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    # ###############
     show_about_section = models.BooleanField(
         default=False,
         help_text="Display the host bio and story section on the public event page"
@@ -37,7 +38,6 @@ class Event(models.Model):
         blank=True,
         help_text="Detailed host biography or background story"
     )
-    #################
 
     allow_plus_ones = models.BooleanField(
         default=False, 
@@ -88,6 +88,22 @@ class Event(models.Model):
                     normalized.append({'url': url, 'caption': caption})
         return normalized
 
+    @property
+    def is_past(self):
+        return self.event_date < timezone.now()
+
+    def google_calendar_url(self):
+        start_date = self.event_date.strftime('%Y%m%d') if hasattr(self.event_date, 'strftime') else str(self.event_date)
+        base_url = "https://calendar.google.com/calendar/render"
+        params = {
+            'action': 'TEMPLATE',
+            'text': self.title,
+            'details': getattr(self, 'description', ''),
+            'location': getattr(self, 'location_name', ''),
+            'dates': f"{start_date}/{start_date}"
+        }
+        return f"{base_url}?{urlencode(params)}"
+
     def save(self, *args, **kwargs):
         if not self.slug:
             base_slug = slugify(self.title) or 'event'
@@ -121,6 +137,8 @@ class RSVP(models.Model):
     dietary_restrictions = models.TextField(blank=True, null=True)
     guest_message = models.TextField(blank=True, null=True)  # Added for celebrant messages
     updated_at = models.DateTimeField(auto_now=True)
+
+    confirmation_sent = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('event', 'email')

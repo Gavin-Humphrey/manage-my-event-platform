@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f1f5f9; margin: 0; padding: 24px; color: {{ style_body }};">
+    <div style="max-width: 600px; margin: 0 auto; background-color: {{ style_card_bg }}; border-radius: 12px; padding: 32px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); border: 1px solid rgba(0,0,0,0.08);">
+        <h2 style="margin-top: 0; color: {{ style_body }}; font-size: 24px; font-weight: 700;">You're all set!</h2>
+        <p style="font-size: 15px; line-height: 1.5; color: {{ style_body }};">Hi <strong>{{ rsvp.name }}</strong>,</p>
+        <p style="font-size: 15px; line-height: 1.5; color: {{ style_body }};">Your RSVP for <strong>{{ event.title }}</strong> has been successfully confirmed.</p>
+        
+        <div style="background: rgba(0, 0, 0, 0.03); padding: 20px; border-radius: 8px; margin: 24px 0; border: 1px solid rgba(0,0,0,0.05);">
+            <p style="margin: 0 0 8px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: {{ style_muted }}; font-weight: 600;">Event Details</p>
+            <p style="margin: 4px 0; font-size: 15px; color: {{ style_body }};"><strong>Date:</strong> {{ event.event_date|date:"F j, Y, g:i a" }}</p>
+            <p style="margin: 4px 0; font-size: 15px; color: {{ style_body }};"><strong>Location:</strong> {{ event.location_name }}</p>
+            {% if event.address %}
+                <p style="margin: 4px 0 0 0; font-size: 13px; color: {{ style_muted }};">{{ event.address }}</p>
+            {% endif %}
+        </div>
+
+        <p style="margin-top: 24px; font-size: 15px; color: {{ style_body }};">We look forward to seeing you there!</p>
+    </div>
+</body>
+</html>

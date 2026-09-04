@@ -1,4 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpResponse
+from django.utils import timezone
+from datetime import timedelta
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
@@ -7,6 +10,11 @@ from .models import Event, RSVP, RSVPGuest
 from .forms import EventForm, RSVPForm, RSVPGuestForm
 from django.utils.text import slugify
 from django.db.models import Q, Sum
+
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.conf import settings
+
 
 
 # -------------------------------------------------------------------
@@ -170,6 +178,10 @@ def edit_event(request, slug=None):
         messages.error(request, "You do not have permission to edit this event.")
         return redirect('events:dashboard')
 
+    if event.is_past:
+        messages.error(request, "Past events cannot be edited.")
+        return redirect('events:event_detail', slug=event.slug)
+
     if request.method == 'POST':
         form = EventForm(request.POST, request.FILES, instance=event)
         if form.is_valid():
@@ -184,6 +196,10 @@ def edit_event(request, slug=None):
 def event_form_view(request, pk=None):
     # Fetch existing instance if editing; otherwise, create a new one (None)
     event = get_object_or_404(Event, pk=pk) if pk else None
+
+    if event and event.is_past:
+        messages.error(request, "This event has concluded and can no longer be edited.")
+        return redirect('events:dashboard')
 
     if request.method == 'POST':
         form = EventForm(request.POST, request.FILES, instance=event)
@@ -238,6 +254,13 @@ def public_rsvp(request, slug):
 
 def submit_rsvp(request, slug):
     event = get_object_or_404(Event, slug=slug)
+
+    if event.is_past:
+        messages.error(request, "This event has concluded. RSVPs are closed.")
+        referer = request.META.get('HTTP_REFERER')
+        if referer:
+            return redirect(referer)
+        return redirect('events:public_rsvp', slug=event.slug)
     
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -347,6 +370,10 @@ def view_rsvp_detail(request, slug, pk):
 def edit_rsvp(request, slug, pk):
     event = get_object_or_404(Event, slug=slug)
     rsvp = get_object_or_404(RSVP, pk=pk, event=event)
+
+    if event.is_past:
+        messages.error(request, "This event has concluded. RSVPs are closed.")
+        return redirect('events:event_rsvps_management', slug=event.slug)
     
     if request.method == 'POST':
         form = RSVPForm(request.POST, instance=rsvp)
@@ -387,3 +414,95 @@ def edit_rsvp(request, slug, pk):
         'form': form,
     }
     return render(request, 'events/edit_rsvp.html', context)
+
+
+# CLONE EXISTING EVENT
+@login_required
+def clone_event(request, slug):
+    original_event = get_object_or_404(Event, slug=slug)
+    
+    cloned_event = original_event
+    cloned_event.pk = None
+    cloned_event.id = None
+    cloned_event.title = f"Copy of {original_event.title}"
+    
+    # Dynamically find and shift ALL Date and DateTime fields on the model forward
+    now = timezone.now()
+    today = now.date()
+    
+    for field in Event._meta.get_fields():
+        if field.get_internal_type() in ['DateField', 'DateTimeField']:
+            field_name = field.name
+            current_val = getattr(cloned_event, field_name, None)
+            if current_val:
+                if hasattr(current_val, 'hour'):  # DateTimeField
+                    setattr(cloned_event, field_name, now + timedelta(days=7))
+                else:  # DateField
+                    setattr(cloned_event, field_name, today + timedelta(days=7))
+                
+    base_slug = slugify(cloned_event.title)
+    unique_slug = base_slug
+    counter = 1
+    while Event.objects.filter(slug=unique_slug).exists():
+        unique_slug = f"{base_slug}-{counter}"
+        counter += 1
+    cloned_event.slug = unique_slug
+    
+    cloned_event.save()
+    
+    messages.success(request, f"Event successfully cloned. You can now update the details.")
+    return redirect(f'/dashboard/events/{cloned_event.slug}/edit/')
+
+def download_ics(request, slug):
+    event = get_object_or_404(Event, slug=slug)
+    
+    start_date = event.event_date.strftime('%Y%m%d') if hasattr(event.event_date, 'strftime') else str(event.event_date)
+    
+    ics_content = f"""BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Manage My Event Platform//EN
+BEGIN:VEVENT
+SUMMARY:{event.title}
+DESCRIPTION:{getattr(event, 'description', '')}
+LOCATION:{getattr(event, 'location_name', '')}
+DTSTART:{start_date}
+DTEND:{start_date}
+END:VEVENT
+END:VCALENDAR"""
+    
+    response = HttpResponse(ics_content, content_type='text/calendar')
+    response['Content-Disposition'] = f'attachment; filename="{event.slug}.ics"'
+    return response
+
+
+def send_rsvp_confirmation(rsvp):
+    event = rsvp.event
+    subject = f"Confirmation: You're attending {event.title}!"
+    
+    # Extract the custom page theme styling attributes matching your public RSVP view
+    theme = getattr(event, 'theme', None)
+    style_card_bg = getattr(theme, 'card_bg', '#ffffff') if theme else '#ffffff'
+    style_body = getattr(theme, 'body_color', '#334155') if theme else '#334155'
+    style_muted = getattr(theme, 'muted_color', '#64748b') if theme else '#64748b'
+    
+    context = {
+        'rsvp': rsvp,
+        'event': event,
+        'style_card_bg': style_card_bg,
+        'style_body': style_body,
+        'style_muted': style_muted,
+    }
+    
+    html_message = render_to_string('events/emails/rsvp_confirmation.html', context)
+    plain_message = render_to_string('events/emails/rsvp_confirmation.txt', context)
+    
+    send_mail(
+        subject,
+        plain_message,
+        settings.DEFAULT_FROM_EMAIL,
+        [rsvp.email],
+        html_message=html_message,
+        fail_silently=False,
+    )
+    rsvp.confirmation_sent = True
+    rsvp.save(update_fields=['confirmation_sent'])

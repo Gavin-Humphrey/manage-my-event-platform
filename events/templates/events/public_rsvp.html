@@ -60,10 +60,28 @@
                         </div>
                         <div>
                             <strong class="block text-xs uppercase tracking-wider" style="color: {{ style_muted }} !important;">Location</strong>
-                            <p class="mt-0.5 font-medium" style="color: {{ style_body }} !important;">{{ event.location_name }}</p>
+                            <p class="mt-0.5 font-medium" style="color: {{ style_body }} !important;">{{ event.location_name }}</p>                       
                             {% if event.address %}
                                 <p class="text-xs mt-0.5" style="color: {{ style_muted }} !important;">{{ event.address }}</p>
                             {% endif %}
+                        </div>
+                        <!-- Calendar Sync Actions -->
+                        <div class="calendar-actions mt-4 flex flex-wrap justify-center items-center gap-3">
+                            <!-- Google Calendar Button -->
+                            <a href="{{ event.google_calendar_url }}" target="_blank" rel="noopener noreferrer" style="background-color: {{ style_card_bg }}; color: {{ style_body }}; border-color: rgba(255,255,255,0.2); transition: all 0.2s ease-in-out;" onmouseover="this.style.filter='brightness(1.15)'; this.style.boxShadow='0 0 12px {{ style_body }}';" onmouseout="this.style.filter='none'; this.style.boxShadow='none';" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-lg border shadow-sm">
+                                <svg class="w-3.5 h-3.5" style="color: {{ style_body }};" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <span>Add to Google Calendar</span>
+                            </a>
+
+                            <!-- Download .ics Button -->
+                            <a href="{% url 'events:download_ics' event.slug %}" style="background-color: {{ style_card_bg }}; color: {{ style_body }}; border-color: rgba(255,255,255,0.2); transition: all 0.2s ease-in-out;" onmouseover="this.style.filter='brightness(1.15)'; this.style.boxShadow='0 0 12px {{ style_body }}';" onmouseout="this.style.filter='none'; this.style.boxShadow='none';" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-lg border shadow-sm">
+                                <svg class="w-3.5 h-3.5" style="color: {{ style_body }};" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                </svg>
+                                <span>Download .ics File</span>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -78,7 +96,6 @@
                 </div>
                 {% endif %}
 
-                <!-- BIOOOOOOOOOO -->
             {% if event.show_about_section %}
                 <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6" style="background-color: {{ style_section_bg }} !important;" data-controller="read-more">
                     <div class="space-y-6">
@@ -118,20 +135,6 @@
                         <div class="space-y-2">
                             <div class="swiper gallery-swiper-split rounded-xl overflow-hidden relative aspect-video w-full">
                                 <div class="swiper-wrapper h-full">
-                                    <!-- {% for item in event.theme_settings.gallery_images %}
-                                        <div class="swiper-slide h-full w-full relative group">
-                                            <img src="{% if item.url %}{{ item.url }}{% else %}{{ item }}{% endif %}" alt="Gallery Image" class="w-full h-full object-cover rounded-xl border border-slate-100">
-                                            
-                                            {% if item.caption %}
-                                            <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 rounded-b-xl z-10 pointer-events-none">
-                                                <p class="text-white text-xs sm:text-sm font-medium drop-shadow-sm line-clamp-2">
-                                                    {{ item.caption }}
-                                                </p>
-                                            </div>
-                                            {% endif %}
-                                        </div>
-                                    {% endfor %} -->
-
                                     {% for item in normalized_gallery %}
                                     <div class="swiper-slide relative bg-slate-900 overflow-hidden rounded-xl">
                                         <img src="{{ item.url }}" alt="Gallery Image" class="w-full h-full object-cover">
@@ -146,7 +149,6 @@
                                     </div>
                                 {% endfor %}
 
-                                    <!--  -->
                                 </div>
                                 <div class="swiper-pagination"></div>
                                 <div class="swiper-button-prev text-white bg-black/40 p-3 rounded-full hover:bg-black/60 transition !w-8 !h-8 after:!text-xs"></div>
@@ -159,7 +161,6 @@
                 </div>
 
                 {% endif %}
-            <!-- BIOOOOOOOOO -->
             </div>
 
             <!-- Right Column: RSVP Form -->
@@ -243,6 +244,24 @@
                 <p class="text-sm font-medium" style="color: {{ style_body }} !important;">
                     📍 {{ event.location_name }}{% if event.address %} — {{ event.address }}{% endif %}
                 </p>
+                <!-- Calendar Sync Actions -->
+                <div class="calendar-actions mt-4 flex flex-wrap justify-center items-center gap-3">
+                    <!-- Google Calendar Button -->
+                    <a href="{{ event.google_calendar_url }}" target="_blank" rel="noopener noreferrer" style="background-color: {{ style_card_bg }}; color: {{ style_body }}; border-color: rgba(255,255,255,0.2); transition: all 0.2s ease-in-out;" onmouseover="this.style.filter='brightness(1.15)'; this.style.boxShadow='0 0 12px {{ style_body }}';" onmouseout="this.style.filter='none'; this.style.boxShadow='none';" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-lg border shadow-sm">
+                        <svg class="w-3.5 h-3.5" style="color: {{ style_body }};" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span>Add to Google Calendar</span>
+                    </a>
+
+                    <!-- Download .ics Button -->
+                    <a href="{% url 'events:download_ics' event.slug %}" style="background-color: {{ style_card_bg }}; color: {{ style_body }}; border-color: rgba(255,255,255,0.2); transition: all 0.2s ease-in-out;" onmouseover="this.style.filter='brightness(1.15)'; this.style.boxShadow='0 0 12px {{ style_body }}';" onmouseout="this.style.filter='none'; this.style.boxShadow='none';" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-lg border shadow-sm">
+                        <svg class="w-3.5 h-3.5" style="color: {{ style_body }};" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        <span>Download .ics File</span>
+                    </a>
+                </div>
             </div>
 
             {% if theme.hero_image_url %}
@@ -261,7 +280,6 @@
             </div>
             {% endif %}
 
-            <!-- BIOOOOOOOOOO -->
             {% if event.show_about_section %}
                 <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6" style="background-color: {{ style_section_bg }} !important;" data-controller="read-more">
                     <div class="space-y-6">
@@ -301,19 +319,6 @@
                         <div class="space-y-2">
                             <div class="swiper gallery-swiper-split rounded-xl overflow-hidden relative aspect-video w-full">
                                 <div class="swiper-wrapper h-full">
-                                    <!-- {% for item in event.theme_settings.gallery_images %}
-                                        <div class="swiper-slide h-full w-full relative group">
-                                            <img src="{% if item.url %}{{ item.url }}{% else %}{{ item }}{% endif %}" alt="Gallery Image" class="w-full h-full object-cover rounded-xl border border-slate-100">
-                                            
-                                            {% if item.caption %}
-                                            <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 rounded-b-xl z-10 pointer-events-none">
-                                                <p class="text-white text-xs sm:text-sm font-medium drop-shadow-sm line-clamp-2">
-                                                    {{ item.caption }}
-                                                </p>
-                                            </div>
-                                            {% endif %}
-                                        </div>
-                                    {% endfor %} -->
 
                                     {% for item in normalized_gallery %}
                                     <div class="swiper-slide relative bg-slate-900 overflow-hidden rounded-xl">
@@ -342,7 +347,6 @@
                 </div>
 
                 {% endif %}
-            <!-- BIOOOOOOOOO -->
 
             <!-- Minimalist RSVP Form -->
             <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6" style="background-color: {{ style_section_bg }} !important;">
@@ -454,6 +458,24 @@
                         {% endif %}
                     </div>
                 </div>
+                <!-- Calendar Sync Actions -->
+                <div class="calendar-actions mt-4 flex flex-wrap justify-center items-center gap-3">
+                    <!-- Google Calendar Button -->
+                    <a href="{{ event.google_calendar_url }}" target="_blank" rel="noopener noreferrer" style="background-color: {{ style_card_bg }}; color: {{ style_body }}; border-color: rgba(255,255,255,0.2); transition: all 0.2s ease-in-out;" onmouseover="this.style.filter='brightness(1.15)'; this.style.boxShadow='0 0 12px {{ style_body }}';" onmouseout="this.style.filter='none'; this.style.boxShadow='none';" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-lg border shadow-sm">
+                        <svg class="w-3.5 h-3.5" style="color: {{ style_body }};" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span>Add to Google Calendar</span>
+                    </a>
+
+                    <!-- Download .ics Button -->
+                    <a href="{% url 'events:download_ics' event.slug %}" style="background-color: {{ style_card_bg }}; color: {{ style_body }}; border-color: rgba(255,255,255,0.2); transition: all 0.2s ease-in-out;" onmouseover="this.style.filter='brightness(1.15)'; this.style.boxShadow='0 0 12px {{ style_body }}';" onmouseout="this.style.filter='none'; this.style.boxShadow='none';" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-lg border shadow-sm">
+                        <svg class="w-3.5 h-3.5" style="color: {{ style_body }};" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        <span>Download .ics File</span>
+                    </a>
+                </div>
             </div>
 
             <!-- Centered Layout About Section -->
@@ -466,7 +488,6 @@
             </div>
             {% endif %}
 
-            <!-- BIOOOOOOOOOO -->
             {% if event.show_about_section %}
                 <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6" style="background-color: {{ style_section_bg }} !important;" data-controller="read-more">
                     <div class="space-y-6">
@@ -533,7 +554,6 @@
                 </div>
 
                 {% endif %}
-            <!-- BIOOOOOOOOO -->
 
             <!-- RSVP Form Section -->
             <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-xl space-y-4" style="background-color: {{ style_section_bg }} !important;">
@@ -581,7 +601,7 @@
 
                     <div>
                         <!-- <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Dietary Restrictions / Notes</label> -->
-                        <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">Dietary Restrictions / Notes</label>
+                        <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Dietary Restrictions / Notes</label>
                         <textarea name="dietary_restrictions" rows="2" placeholder="Dietary notes or special requests..." class="w-full px-3.5 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important; border-color: {{ style_muted }}60 !important;"></textarea>
                     </div>
 
@@ -589,15 +609,21 @@
                         <div class="space-y-4 pt-4 border-t border-slate-200">
                             <!-- <h3 class="text-sm font-semibold uppercase tracking-wider" style="color: {{ style_heading }} !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</h3> -->
                             <div>
-                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</label>
-                                <textarea name="about_text" rows="3" placeholder="Write a short message or note..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;"></textarea>
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</label>
+                                <textarea name="guest_message" rows="3" placeholder="Write a short message or note..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;"></textarea>
                             </div>
                         </div>
                     {% endif %}
-
+                    
+                    {% if not event.is_past %}
                     <button type="submit" style="background-color: {{ style_primary }} !important;" class="w-full py-3.5 text-white font-semibold text-sm rounded-xl shadow-md transition hover:opacity-95 focus:ring-4 focus:ring-blue-200 cursor-pointer">
                         Confirm RSVP
                     </button>
+                    {% else %}
+                        <span class="text-xs px-3 py-1.5 bg-slate-800 text-slate-400 rounded-lg border border-slate-700">
+                            🔒 Event Concluded (Locked)
+                        </span>
+                    {% endif %}
                 </form>
             </div>
 

@@ -26,7 +26,9 @@
     <!-- Share Guest Link Banner -->
     <div class="max-w-6xl mx-auto pt-6 px-4">
         <div class="p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3" style="background-color: {{ style_section_bg }} !important;">
+            {% if not event.is_past %}
             <div class="flex items-center justify-between">
+                
                 <div class="flex items-center space-x-2">
                     <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,8 +46,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                     </svg>
                 </a>
+            
             </div>
-
             <div class="flex items-center gap-2 pt-1">
                 <input 
                     type="text" 
@@ -66,16 +68,24 @@
                     </svg>
                     <span id="copyBtnText">Copy Link</span>
                 </button>
+                
             </div>
+            {% endif %}
 
             {% if request.user == event.host %}
             <div class="mt-2">
+                {% if not event.is_past %}
                 <a href="{% url 'events:edit_event' slug=event.slug %}" class="text-xs font-semibold hover:opacity-80 inline-flex items-center gap-1" style="color: {{ style_primary }} !important;">
                     Edit Event
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002-2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                 </a>
+                {% else %}
+                    <span class="text-xs px-3 py-1.5 bg-slate-800 text-slate-400 rounded-lg border border-slate-700">
+                        🔒 Event Concluded (Locked)
+                    </span>
+                {% endif %}
             </div>
             {% endif %}
         </div>
@@ -112,6 +122,24 @@
                             {% if event.address %}<p class="text-xs mt-0.5" style="color: {{ style_muted }} !important;">{{ event.address }}</p>{% endif %}
                         </div>
                     </div>
+                     <!-- Calendar Sync Actions -->
+                    <div class="calendar-actions mt-4 flex flex-wrap justify-center items-center gap-3">
+                        <!-- Google Calendar Button -->
+                        <a href="{{ event.google_calendar_url }}" target="_blank" rel="noopener noreferrer" style="background-color: {{ style_card_bg }}; color: {{ style_body }}; border-color: rgba(255,255,255,0.2); transition: all 0.2s ease-in-out;" onmouseover="this.style.filter='brightness(1.15)'; this.style.boxShadow='0 0 12px {{ style_body }}';" onmouseout="this.style.filter='none'; this.style.boxShadow='none';" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-lg border shadow-sm">
+                            <svg class="w-3.5 h-3.5" style="color: {{ style_body }};" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span>Add to Google Calendar</span>
+                        </a>
+
+                        <!-- Download .ics Button -->
+                        <a href="{% url 'events:download_ics' event.slug %}" style="background-color: {{ style_card_bg }}; color: {{ style_body }}; border-color: rgba(255,255,255,0.2); transition: all 0.2s ease-in-out;" onmouseover="this.style.filter='brightness(1.15)'; this.style.boxShadow='0 0 12px {{ style_body }}';" onmouseout="this.style.filter='none'; this.style.boxShadow='none';" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-lg border shadow-sm">
+                            <svg class="w-3.5 h-3.5" style="color: {{ style_body }};" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            <span>Download .ics File</span>
+                        </a>
+                    </div>
                 </div>
 
                 {% if event.description %}
@@ -120,7 +148,6 @@
                         <div class="text-sm leading-relaxed whitespace-pre-line" style="color: {{ style_body }} !important;">{{ event.description }}</div>
                     </div>
                 {% endif %}
-                <!-- BIOOOOOOOOOO -->
                 {% if event.show_about_section %}
                     <div class="p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6" style="background-color: {{ style_section_bg }} !important;">
                         
@@ -188,7 +215,6 @@
                         </div>
                     </div>
                 {% endif %}
-                <!-- BIOOOOOOOOOO -->
             </div>
 
             <!-- Right Column: RSVP Form -->
@@ -248,6 +274,24 @@
                 <span class="inline-block px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white rounded-full" style="background-color: {{ style_primary }} !important;">{{ event.event_date|date:"F j, Y @ g:i A" }}</span>
                 <h1 class="text-4xl font-black tracking-tight" style="color: {{ style_heading }} !important;">{{ event.title }}</h1>
                 <p class="text-sm font-medium" style="color: {{ style_body }} !important;">📍 {{ event.location_name }}{% if event.address %} — {{ event.address }}{% endif %}</p>
+                 <!-- Calendar Sync Actions -->
+                <div class="calendar-actions mt-4 flex flex-wrap justify-center items-center gap-3">
+                    <!-- Google Calendar Button -->
+                    <a href="{{ event.google_calendar_url }}" target="_blank" rel="noopener noreferrer" style="background-color: {{ style_card_bg }}; color: {{ style_body }}; border-color: rgba(255,255,255,0.2); transition: all 0.2s ease-in-out;" onmouseover="this.style.filter='brightness(1.15)'; this.style.boxShadow='0 0 12px {{ style_body }}';" onmouseout="this.style.filter='none'; this.style.boxShadow='none';" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-lg border shadow-sm">
+                        <svg class="w-3.5 h-3.5" style="color: {{ style_body }};" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span>Add to Google Calendar</span>
+                    </a>
+
+                    <!-- Download .ics Button -->
+                    <a href="{% url 'events:download_ics' event.slug %}" style="background-color: {{ style_card_bg }}; color: {{ style_body }}; border-color: rgba(255,255,255,0.2); transition: all 0.2s ease-in-out;" onmouseover="this.style.filter='brightness(1.15)'; this.style.boxShadow='0 0 12px {{ style_body }}';" onmouseout="this.style.filter='none'; this.style.boxShadow='none';" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-lg border shadow-sm">
+                        <svg class="w-3.5 h-3.5" style="color: {{ style_body }};" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        <span>Download .ics File</span>
+                    </a>
+                </div>
             </div>
 
             {% if theme.hero_image_url %}
@@ -263,7 +307,6 @@
             </div>
             {% endif %}
 
-            <!-- BIOOOOOOOOOO -->
             {% if event.show_about_section %}
                 <div class="p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6" style="background-color: {{ style_section_bg }} !important;">
                     
@@ -331,7 +374,6 @@
                     </div>
                 </div>
             {% endif %}
-            <!-- BIOOOOOOOOOO -->
 
             <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6" style="background-color: {{ style_section_bg }} !important;">
                 <h2 class="text-xl font-bold border-b border-slate-100 pb-3" style="color: {{ style_heading }} !important;">Will you be attending?</h2>
@@ -415,6 +457,24 @@
                         <p class="mt-1 font-medium" style="color: {{ style_body }} !important;">{{ event.location_name }}</p>
                         {% if event.address %}<p class="text-xs mt-0.5" style="color: {{ style_muted }} !important;">{{ event.address }}</p>{% endif %}
                     </div>
+                </div>
+                 <!-- Calendar Sync Actions -->
+                <div class="calendar-actions mt-4 flex flex-wrap justify-center items-center gap-3">
+                    <!-- Google Calendar Button -->
+                    <a href="{{ event.google_calendar_url }}" target="_blank" rel="noopener noreferrer" style="background-color: {{ style_card_bg }}; color: {{ style_body }}; border-color: rgba(255,255,255,0.2); transition: all 0.2s ease-in-out;" onmouseover="this.style.filter='brightness(1.15)'; this.style.boxShadow='0 0 12px {{ style_body }}';" onmouseout="this.style.filter='none'; this.style.boxShadow='none';" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-lg border shadow-sm">
+                        <svg class="w-3.5 h-3.5" style="color: {{ style_body }};" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span>Add to Google Calendar</span>
+                    </a>
+
+                    <!-- Download .ics Button -->
+                    <a href="{% url 'events:download_ics' event.slug %}" style="background-color: {{ style_card_bg }}; color: {{ style_body }}; border-color: rgba(255,255,255,0.2); transition: all 0.2s ease-in-out;" onmouseover="this.style.filter='brightness(1.15)'; this.style.boxShadow='0 0 12px {{ style_body }}';" onmouseout="this.style.filter='none'; this.style.boxShadow='none';" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-lg border shadow-sm">
+                        <svg class="w-3.5 h-3.5" style="color: {{ style_body }};" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        <span>Download .ics File</span>
+                    </a>
                 </div>
             </div>
 
@@ -531,14 +591,14 @@
                     {% endif %}
                     <div>
                         <!-- <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Dietary Restrictions / Notes</label> -->
-                        <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">Dietary Restrictions / Notes</label>
+                        <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Dietary Restrictions / Notes</label>
                         <textarea name="dietary_restrictions" rows="2" placeholder="Dietary notes or special requests..." class="w-full px-3.5 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important; border-color: {{ style_muted }}60 !important;"></textarea>
                     </div>
                     {% if event.allow_guest_messages %}
                         <div class="space-y-4 pt-4 border-t border-slate-200">
                             <!-- <h3 class="text-sm font-semibold uppercase tracking-wider" style="color: {{ style_heading }} !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</h3> -->
                             <div>
-                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading } } !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</label>
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted } } !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</label>
                                 <textarea name="about_text" rows="3" placeholder="Write a short message or note..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;"></textarea>
                             </div>
                         </div>
