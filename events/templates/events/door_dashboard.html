@@ -1,0 +1,47 @@
+<div class="grid grid-cols-3 gap-4 mb-6">
+    <div class="bg-gray-50 p-4 rounded-lg border">
+        <span class="text-sm text-gray-500">Total RSVPs</span>
+        <p class="text-2xl font-bold">{{ total_rsvps }}</p>
+    </div>
+    <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+        <span class="text-sm text-green-600">Checked In</span>
+        <p class="text-2xl font-bold text-green-700">{{ checked_in_count }}</p>
+    </div>
+    <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+        <span class="text-sm text-yellow-600">Pending</span>
+        <p class="text-2xl font-bold text-yellow-700">{{ pending_count }}</p>
+    </div>
+</div>
+
+<table class="w-full text-left border-collapse">
+    <thead>
+        <tr class="border-b text-sm text-gray-500">
+            <th class="pb-3">Guest Name</th>
+            <th class="pb-3">Plus-Ones</th>
+            <th class="pb-3">Status</th>
+            <th class="pb-3 text-right">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for rsvp in rsvps %}
+        <tr class="border-b hover:bg-gray-50">
+            <td class="py-3 font-medium text-gray-900">{{ rsvp.full_name }}</td>
+            <td class="py-3 text-gray-600">+{{ rsvp.plus_ones_count }}</td>
+            <td class="py-3">
+                {% if rsvp.checked_in %}
+                    <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Checked In</span>
+                {% else %}
+                    <span class="px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded-full">Not Arrived</span>
+                {% endif %}
+            </td>
+            <td class="py-3 text-right">
+                {% if not rsvp.checked_in %}
+                    <a href="{% url 'events:verify_checkin' event.slug rsvp.checkin_token %}" class="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">Check In</a>
+                {% else %}
+                    <span class="text-xs text-gray-400">{{ rsvp.checked_in_at|time:"H:i" }}</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

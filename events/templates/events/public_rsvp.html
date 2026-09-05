@@ -54,9 +54,10 @@
                     </h1>
 
                     <div class="pt-4 border-t border-slate-100 space-y-3 text-sm">
+                        
                         <div>
                             <strong class="block text-xs uppercase tracking-wider" style="color: {{ style_muted }} !important;">Date & Time</strong>
-                            <p class="mt-0.5 font-medium" style="color: {{ style_body }} !important;">{{ event.event_date|date:"EEEE, F j, Y" }} at {{ event.event_date|date:"g:i A" }}</p>
+                            <p class="mt-0.5 font-medium" style="color: {{ style_body }} !important;">{{ event.event_date|date:"l, F j, Y" }} at {{ event.event_date|date:"g:i A" }}</p>
                         </div>
                         <div>
                             <strong class="block text-xs uppercase tracking-wider" style="color: {{ style_muted }} !important;">Location</strong>
@@ -446,9 +447,10 @@
                 <h2 class="text-xl font-bold border-b border-slate-100 pb-3" style="color: {{ style_heading }} !important;">Event Overview</h2>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                    
                     <div>
                         <strong class="block text-xs uppercase tracking-wider" style="color: {{ style_muted }} !important;">Date & Time</strong>
-                        <p class="mt-1 font-medium" style="color: {{ style_body }} !important;">{{ event.event_date|date:"EEEE, F j, Y" }} at {{ event.event_date|date:"g:i A" }}</p>
+                        <p class="mt-0.5 font-medium" style="color: {{ style_body }} !important;">{{ event.event_date|date:"l, F j, Y" }} at {{ event.event_date|date:"g:i A" }}</p>
                     </div>
                     <div>
                         <strong class="block text-xs uppercase tracking-wider" style="color: {{ style_muted }} !important;">Location</strong>
@@ -568,7 +570,14 @@
                         </div>
                         <div>
                             <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Email Address *</label>
-                            <input type="email" name="email" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                            <input type="email" name="email" value="{{ form_data.email|default:'' }}" required class="w-full px-3.5 py-2.5 border {% if form_errors.email %}border-red-500{% else %}border-slate-300{% endif %} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                            {% if form_errors.email %}
+                                <p class="mt-1 text-xs text-red-600 font-medium">{{ form_errors.email }}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Phone Number</label>
+                            <input type="tel" name="phone" value="{{ form_data.phone|default:'' }}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
                         </div>
                     </div>
 

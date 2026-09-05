@@ -373,7 +373,7 @@ class EventForm(forms.ModelForm):
         model = Event
         fields = [
             'title', 'event_date', 'location_name', 'address','show_about_section', 'about_title', 'about_text',
-            'allow_plus_ones', 'max_plus_ones_per_guest', 'allow_guest_messages', 'theme_settings'
+            'allow_plus_ones', 'max_plus_ones_per_guest', 'allow_guest_messages', 'enable_qr_checkins', 'theme_settings'
         ]
         widgets = {
             'event_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
@@ -431,63 +431,6 @@ class EventForm(forms.ModelForm):
                 raise forms.ValidationError(f"File '{f.name}' exceeds the maximum allowed size of 5MB.")
 
         return uploaded_files
-
-    # def save(self, commit=True):
-    #     instance = super().save(commit=False)
-    #     theme = instance.theme_settings or {}
-        
-    #     existing_gallery_urls = list(theme.get('gallery_images', []))
-
-    #     hero_file = self.cleaned_data.get('hero_image')
-    #     if hero_file:
-    #         path = default_storage.save(f"event_heroes/{hero_file.name}", hero_file)
-    #         theme['hero_image_url'] = f"/media/{path}"
-
-    #     uploaded_gallery_files = self.cleaned_data.get('gallery_files') or []
-    #     if not isinstance(uploaded_gallery_files, (list, tuple)):
-    #         uploaded_gallery_files = [uploaded_gallery_files]
-
-    #     for gallery_file in uploaded_gallery_files:
-    #         if gallery_file:
-    #             path = default_storage.save(f"event_galleries/{gallery_file.name}", gallery_file)
-    #             media_path = f"/media/{path}"
-    #             if media_path not in existing_gallery_urls:
-    #                 existing_gallery_urls.append(media_path)
-
-    #     gallery_slides = []
-    #     for index, url in enumerate(existing_gallery_urls):
-    #         desc = ""
-    #         if hasattr(self, 'data') and self.data:
-    #             desc = self.data.get(f'gallery_desc_{index}', '')
-    #         else:
-    #             old_slides = theme.get('gallery_slides', [])
-    #             if index < len(old_slides):
-    #                 desc = old_slides[index].get('description', '')
-
-    #         gallery_slides.append({
-    #             'url': url,
-    #             'description': desc
-    #         })
-
-    #     theme['gallery_images'] = existing_gallery_urls
-    #     theme['gallery_slides'] = gallery_slides
-    #     theme['primary_color'] = self.cleaned_data.get('theme_color', '#3b82f6')
-    #     theme['page_bg_color'] = self.cleaned_data.get('page_bg_color', '#f8fafc')
-    #     theme['section_bg_color'] = self.cleaned_data.get('section_bg_color', '#ffffff')
-    #     theme['heading_color'] = self.cleaned_data.get('heading_color', '#0f172a')
-    #     theme['body_color'] = self.cleaned_data.get('body_color', '#475569')
-    #     theme['muted_color'] = self.cleaned_data.get('muted_color', '#94a3b8')
-    #     theme['font_family'] = self.cleaned_data.get('font_family', 'sans-serif')
-    #     theme['layout_style'] = self.cleaned_data.get('layout_style', 'centered')
-    #     theme['show_about_section'] = self.cleaned_data.get('show_about_section', False)
-    #     # theme['about_title'] = self.cleaned_data.get('about_title', 'About the Host')
-    #     theme['guest_message'] = self.cleaned_data.get('guest_message', '')
-
-    #     instance.theme_settings = theme
-    #     if commit:
-    #         instance.save()
-    #     return instance
-
 
     def save(self, commit=True):
             instance = super().save(commit=False)
@@ -553,6 +496,10 @@ class EventForm(forms.ModelForm):
             return instance
 
 class RSVPForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        self.event = kwargs.pop('event', None)
+        super().__init__(*args, **kwargs)
+
     class Meta:
         model = RSVP
         fields = ['first_name', 'last_name', 'email', 'phone', 'status', 'dietary_restrictions']

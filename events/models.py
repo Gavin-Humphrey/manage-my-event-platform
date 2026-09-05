@@ -5,6 +5,11 @@ from django.contrib.auth.models import User
 from django.utils.text import slugify
 from urllib.parse import urlencode
 
+import qrcode
+import base64
+from io import BytesIO
+from django.urls import reverse
+
 
 class Event(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -52,6 +57,12 @@ class Event(models.Model):
         default=False, 
         help_text="Allow guests to leave a special message for the celebrant"
     )
+
+    enable_qr_checkins = models.BooleanField(
+        default=False,
+        help_text="Enable digital ticket QR codes and door scanner interface"
+    )
+
     @property
     def normalized_gallery(self):
         gallery = self.theme_settings.get('gallery_images', [])
@@ -140,6 +151,10 @@ class RSVP(models.Model):
 
     confirmation_sent = models.BooleanField(default=False)
 
+    checkin_token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    checked_in = models.BooleanField(default=False)
+    checked_in_at = models.DateTimeField(null=True, blank=True)
+
     class Meta:
         unique_together = ('event', 'email')
 
@@ -149,6 +164,27 @@ class RSVP(models.Model):
 
     def __str__(self):
         return f"{self.full_name} - {self.event.title}"
+
+
+    def get_qr_code_data_uri(self):
+        if not self.event.enable_qr_checkins:
+            return None
+            
+        checkin_url = reverse('events:verify_checkin', kwargs={
+            'slug': self.event.slug, 
+            'token': self.checkin_token
+        })
+        full_url = f"http://127.0.0.1:8000{checkin_url}"  # Update domain for production
+        
+        qr = qrcode.QRCode(version=1, box_size=10, border=2)
+        qr.add_data(full_url)
+        qr.make(fit=True)
+        
+        img = qr.make_image(fill_color="black", back_color="white")
+        buffer = BytesIO()
+        img.save(buffer, format="PNG")
+        encoded_img = base64.b64encode(buffer.getvalue()).decode('utf-8')
+        return f"data:image/png;base64,{encoded_img}"
 
 
 

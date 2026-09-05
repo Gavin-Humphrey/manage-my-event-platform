@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.conf import settings
 from django.http import HttpResponse
 from django.utils import timezone
 from datetime import timedelta
@@ -11,9 +12,9 @@ from .forms import EventForm, RSVPForm, RSVPGuestForm
 from django.utils.text import slugify
 from django.db.models import Q, Sum
 
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
-from django.conf import settings
+
+
+from .utils import send_rsvp_confirmation
 
 
 
@@ -219,7 +220,23 @@ def event_form_view(request, pk=None):
 def public_rsvp(request, slug):
     event = get_object_or_404(Event, slug=slug)
     
-    # Safely retrieve theme settings
+    if request.method == 'POST':
+        form = RSVPForm(request.POST, event=event)
+        if form.is_valid():
+            rsvp = form.save(commit=False)
+            rsvp.event = event
+            rsvp.status = 'ATTENDING'
+            rsvp.save()
+            
+            try:
+                send_rsvp_confirmation(rsvp)
+            except Exception as e:
+                print(f"Email failed to send: {e}")
+                
+            return redirect('events:rsvp_confirmed', pk=rsvp.pk)
+    else:
+        form = RSVPForm(event=event)
+    
     raw_theme = event.theme_settings() if callable(getattr(event, 'theme_settings', None)) else getattr(event, 'theme_settings', None)
     
     theme = {}
@@ -229,7 +246,6 @@ def public_rsvp(request, slug):
     elif raw_theme is not None:
         theme = raw_theme
 
-    # Normalize gallery slides and descriptions
     raw_gallery = theme.get('gallery_slides') or theme.get('gallery_images', [])
     normalized_gallery = []
     for item in raw_gallery:
@@ -241,80 +257,111 @@ def public_rsvp(request, slug):
             if url:
                 normalized_gallery.append({'url': url, 'caption': caption})
 
-    # Query RSVPs that contain a message for the carousel 
     guest_messages = event.rsvps.exclude(guest_message__isnull=True).exclude(guest_message__exact='')
 
     context = {
         'event': event,
+        'form': form,
         'theme': theme,
         'guest_messages': guest_messages,
         'normalized_gallery': normalized_gallery,
     }
     return render(request, 'events/public_rsvp.html', context)
 
+
 def submit_rsvp(request, slug):
     event = get_object_or_404(Event, slug=slug)
 
     if event.is_past:
         messages.error(request, "This event has concluded. RSVPs are closed.")
-        referer = request.META.get('HTTP_REFERER')
-        if referer:
-            return redirect(referer)
         return redirect('events:public_rsvp', slug=event.slug)
     
     if request.method == 'POST':
-        email = request.POST.get('email')
+        email = request.POST.get('email', '').strip().lower()
         full_name = request.POST.get('full_name', '').strip()
+        first_name = request.POST.get('first_name') or (full_name.split(' ', 1)[0] if full_name else '')
+        last_name = request.POST.get('last_name') or (full_name.split(' ', 1)[1] if len(full_name.split(' ', 1)) > 1 else '')
+        phone = request.POST.get('phone', '').strip()
         status = request.POST.get('status', 'ATTENDING').upper()
-        guest_message = request.POST.get('guest_message', '').strip() # Capture celebrant message
-        dietary_restrictions = request.POST.get('dietary_restrictions', '').strip()
-        
-        # Split full name into first and last name components
-        name_parts = full_name.split(' ', 1)
-        first_name = name_parts[0] if name_parts else ''
-        last_name = name_parts[1] if len(name_parts) > 1 else ''
-        
-        if email and first_name:
+        guest_message = request.POST.get('guest_message', '').strip()
+        dietary = request.POST.get('dietary_restrictions', '').strip()
+
+        errors = {}
+
+        if not email:
+            errors['email'] = "Email is required."
+        elif RSVP.objects.filter(event=event, email=email).exists():
+            errors['email'] = "This email address has already been used to RSVP for this event."
+
+        if not first_name and not full_name:
+            errors['full_name'] = "Full name is required."
+
+        # If there are errors, re-render the template with the user's input intact
+        if errors:
+            # Rebuild theme/gallery context as needed by public_rsvp
+            raw_theme = event.theme_settings() if callable(getattr(event, 'theme_settings', None)) else getattr(event, 'theme_settings', None)
+            theme = raw_theme.copy() if isinstance(raw_theme, dict) else (raw_theme or {})
+            if isinstance(theme, dict):
+                theme['theme_color'] = theme.get('theme_color') or theme.get('primary_color') or '#3b82f6'
+
+            raw_gallery = theme.get('gallery_slides') or theme.get('gallery_images', [])
+            normalized_gallery = []
+            for item in raw_gallery:
+                if isinstance(item, str):
+                    normalized_gallery.append({'url': item, 'caption': ''})
+                elif isinstance(item, dict):
+                    url = item.get('url') or item.get('image') or ''
+                    caption = item.get('description') or item.get('caption') or item.get('text') or ''
+                    if url:
+                        normalized_gallery.append({'url': url, 'caption': caption})
+
+            context = {
+                'event': event,
+                'theme': theme,
+                'guest_messages': event.rsvps.exclude(guest_message__isnull=True).exclude(guest_message__exact=''),
+                'normalized_gallery': normalized_gallery,
+                'form_data': request.POST,  # Retain user inputs
+                'form_errors': errors,      # Field-specific errors
+            }
+            return render(request, 'events/public_rsvp.html', context)
+
+        try:
+            plus_ones_count = int(request.POST.get('plus_ones_count') or request.POST.get('guest_count', 0))
+            if event.allow_plus_ones:
+                plus_ones_count = min(plus_ones_count, event.max_plus_ones_per_guest)
+            else:
+                plus_ones_count = 0
+        except ValueError:
             plus_ones_count = 0
-            if status == 'ATTENDING' and event.allow_plus_ones:
-                try:
-                    plus_ones_count = int(request.POST.get('guest_count', 0))
-                    plus_ones_count = min(plus_ones_count, event.max_plus_ones_per_guest)
-                except ValueError:
-                    plus_ones_count = 0
 
-            rsvp, created = RSVP.objects.update_or_create(
-                event=event,
-                email=email,
-                defaults={
-                    'first_name': first_name,
-                    'last_name': last_name,
-                    'status': status,
-                    'plus_ones_allowed': getattr(event, 'max_plus_ones_per_guest', 0),
-                    'plus_ones_count': plus_ones_count,
-                    'guest_message': guest_message, # Save the message here
-                    'dietary_restrictions': dietary_restrictions,
-                }
-            )
+        rsvp = RSVP.objects.create(
+            event=event,
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            phone=phone,
+            status=status,
+            plus_ones_allowed=getattr(event, 'max_plus_ones_per_guest', 0),
+            plus_ones_count=plus_ones_count,
+            guest_message=guest_message,
+            dietary_restrictions=dietary,
+        )
 
-            # Clear old plus-ones if updating, then insert fresh individual names
-            if hasattr(rsvp, 'plus_ones'):
-                rsvp.plus_ones.all().delete()
-                if status == 'ATTENDING' and event.allow_plus_ones:
-                    for i in range(1, plus_ones_count + 1):
-                        # Match HTML template loop name: 'guest_name_i'
-                        guest_name = request.POST.get(f'guest_name_{i}')
-                        if guest_name:
-                            RSVPGuest.objects.create(
-                                rsvp=rsvp,
-                                full_name=guest_name
-                            )
+        if status == 'ATTENDING' and event.allow_plus_ones:
+            for i in range(1, plus_ones_count + 1):
+                guest_name = request.POST.get(f'guest_name_{i}')
+                if guest_name:
+                    RSVPGuest.objects.create(rsvp=rsvp, full_name=guest_name)
 
-            messages.success(request, "Your RSVP has been recorded successfully!")
-        else:
-            messages.error(request, "Email and Full Name are required fields.")
-            
-    return redirect('events:public_rsvp', slug=event.slug)
+        try:
+            send_rsvp_confirmation(rsvp)
+        except Exception as e:
+            print(f"Email delivery error: {e}")
+
+        messages.success(request, "Your RSVP has been recorded successfully!")
+        return redirect('events:rsvp_confirmed', pk=rsvp.pk)
+
+    return redirect('events:public_rsvp', slug=slug)
 
 @login_required
 def event_rsvps_management(request, slug):
@@ -475,34 +522,45 @@ END:VCALENDAR"""
     return response
 
 
-def send_rsvp_confirmation(rsvp):
-    event = rsvp.event
-    subject = f"Confirmation: You're attending {event.title}!"
+def rsvp_confirmed_view(request, pk):
+    rsvp = get_object_or_404(RSVP, pk=pk)
+    return render(request, 'events/rsvp_confirmed.html', {'rsvp': rsvp})
+
+
+@login_required
+def verify_checkin(request, slug, token):
+    event = get_object_or_404(Event, slug=slug, host=request.user)
     
-    # Extract the custom page theme styling attributes matching your public RSVP view
-    theme = getattr(event, 'theme', None)
-    style_card_bg = getattr(theme, 'card_bg', '#ffffff') if theme else '#ffffff'
-    style_body = getattr(theme, 'body_color', '#334155') if theme else '#334155'
-    style_muted = getattr(theme, 'muted_color', '#64748b') if theme else '#64748b'
+    if not event.enable_qr_checkins:
+        messages.error(request, "QR check-ins are not enabled for this event.")
+        return redirect('events:dashboard', slug=event.slug)
+        
+    rsvp = get_object_or_404(RSVP, event=event, checkin_token=token)
+    
+    if not rsvp.checked_in:
+        rsvp.checked_in = True
+        rsvp.checked_in_at = timezone.now()
+        rsvp.save()
+        messages.success(request, f"Checked in: {rsvp.first_name} {rsvp.last_name}!")
+    else:
+        messages.warning(request, f"Guest already checked in at {rsvp.checked_in_at.strftime('%H:%M')}.")
+        
+    return redirect('events:dashboard', slug=event.slug)
+
+
+@login_required
+def event_door_dashboard(request, slug):
+    event = get_object_or_404(Event, slug=slug, host=request.user)
+    rsvps = event.rsvps.all().order_by('-updated_at')
+    
+    total_rsvps = rsvps.count()
+    checked_in_count = rsvps.filter(checked_in=True).count()
     
     context = {
-        'rsvp': rsvp,
         'event': event,
-        'style_card_bg': style_card_bg,
-        'style_body': style_body,
-        'style_muted': style_muted,
+        'rsvps': rsvps,
+        'total_rsvps': total_rsvps,
+        'checked_in_count': checked_in_count,
+        'pending_count': total_rsvps - checked_in_count,
     }
-    
-    html_message = render_to_string('events/emails/rsvp_confirmation.html', context)
-    plain_message = render_to_string('events/emails/rsvp_confirmation.txt', context)
-    
-    send_mail(
-        subject,
-        plain_message,
-        settings.DEFAULT_FROM_EMAIL,
-        [rsvp.email],
-        html_message=html_message,
-        fail_silently=False,
-    )
-    rsvp.confirmation_sent = True
-    rsvp.save(update_fields=['confirmation_sent'])
+    return render(request, 'events/door_dashboard.html', context)

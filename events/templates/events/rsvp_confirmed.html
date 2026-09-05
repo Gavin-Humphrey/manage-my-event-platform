@@ -1,0 +1,16 @@
+{% if rsvp.event.enable_qr_checkins and rsvp.get_qr_code_data_uri %}
+    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 text-center my-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Your Digital Event Pass</h3>
+        <p class="text-sm text-gray-600 mb-4">Present this QR code at the door for rapid check-in.</p>
+        <div class="inline-block p-2 bg-gray-50 border border-gray-200 rounded-md">
+            <img src="{{ rsvp.get_qr_code_data_uri }}" alt="Check-in QR Code" class="w-48 h-48 mx-auto">
+        </div>
+        <p class="text-xs text-gray-400 mt-3">Pass ID: {{ rsvp.checkin_token }}</p>
+        <div style="margin-top: 2rem; text-align: center;">
+    <a href="{% url 'events:public_rsvp' rsvp.event.slug %}" style="display: inline-block; background-color: #4f46e5; color: #ffffff; font-weight: 600; padding: 0.75rem 1.5rem; border-radius: 0.75rem; text-decoration: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        &larr; Back to Event RSVP Page
+    </a>
+</div>
+    </div>
+    
+{% endif %}

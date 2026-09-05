@@ -98,6 +98,19 @@
                 </div>
                 <p class="text-[11px] text-slate-400 mt-1 pl-7">Enables a dedicated text field on your public RSVP form for personal notes, displayed via a scrolling carousel on your event dashboard.</p>
             </div>
+            <!-- /////////// -->
+            <!-- Enable QR Check-ins Checkbox -->
+                <div class="flex items-center space-x-3 mt-4">
+                    {{ form.enable_qr_checkins }}
+                    <label for="{{ form.enable_qr_checkins.id_for_label }}" class="text-sm font-semibold text-slate-700 select-none cursor-pointer">
+                        Enable digital ticket QR codes and door scanner interface
+                    </label>
+                    {% if form.enable_qr_checkins.errors %}
+                        <p class="text-xs text-red-600 mt-1">{{ form.enable_qr_checkins.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1 pl-7">Generates a unique QR pass for every attendee and provides hosts with a live check-in dashboard at the door.</p>
+            <!-- /////////// -->
 
             <!-- Section 3: Visual Customization & Theme -->
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
