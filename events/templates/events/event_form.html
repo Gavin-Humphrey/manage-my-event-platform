@@ -54,6 +54,16 @@
                 </div>
             </div>
 
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <h2 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3">1.5. Maximum Venue Capacity</h2>
+                <div>
+                    <label for="{{ form.max_capacity.id_for_label }}" class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Maximum Venue Capacity (Optional)</label>
+                    {{ form.max_capacity }}
+                    <p class="text-[11px] mt-1" style="color: {{ style_muted }} !important;">Leave blank for unlimited venue capacity.</p>
+                    {% if form.max_capacity.errors %}<p class="text-xs text-red-600 mt-1">{{ form.max_capacity.errors.0 }}</p>{% endif %}
+                </div>
+            </div>
+
             <!-- Section 2: Plus-One & Guest Options -->
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                 <h2 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3">2. Plus-One & Guest Options</h2>

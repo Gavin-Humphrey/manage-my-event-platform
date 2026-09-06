@@ -48,8 +48,18 @@
                                         <p style="margin: 10px 0 0 0; font-size: 14px; color: {{ style_muted }};">
                                             <strong>Additional Guests:</strong> {{ rsvp.plus_ones_count }}
                                         </p>
-                                        {% endif %}
-                                        
+                                            {% if rsvp.plus_ones.all %}
+                                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top: 10px;">
+                                                    {% for plus_one in rsvp.plus_ones.all %}
+                                                    <tr>
+                                                        <td style="padding: 6px 0; font-size: 14px; color: {{ style_muted }};">
+                                                            #{{ forloop.counter }} - {{ plus_one.full_name }}
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </table>
+                                            {% endif %}
+                                        {% endif %}                                    
                                     </td>
                                 </tr>
                             </table>
@@ -67,7 +77,7 @@
                     <!-- Footer -->
                     <tr>
                         <td style="padding: 20px 40px; background-color: #f1f5f9; text-align: center; border-top: 1px solid #e2e8f0;">
-                            <p style="margin: 0; font-size: 12px; color: {{ style_muted }};">Powered by {{your self-hosted event platform.}}</p>
+                            <p style="margin: 0; font-size: 12px; color: {{ style_muted }};">Powered by your self-hosted event platform.</p>
                         </td>
                     </tr>
                     

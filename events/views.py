@@ -11,8 +11,7 @@ from .models import Event, RSVP, RSVPGuest
 from .forms import EventForm, RSVPForm, RSVPGuestForm
 from django.utils.text import slugify
 from django.db.models import Q, Sum
-
-
+from django.db.models import Sum
 
 from .utils import send_rsvp_confirmation
 
@@ -28,6 +27,9 @@ def home(request):
 
 def event_detail(request, slug):
     event = get_object_or_404(Event, slug=slug)
+
+    # Instantiate the form for the template
+    form = RSVPForm(event=event) ######
     
     # Safely retrieve theme settings
     raw_theme = event.theme_settings() if callable(getattr(event, 'theme_settings', None)) else getattr(event, 'theme_settings', None)
@@ -55,6 +57,7 @@ def event_detail(request, slug):
     
     return render(request, 'events/event_detail.html', {
         'event': event, 
+        'form': form, #####
         'theme': theme,
         'guest_messages': guest_messages,
         'normalized_gallery': normalized_gallery,
@@ -216,7 +219,6 @@ def event_form_view(request, pk=None):
     })
 
 # 3. PUBLIC RSVP PAGE (Guest view)
-
 def public_rsvp(request, slug):
     event = get_object_or_404(Event, slug=slug)
     
@@ -226,14 +228,31 @@ def public_rsvp(request, slug):
             rsvp = form.save(commit=False)
             rsvp.event = event
             rsvp.status = 'ATTENDING'
-            rsvp.save()
             
-            try:
-                send_rsvp_confirmation(rsvp)
-            except Exception as e:
-                print(f"Email failed to send: {e}")
+            # Calculate total headcount request (Primary + Plus-Ones)
+            requested_plus_ones = form.cleaned_data.get('plus_ones_count', 0)
+            total_requested = 1 + requested_plus_ones
+            
+            # Enforce Event Capacity Limit
+            current_headcount = sum(r.plus_ones.count() + 1 for r in event.rsvps.filter(status='ATTENDING'))
+            if event.max_capacity and (current_headcount + total_requested > event.max_capacity):
+                messages.error(request, "Sorry, this event does not have enough remaining capacity for your requested plus-ones.")
+                # Fall through to render context with errors
+            else:
+                rsvp.save()
                 
-            return redirect('events:rsvp_confirmed', pk=rsvp.pk)
+                # Save Individual Plus-One Names if provided
+                plus_one_names = request.POST.getlist('plus_one_names[]')
+                for name in plus_one_names:
+                    if name.strip():
+                        PlusOne.objects.create(rsvp=rsvp, full_name=name.strip())
+                
+                try:
+                    send_rsvp_confirmation(rsvp)
+                except Exception as e:
+                    print(f"Email failed to send: {e}")
+                    
+                return redirect('events:rsvp_confirmed', pk=rsvp.pk)
     else:
         form = RSVPForm(event=event)
     
@@ -281,10 +300,26 @@ def submit_rsvp(request, slug):
         full_name = request.POST.get('full_name', '').strip()
         first_name = request.POST.get('first_name') or (full_name.split(' ', 1)[0] if full_name else '')
         last_name = request.POST.get('last_name') or (full_name.split(' ', 1)[1] if len(full_name.split(' ', 1)) > 1 else '')
-        phone = request.POST.get('phone', '').strip()
+        
+        phone_prefix = request.POST.get('phone_prefix', '').strip()
+        custom_prefix = request.POST.get('custom_phone_prefix', '').strip()
+        raw_phone = request.POST.get('phone', '').strip()
+
+        active_prefix = custom_prefix if phone_prefix == 'OTHER' and custom_prefix else phone_prefix
+        phone = f"{active_prefix} {raw_phone}".strip() if raw_phone else ''
+
         status = request.POST.get('status', 'ATTENDING').upper()
         guest_message = request.POST.get('guest_message', '').strip()
         dietary = request.POST.get('dietary_restrictions', '').strip()
+
+        try:
+            plus_ones_count = int(request.POST.get('plus_ones_count') or request.POST.get('guest_count', 0))
+            if event.allow_plus_ones:
+                plus_ones_count = min(plus_ones_count, event.max_plus_ones_per_guest)
+            else:
+                plus_ones_count = 0
+        except ValueError:
+            plus_ones_count = 0
 
         errors = {}
 
@@ -296,9 +331,22 @@ def submit_rsvp(request, slug):
         if not first_name and not full_name:
             errors['full_name'] = "Full name is required."
 
+        # Maximum venue capacity validation check
+        if not errors and event.max_capacity and status == 'ATTENDING':
+            incoming_headcount = 1 + plus_ones_count
+            
+            current_headcount = event.rsvps.filter(status='ATTENDING').aggregate(
+                total=Sum('plus_ones_count')
+            )['total'] or 0
+            current_primary_count = event.rsvps.filter(status='ATTENDING').count()
+            total_current_attendees = current_primary_count + current_headcount
+
+            if (total_current_attendees + incoming_headcount) > event.max_capacity:
+                remaining_spots = max(0, event.max_capacity - total_current_attendees)
+                errors['plus_ones_count'] = f"Sorry, this event has reached its maximum venue capacity of {event.max_capacity} guests. Only {remaining_spots} spot(s) remaining."
+
         # If there are errors, re-render the template with the user's input intact
         if errors:
-            # Rebuild theme/gallery context as needed by public_rsvp
             raw_theme = event.theme_settings() if callable(getattr(event, 'theme_settings', None)) else getattr(event, 'theme_settings', None)
             theme = raw_theme.copy() if isinstance(raw_theme, dict) else (raw_theme or {})
             if isinstance(theme, dict):
@@ -320,19 +368,10 @@ def submit_rsvp(request, slug):
                 'theme': theme,
                 'guest_messages': event.rsvps.exclude(guest_message__isnull=True).exclude(guest_message__exact=''),
                 'normalized_gallery': normalized_gallery,
-                'form_data': request.POST,  # Retain user inputs
-                'form_errors': errors,      # Field-specific errors
+                'form_data': request.POST,  
+                'form_errors': errors,      
             }
             return render(request, 'events/public_rsvp.html', context)
-
-        try:
-            plus_ones_count = int(request.POST.get('plus_ones_count') or request.POST.get('guest_count', 0))
-            if event.allow_plus_ones:
-                plus_ones_count = min(plus_ones_count, event.max_plus_ones_per_guest)
-            else:
-                plus_ones_count = 0
-        except ValueError:
-            plus_ones_count = 0
 
         rsvp = RSVP.objects.create(
             event=event,
@@ -357,7 +396,7 @@ def submit_rsvp(request, slug):
             send_rsvp_confirmation(rsvp)
         except Exception as e:
             print(f"Email delivery error: {e}")
-
+        
         messages.success(request, "Your RSVP has been recorded successfully!")
         return redirect('events:rsvp_confirmed', pk=rsvp.pk)
 
@@ -545,22 +584,33 @@ def verify_checkin(request, slug, token):
     else:
         messages.warning(request, f"Guest already checked in at {rsvp.checked_in_at.strftime('%H:%M')}.")
         
-    return redirect('events:dashboard', slug=event.slug)
+    return redirect('events:door_dashboard', slug=event.slug)
 
 
-@login_required
 def event_door_dashboard(request, slug):
     event = get_object_or_404(Event, slug=slug, host=request.user)
-    rsvps = event.rsvps.all().order_by('-updated_at')
-    
-    total_rsvps = rsvps.count()
-    checked_in_count = rsvps.filter(checked_in=True).count()
-    
+    rsvps = event.rsvps.all()
+
+    search_query = request.GET.get('q', '').strip()
+    if search_query:
+        rsvps = rsvps.filter(
+            Q(full_name__icontains=search_query) | 
+            Q(email__icontains=search_query)
+        )
+
+    status_filter = request.GET.get('status', '').strip()
+    if status_filter == 'checked_in':
+        rsvps = rsvps.filter(checked_in=True)
+    elif status_filter == 'pending':
+        rsvps = rsvps.filter(checked_in=False)
+
     context = {
         'event': event,
         'rsvps': rsvps,
-        'total_rsvps': total_rsvps,
-        'checked_in_count': checked_in_count,
-        'pending_count': total_rsvps - checked_in_count,
+        'total_rsvps': event.rsvps.count(),
+        'checked_in_count': event.rsvps.filter(checked_in=True).count(),
+        'pending_count': event.rsvps.filter(checked_in=False).count(),
+        'search_query': search_query,
+        'status_filter': status_filter,
     }
     return render(request, 'events/door_dashboard.html', context)

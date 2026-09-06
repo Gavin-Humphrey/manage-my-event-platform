@@ -24,7 +24,6 @@ urlpatterns = [
     path('e/<slug:slug>/calendar/ics/', views.download_ics, name='download_ics'),
 
     # Guest RSVP Confirmation page (where the QR code displays)
-    #path('rsvp/<int:pk>/confirmed/', views.send_rsvp_confirmation, name='rsvp_confirmed'),
     path('rsvp/<int:pk>/confirmed/', views.rsvp_confirmed_view, name='rsvp_confirmed'),
     
     # Host Door Check-in Verification (triggered when scanning the QR code)

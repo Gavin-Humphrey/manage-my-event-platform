@@ -19,6 +19,7 @@ class Event(models.Model):
     event_date = models.DateTimeField()
     location_name = models.CharField(max_length=255)
     address = models.TextField(blank=True, null=True)
+    max_capacity = models.PositiveIntegerField(null=True, blank=True, help_text="Maximum total venue capacity")
     
     theme_settings = models.JSONField(
         default=dict, 

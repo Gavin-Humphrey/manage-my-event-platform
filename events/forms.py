@@ -372,7 +372,7 @@ class EventForm(forms.ModelForm):
     class Meta:
         model = Event
         fields = [
-            'title', 'event_date', 'location_name', 'address','show_about_section', 'about_title', 'about_text',
+            'title', 'event_date', 'location_name', 'address', 'max_capacity', 'show_about_section', 'about_title', 'about_text',
             'allow_plus_ones', 'max_plus_ones_per_guest', 'allow_guest_messages', 'enable_qr_checkins', 'theme_settings'
         ]
         widgets = {
@@ -496,13 +496,63 @@ class EventForm(forms.ModelForm):
             return instance
 
 class RSVPForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        self.event = kwargs.pop('event', None)
-        super().__init__(*args, **kwargs)
+    PHONE_PREFIX_CHOICES = [
+        ('+33', '+33 (France)'),
+        ('+1', '+1 (US/CA)'),
+        ('+44', '+44 (UK)'),
+        ('+49', '+49 (Germany)'),
+        ('+34', '+34 (Spain)'),
+        ('+39', '+39 (Italy)'),
+        ('+41', '+41 (Switzerland)'),
+        ('+32', '+32 (Belgium)'),
+        ('+31', '+31 (Netherlands)'),
+        ('+351', '+351 (Portugal)'),
+        ('+61', '+61 (Australia)'),
+        ('+81', '+81 (Japan)'),
+        ('OTHER', 'Other (Custom...)'),
+    ]
+
+    phone_prefix = forms.ChoiceField(
+        choices=PHONE_PREFIX_CHOICES,
+        initial='+33',
+        required=False,
+        widget=forms.Select(attrs={
+            'id': 'id_phone_prefix_select',
+            'class': 'w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer'
+        })
+    )
+    
+    custom_phone_prefix = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'id': 'id_custom_phone_prefix',
+            'placeholder': 'e.g. +234',
+            'class': 'w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none hidden mt-2'
+        })
+    )
 
     class Meta:
         model = RSVP
         fields = ['first_name', 'last_name', 'email', 'phone', 'status', 'dietary_restrictions']
+
+    def __init__(self, *args, **kwargs):
+        self.event = kwargs.pop('event', None)
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        prefix = cleaned_data.get('phone_prefix')
+        custom_prefix = cleaned_data.get('custom_phone_prefix')
+        phone = cleaned_data.get('phone')
+        
+        # Use custom prefix if 'OTHER' was chosen
+        active_prefix = custom_prefix.strip() if prefix == 'OTHER' and custom_prefix else prefix
+        
+        if phone:
+            clean_phone = phone.strip()
+            cleaned_data['phone'] = f"{active_prefix} {clean_phone}" if active_prefix else clean_phone
+            
+        return cleaned_data
 
 class RSVPGuestForm(forms.ModelForm):
     class Meta:

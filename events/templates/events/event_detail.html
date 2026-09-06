@@ -231,6 +231,34 @@
                             <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Email Address *</label>
                             <input type="email" name="email" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
                         </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 3fr; gap: 1rem; width: 100%; position: relative; z-index: 50;">
+                            <div>
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Prefix</label>
+                                {{ form.phone_prefix }}
+                                {{ form.custom_phone_prefix }}
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Phone Number</label>
+                                <input type="tel" name="phone" value="{{ form_data.phone|default:'' }}" placeholder="6 12 34 56 78" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                            </div>
+                        </div>
+                    
+                        <style>
+                            select[name="phone_prefix"] {
+                                color: {{ style_body }} !important;
+                                background-color: {{ style_section_bg }} !important;
+                                appearance: auto !important;
+                                -webkit-appearance: auto !important;
+                                -moz-appearance: auto !important;
+                                width: 100% !important;
+                                padding: 0.625rem 0.875rem !important;
+                                border: 1px solid #cbd5e1 !important;
+                                border-radius: 0.5rem !important;
+                                font-size: 0.875rem !important;
+                            }
+                        </style>
+                        <!--  -->
                         <div>
                             <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Attendance Status *</label>
                             <select name="status" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
@@ -238,15 +266,29 @@
                                 <option value="DECLINED">Sorry, I cannot make it</option>
                             </select>
                         </div>
+
                         {% if event.allow_plus_ones and event.max_plus_ones_per_guest > 0 %}
                             <div>
-                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Number of Additional Guests (Max: {{ event.max_plus_ones_per_guest }})</label>
-                                <input type="number" name="guest_count" id="id_guest_count_split" min="0" max="{{ event.max_plus_ones_per_guest }}" value="0" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">
+                                    Number of Additional Guests (Max: {{ event.max_plus_ones_per_guest }})
+                                </label>
+                                <input type="number" name="guest_count" id="id_guest_count_split" min="0" max="{{ event.max_plus_ones_per_guest }}" value="{{ form_data.guest_count|default:'0' }}" 
+                                    class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                                
+                                {% if form_errors.plus_ones_count %}
+                                    <p class="text-xs text-red-600 mt-1">{{ form_errors.plus_ones_count }}</p>
+                                {% endif %}
+
+                                <p class="text-[11px] mt-1" style="color: {{ style_muted }} !important;">You can bring up to {{ event.max_plus_ones_per_guest }} additional guest(s).</p>
                             </div>
-                            <div id="guest-name-container-split" class="space-y-2 hidden pt-2 border-t border-dashed border-slate-200"></div>
+
+                            <div id="guest-name-container-split" class="space-y-2 hidden pt-2 border-t border-dashed border-slate-200">
+                                <!-- Dynamic guest name fields injected here -->
+                            </div>
                         {% else %}
                             <input type="hidden" name="guest_count" value="0">
                         {% endif %}
+
                         <div>
                             <!-- <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Dietary Restrictions / Notes</label> -->
                              <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">Dietary Restrictions / Notes</label>
@@ -254,10 +296,9 @@
                         </div>
                         {% if event.allow_guest_messages %}
                             <div class="space-y-4 pt-4 border-t border-slate-200">
-                                <!-- <h3 class="text-sm font-semibold uppercase tracking-wider" style="color: {{ style_heading }} !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</h3> -->
                                 <div>
-                                    <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</label>
-                                    <textarea name="about_text" rows="3" placeholder="Write a short message or note..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;"></textarea>
+                                    <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</label>
+                                    <textarea name="guest_message" rows="3" placeholder="Write a short message or note..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">{{ form_data.guest_message }}</textarea>
                                 </div>
                             </div>
                         {% endif %}
@@ -389,6 +430,34 @@
                             <input type="email" name="email" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
                         </div>
                     </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 3fr; gap: 1rem; width: 100%; position: relative; z-index: 50;">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Prefix</label>
+                            {{ form.phone_prefix }}
+                            {{ form.custom_phone_prefix }}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Phone Number</label>
+                            <input type="tel" name="phone" value="{{ form_data.phone|default:'' }}" placeholder="6 12 34 56 78" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                        </div>
+                    </div>
+                   
+                    <style>
+                        select[name="phone_prefix"] {
+                            color: {{ style_body }} !important;
+                            background-color: {{ style_section_bg }} !important;
+                            appearance: auto !important;
+                            -webkit-appearance: auto !important;
+                            -moz-appearance: auto !important;
+                            width: 100% !important;
+                            padding: 0.625rem 0.875rem !important;
+                            border: 1px solid #cbd5e1 !important;
+                            border-radius: 0.5rem !important;
+                            font-size: 0.875rem !important;
+                        }
+                    </style>
+                    
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">Attendance Status *</label>
@@ -397,18 +466,29 @@
                                 <option value="DECLINED">Cannot attend</option>
                             </select>
                         </div>
+
                         {% if event.allow_plus_ones and event.max_plus_ones_per_guest > 0 %}
                             <div>
-                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">Guests (Max: {{ event.max_plus_ones_per_guest }})</label>
-                                <input type="number" name="guest_count" id="id_guest_count_minimal" min="0" max="{{ event.max_plus_ones_per_guest }}" value="0" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">
+                                    Guests (Max: {{ event.max_plus_ones_per_guest }})
+                                </label>
+                                <input type="number" name="guest_count" id="id_guest_count_minimal" min="0" max="{{ event.max_plus_ones_per_guest }}" value="{{ form_data.guest_count|default:'0' }}" 
+                                    class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                                
+                                {% if form_errors.plus_ones_count %}
+                                    <p class="text-xs text-red-600 mt-1">{{ form_errors.plus_ones_count }}</p>
+                                {% endif %}
                             </div>
                         {% else %}
                             <input type="hidden" name="guest_count" value="0">
                         {% endif %}
                     </div>
+
                     {% if event.allow_plus_ones and event.max_plus_ones_per_guest > 0 %}
-                        <div id="guest-name-container-minimal" class="space-y-2 hidden pt-2 border-t border-dashed border-slate-200"></div>
+                        <div id="guest-name-container-minimal" class="space-y-2 hidden pt-2 border-t border-dashed border-slate-200">
+                        </div>
                     {% endif %}
+
                     <div>
                         <!-- <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Dietary Restrictions / Notes</label> -->
                         <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">Dietary Restrictions / Notes</label>
@@ -416,10 +496,9 @@
                     </div>
                     {% if event.allow_guest_messages %}
                         <div class="space-y-4 pt-4 border-t border-slate-200">
-                            <!-- <h3 class="text-sm font-semibold uppercase tracking-wider" style="color: {{ style_heading }} !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</h3> -->
                             <div>
-                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</label>
-                                <textarea name="about_text" rows="3" placeholder="Write a short message or note..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;"></textarea>
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</label>
+                                <textarea name="guest_message" rows="3" placeholder="Write a short message or note..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">{{ form_data.guest_message }}</textarea>
                             </div>
                         </div>
                     {% endif %}
@@ -489,7 +568,6 @@
             </div>
             {% endif %}
 
-            <!-- BIOOOOOOOOOO -->
             {% if event.show_about_section %}
                 <div class="p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6" style="background-color: {{ style_section_bg }} !important;">
                     
@@ -557,22 +635,54 @@
                     </div>
                 </div>
             {% endif %}
-            <!-- BIOOOOOOOOOO -->
 
             <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-xl space-y-4" style="background-color: {{ style_section_bg }} !important;">
                 <h2 class="text-xl font-bold border-b border-slate-100 pb-3" style="color: {{ style_heading }} !important;">RSVP For This Event</h2>
+                
                 <form method="post" action="{% url 'events:submit_rsvp' slug=event.slug %}" class="space-y-4" id="rsvpFormDefault">
                     {% csrf_token %}
+                    
+                    <!-- Row 1: Full Name & Email -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Full Name *</label>
-                            <input type="text" name="full_name" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                            <input type="text" name="full_name" value="{{ form_data.full_name|default:'' }}" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Email Address *</label>
-                            <input type="email" name="email" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                            <input type="email" name="email" value="{{ form_data.email|default:'' }}" required class="w-full px-3.5 py-2.5 border {% if form_errors.email %}border-red-500{% else %}border-slate-300{% endif %} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                            {% if form_errors.email %}
+                                <p class="mt-1 text-xs text-red-600 font-medium">{{ form_errors.email }}</p>
+                            {% endif %}
                         </div>
                     </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 3fr; gap: 1rem; width: 100%; position: relative; z-index: 50;">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Prefix</label>
+                            {{ form.phone_prefix }}
+                            {{ form.custom_phone_prefix }}
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Phone Number</label>
+                            <input type="tel" name="phone" value="{{ form_data.phone|default:'' }}" placeholder="6 12 34 56 78" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                        </div>
+                    </div>
+                    <style>
+                        select[name="phone_prefix"] {
+                            color: {{ style_body }} !important;
+                            background-color: {{ style_section_bg }} !important;
+                            appearance: auto !important;
+                            -webkit-appearance: auto !important;
+                            -moz-appearance: auto !important;
+                            width: 100% !important;
+                            padding: 0.625rem 0.875rem !important;
+                            border: 1px solid #cbd5e1 !important;
+                            border-radius: 0.5rem !important;
+                            font-size: 0.875rem !important;
+                        }
+                    </style>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Attendance Status *</label>
@@ -581,32 +691,45 @@
                                 <option value="DECLINED">Cannot attend</option>
                             </select>
                         </div>
+
                         {% if event.allow_plus_ones and event.max_plus_ones_per_guest > 0 %}
                             <div>
-                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Guests (Max: {{ event.max_plus_ones_per_guest }})</label>
-                                <input type="number" name="guest_count" id="id_guest_count_default" min="0" max="{{ event.max_plus_ones_per_guest }}" value="0" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">
+                                    Number of Guests (Max: {{ event.max_plus_ones_per_guest }})
+                                </label>
+                                <input type="number" name="guest_count" id="id_guest_count_default" min="0" max="{{ event.max_plus_ones_per_guest }}" value="{{ form_data.guest_count|default:'0' }}" 
+                                    class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                                
+                                {% if form_errors.plus_ones_count %}
+                                    <p class="text-xs text-red-600 mt-1">{{ form_errors.plus_ones_count }}</p>
+                                {% endif %}
                             </div>
                         {% else %}
                             <input type="hidden" name="guest_count" value="0">
                         {% endif %}
                     </div>
+
                     {% if event.allow_plus_ones and event.max_plus_ones_per_guest > 0 %}
-                        <div id="guest-name-container-default" class="space-y-2 hidden pt-2 border-t border-dashed border-slate-200"></div>
+                        <div id="guest-name-container-default" class="space-y-2 hidden pt-2 border-t border-dashed border-slate-200">
+                            <!-- Dynamic full-width name inputs injected here -->
+                        </div>
                     {% endif %}
+                    <!--  -->
+
                     <div>
-                        <!-- <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Dietary Restrictions / Notes</label> -->
                         <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Dietary Restrictions / Notes</label>
                         <textarea name="dietary_restrictions" rows="2" placeholder="Dietary notes or special requests..." class="w-full px-3.5 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important; border-color: {{ style_muted }}60 !important;"></textarea>
                     </div>
+
                     {% if event.allow_guest_messages %}
                         <div class="space-y-4 pt-4 border-t border-slate-200">
-                            <!-- <h3 class="text-sm font-semibold uppercase tracking-wider" style="color: {{ style_heading }} !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</h3> -->
                             <div>
-                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted } } !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</label>
-                                <textarea name="about_text" rows="3" placeholder="Write a short message or note..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;"></textarea>
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</label>
+                                <textarea name="guest_message" rows="3" placeholder="Write a short message or note..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">{{ form_data.guest_message }}</textarea>
                             </div>
                         </div>
                     {% endif %}
+
                     <button type="submit" style="background-color: {{ style_primary }} !important;" class="w-full py-3 text-white font-semibold text-sm rounded-lg shadow transition hover:opacity-95 cursor-pointer">Submit RSVP</button>
                 </form>
             </div>
@@ -622,7 +745,7 @@
                 <div class="swiper messages-swiper rounded-xl overflow-hidden relative w-full py-2">
                     <div class="swiper-wrapper">
                         {% for msg in guest_messages %}
-                            <div class="swiper-slide p-6 rounded-xl border border-slate-100 flex flex-col justify-between" style="background-color: {{ style_page_bg }} !important;">
+                            <div class="swiper-slide p-6 rounded-xl border border-slate-100 flex flex-col justify-between" style="background-color: {{ style_section_bg }} !important;">
                                 <p class="text-sm italic mb-4" style="color: {{ style_body }} !important;">"{{ msg.guest_message }}"</p>
                                 <span class="text-xs font-bold uppercase tracking-wider" style="color: {{ style_primary }} !important;">— {{ msg.full_name }}</span>
                             </div>
@@ -795,6 +918,57 @@
                 });
             }
         });
+    });
+
+    //PREFIX
+    document.addEventListener('DOMContentLoaded', function() {
+        const select = document.getElementById('id_phone_prefix_select');
+        const customInput = document.getElementById('id_custom_phone_prefix');
+
+        if (select && customInput) {
+            function toggleCustom() {
+                if (select.value === 'OTHER') {
+                    customInput.classList.remove('hidden');
+                } else {
+                    customInput.classList.add('hidden');
+                }
+            }
+            select.addEventListener('change', toggleCustom);
+            toggleCustom();
+        }
+    });
+
+
+    // Max-capacity
+    /// plus_ones_count
+    document.addEventListener('DOMContentLoaded', function() {
+        const countSelect = document.querySelector('[name="plus_ones_count"]');
+        const container = document.getElementById('plus-one-inputs-list');
+        const wrapper = document.getElementById('plus-ones-container');
+
+        function updatePlusOneInputs() {
+            const count = parseInt(countSelect ? countSelect.value : 0) || 0;
+            container.innerHTML = '';
+            
+            if (count > 0) {
+                wrapper.style.display = 'block';
+                for (let i = 1; i <= count; i++) {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.name = 'plus_one_names[]';
+                    input.placeholder = `Plus-One #${i} Full Name`;
+                    input.className = 'w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none';
+                    container.appendChild(input);
+                }
+            } else {
+                wrapper.style.display = 'none';
+            }
+        }
+
+        if (countSelect) {
+            countSelect.addEventListener('change', updatePlusOneInputs);
+            updatePlusOneInputs(); // Run on load in case of pre-filled or error-reloaded states
+        }
     });
 </script>
 {% endblock %}
