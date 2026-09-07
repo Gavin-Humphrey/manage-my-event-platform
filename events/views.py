@@ -8,12 +8,14 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from .models import Event, RSVP, RSVPGuest
-from .forms import EventForm, RSVPForm, RSVPGuestForm
+from .forms import EventForm, RSVPForm
 from django.utils.text import slugify
-from django.db.models import Q, Sum
-from django.db.models import Sum
+from django.db.models import Q, Value, Sum
+from django.db.models.functions import Concat
 
 from .utils import send_rsvp_confirmation
+
+
 
 
 
@@ -29,7 +31,7 @@ def event_detail(request, slug):
     event = get_object_or_404(Event, slug=slug)
 
     # Instantiate the form for the template
-    form = RSVPForm(event=event) ######
+    form = RSVPForm(event=event) 
     
     # Safely retrieve theme settings
     raw_theme = event.theme_settings() if callable(getattr(event, 'theme_settings', None)) else getattr(event, 'theme_settings', None)
@@ -57,7 +59,7 @@ def event_detail(request, slug):
     
     return render(request, 'events/event_detail.html', {
         'event': event, 
-        'form': form, #####
+        'form': form, 
         'theme': theme,
         'guest_messages': guest_messages,
         'normalized_gallery': normalized_gallery,
@@ -402,6 +404,7 @@ def submit_rsvp(request, slug):
 
     return redirect('events:public_rsvp', slug=slug)
 
+
 @login_required
 def event_rsvps_management(request, slug):
     event = get_object_or_404(Event, slug=slug, host=request.user)
@@ -409,10 +412,14 @@ def event_rsvps_management(request, slug):
     
     search_query = request.GET.get('q', '').strip()
     if search_query:
-        rsvps = rsvps.filter(
-            Q(first_name__icontains=search_query) |
-            Q(last_name__icontains=search_query) |
-            Q(email__icontains=search_query)
+        rsvps = rsvps.annotate(
+            computed_full_name=Concat('first_name', Value(' '), 'last_name')
+        ).filter(
+            Q(first_name__icontains=search_query) | 
+            Q(last_name__icontains=search_query) | 
+            Q(computed_full_name__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(phone__icontains=search_query)
         )
         
     status_filter = request.GET.get('status', '').strip()
@@ -593,13 +600,22 @@ def event_door_dashboard(request, slug):
 
     search_query = request.GET.get('q', '').strip()
     if search_query:
-        rsvps = rsvps.filter(
-            Q(full_name__icontains=search_query) | 
-            Q(email__icontains=search_query)
+        rsvps = rsvps.annotate(
+            computed_full_name=Concat('first_name', Value(' '), 'last_name')
+        ).filter(
+            Q(first_name__icontains=search_query) | 
+            Q(last_name__icontains=search_query) | 
+            Q(computed_full_name__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(phone__icontains=search_query)
         )
 
     status_filter = request.GET.get('status', '').strip()
-    if status_filter == 'checked_in':
+    if status_filter == 'ATTENDING':
+        rsvps = rsvps.filter(status='ATTENDING')
+    elif status_filter == 'DECLINED':
+        rsvps = rsvps.filter(status='DECLINED')
+    elif status_filter == 'checked_in':
         rsvps = rsvps.filter(checked_in=True)
     elif status_filter == 'pending':
         rsvps = rsvps.filter(checked_in=False)
@@ -614,3 +630,6 @@ def event_door_dashboard(request, slug):
         'status_filter': status_filter,
     }
     return render(request, 'events/door_dashboard.html', context)
+
+def features_view(request):
+    return render(request, 'events/features_page.html')

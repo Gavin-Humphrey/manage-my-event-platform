@@ -13,7 +13,7 @@
 <div class="min-h-screen pb-16 font-{{ theme.font_family|default:'sans' }}" style="background-color: {{ style_page_bg }} !important;">
 
     <!-- Messages / Alert Banner -->
-    {% if messages %}
+    <!-- {% if messages %}
         <div class="max-w-6xl mx-auto pt-6 px-4">
             {% for message in messages %}
                 <div class="p-4 rounded-xl text-sm font-medium mb-4 shadow-sm {% if message.tags == 'success' %}bg-emerald-50 text-emerald-800 border border-emerald-200{% else %}bg-red-50 text-red-800 border border-red-200{% endif %}">
@@ -21,7 +21,7 @@
                 </div>
             {% endfor %}
         </div>
-    {% endif %}
+    {% endif %} -->
 
     <!-- Share Guest Link Banner -->
     <div class="max-w-6xl mx-auto pt-6 px-4">
@@ -121,6 +121,18 @@
                             <p class="mt-0.5 font-medium" style="color: {{ style_body }} !important;">{{ event.location_name }}</p>
                             {% if event.address %}<p class="text-xs mt-0.5" style="color: {{ style_muted }} !important;">{{ event.address }}</p>{% endif %}
                         </div>
+                        <!--  -->
+                        <!-- Embedded Map Box -->
+                        <div class="mt-4 w-full h-48 rounded-xl overflow-hidden border border-slate-200 shadow-sm relative z-10">
+                            <iframe 
+                                width="100%" 
+                                height="100%" 
+                                style="border:0;" 
+                                loading="lazy" 
+                                src="https://www.google.com/maps?q={{ event.address|urlencode|default:event.location_name|urlencode }}&output=embed">
+                            </iframe>
+                        </div>
+                        <!--  -->
                     </div>
                      <!-- Calendar Sync Actions -->
                     <div class="calendar-actions mt-4 flex flex-wrap justify-center items-center gap-3">
@@ -315,6 +327,18 @@
                 <span class="inline-block px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white rounded-full" style="background-color: {{ style_primary }} !important;">{{ event.event_date|date:"F j, Y @ g:i A" }}</span>
                 <h1 class="text-4xl font-black tracking-tight" style="color: {{ style_heading }} !important;">{{ event.title }}</h1>
                 <p class="text-sm font-medium" style="color: {{ style_body }} !important;">📍 {{ event.location_name }}{% if event.address %} — {{ event.address }}{% endif %}</p>
+                <!--  -->
+                 <!-- Embedded Map Box -->
+                <div class="mt-4 w-full h-48 rounded-xl overflow-hidden border border-slate-200 shadow-sm relative z-10">
+                    <iframe 
+                        width="100%" 
+                        height="100%" 
+                        style="border:0;" 
+                        loading="lazy" 
+                        src="https://www.google.com/maps?q={{ event.address|urlencode|default:event.location_name|urlencode }}&output=embed">
+                    </iframe>
+                </div>
+                <!--  -->
                  <!-- Calendar Sync Actions -->
                 <div class="calendar-actions mt-4 flex flex-wrap justify-center items-center gap-3">
                     <!-- Google Calendar Button -->
@@ -540,6 +564,18 @@
                         <p class="mt-1 font-medium" style="color: {{ style_body }} !important;">{{ event.location_name }}</p>
                         {% if event.address %}<p class="text-xs mt-0.5" style="color: {{ style_muted }} !important;">{{ event.address }}</p>{% endif %}
                     </div>
+                    <!--  -->
+                    <!-- Embedded Map Box -->
+                    <div class="mt-4 w-full h-48 rounded-xl overflow-hidden border border-slate-200 shadow-sm relative z-10">
+                        <iframe 
+                            width="100%" 
+                            height="100%" 
+                            style="border:0;" 
+                            loading="lazy" 
+                            src="https://www.google.com/maps?q={{ event.address|urlencode|default:event.location_name|urlencode }}&output=embed">
+                        </iframe>
+                    </div>
+                    <!--  -->
                 </div>
                  <!-- Calendar Sync Actions -->
                 <div class="calendar-actions mt-4 flex flex-wrap justify-center items-center gap-3">
@@ -756,6 +792,8 @@
             </div>
         </div>
     {% endif %}
+
+    
 
 </div>
 

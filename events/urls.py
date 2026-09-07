@@ -31,6 +31,8 @@ urlpatterns = [
     
     # Host Live Attendance & Door Dashboard
     path('event/<slug:slug>/door/', views.event_door_dashboard, name='door_dashboard'),
+
+    path('features/', views.features_view, name='features_page'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,105 +1,108 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>{{ event.title }} - Door Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-slate-50 font-sans text-slate-900">
-    <div class="max-w-5xl mx-auto px-4 py-8">
+{% extends 'events/landing_base.html' %}
+{% load static %}
+
+{% block title %}{{ event.title }} - Door Dashboard{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'events/css/landing.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="door-dashboard-body">
+    <div class="door-dashboard-wrapper">
         
         <!-- Header -->
-        <div class="flex items-center justify-between mb-8 border-b border-slate-200 pb-4">
+        <div class="door-header-flex">
             <div>
-                <h1 class="text-2xl font-bold">{{ event.title }}</h1>
-                <p class="text-sm text-slate-500">Entrance & Check-In Control Center</p>
+                <h1 class="door-header-title">{{ event.title }}</h1>
+                <p class="door-header-subtitle">Entrance & Check-In Control Center</p>
             </div>
-            <a href="{% url 'events:event_rsvps_management' event.slug %}" class="px-4 py-2 bg-[#4F46E5] hover:bg-[#3730A3] text-white rounded-lg text-sm font-medium shadow-sm transition inline-flex items-center">
+            <a href="{% url 'events:event_rsvps_management' event.slug %}" class="door-back-btn">
                 &larr; Back to Event Dashboard
             </a>
         </div>
 
         <!-- Metrics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                <p class="text-xs font-semibold uppercase text-slate-400">Total RSVPs</p>
-                <p class="text-3xl font-bold text-slate-900 mt-1">{{ total_rsvps }}</p>
+        <div class="door-metrics-grid">
+            <div class="door-metric-card">
+                <p class="door-metric-label-total">Total RSVPs</p>
+                <p class="door-metric-value">{{ total_rsvps }}</p>
             </div>
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                <p class="text-xs font-semibold uppercase text-emerald-600">Checked In</p>
-                <p class="text-3xl font-bold text-emerald-700 mt-1">{{ checked_in_count }}</p>
+            <div class="door-metric-card">
+                <p class="door-metric-label-emerald">Checked In</p>
+                <p class="door-metric-value-emerald">{{ checked_in_count }}</p>
             </div>
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                <p class="text-xs font-semibold uppercase text-amber-600">Pending Arrival</p>
-                <p class="text-3xl font-bold text-amber-700 mt-1">{{ pending_count }}</p>
+            <div class="door-metric-card">
+                <p class="door-metric-label-amber">Pending Arrival</p>
+                <p class="door-metric-value-amber">{{ pending_count }}</p>
             </div>
         </div>
 
         <!-- Guest List Table with Search & Filter Bar -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <h3 class="font-bold text-slate-800">Attendee Check-In Roster</h3>
+        <div class="door-table-container">
+            <div class="door-filter-bar">
+                <h3 class="door-table-heading">Attendee Check-In Roster</h3>
                 
-                <form method="GET" class="flex w-full sm:w-auto items-center space-x-2">
-                    <input type="text" name="q" value="{{ search_query }}" placeholder="Search name or email..." class="px-3 py-1.5 border border-slate-300 rounded-lg text-sm w-full sm:w-60 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                <form method="GET" class="door-filter-form">
+                    <input type="text" name="q" value="{{ search_query }}" placeholder="Search name or email..." class="door-input-text">
                     
-                    <select name="status" class="px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    <select name="status" class="door-select">
                         <option value="">All Statuses</option>
                         <option value="checked_in" {% if status_filter == 'checked_in' %}selected{% endif %}>Checked In</option>
                         <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
                     </select>
 
-                    <button type="submit" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition">Filter</button>
+                    <button type="submit" class="door-filter-btn">Filter</button>
                 </form>
             </div>
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-sm">
+                <table class="door-table">
                     <thead>
-                        <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-xs tracking-wider">
-                            <th class="py-3 px-6">Guest Name</th>
-                            <th class="py-3 px-6">Status / Guests</th>
-                            <th class="py-3 px-6">Check-In Status</th>
-                            <th class="py-3 px-6 text-right">Action</th>
+                        <tr>
+                            <th>Guest Name</th>
+                            <th>Status / Guests</th>
+                            <th>Check-In Status</th>
+                            <th class="text-right">Action</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100">
+                    <tbody>
                         {% for rsvp in rsvps %}
-                        <tr class="hover:bg-slate-50/50">
-                            <td class="py-4 px-6">
-                                <div class="font-medium text-slate-900">{{ rsvp.full_name }}</div>
-                                <div class="text-xs text-slate-400">{{ rsvp.email|default:"No email" }}</div>
+                        <tr>
+                            <td>
+                                <div class="font-medium text-[var(--text-main)]">{{ rsvp.full_name }}</div>
+                                <div class="text-xs text-[var(--text-muted)]">{{ rsvp.email|default:"No email" }}</div>
                             </td>
-                            <td class="py-4 px-6">
-                                <span class="inline-block px-2.5 py-1 text-xs font-semibold rounded-full 
-                                    {% if rsvp.status == 'ATTENDING' %}bg-emerald-50 text-emerald-700 border border-emerald-200
-                                    {% elif rsvp.status == 'DECLINED' %}bg-rose-50 text-rose-700 border border-rose-200
-                                    {% else %}bg-amber-50 text-amber-700 border border-amber-200{% endif %}">
+                            <td>
+                                <span class="
+                                    {% if rsvp.status == 'ATTENDING' %}door-badge-attending
+                                    {% elif rsvp.status == 'DECLINED' %}door-badge-declined
+                                    {% else %}door-badge-pending{% endif %}">
                                     {{ rsvp.get_status_display }}
                                 </span>
                                 {% if rsvp.plus_ones_count > 0 %}
-                                    <span class="text-xs text-slate-500 ml-1">(+{{ rsvp.plus_ones_count }})</span>
+                                    <span class="text-xs text-[var(--text-muted)] ml-1">(+{{ rsvp.plus_ones_count }})</span>
                                 {% endif %}
                             </td>
-                            <td class="py-4 px-6">
+                            <td>
                                 {% if rsvp.checked_in %}
-                                    <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-100">
+                                    <span class="door-checkin-active">
                                         Checked In ({{ rsvp.checked_in_at|date:"H:i" }})
                                     </span>
                                 {% else %}
-                                    <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">
+                                    <span class="door-checkin-inactive">
                                         Not Arrived
                                     </span>
                                 {% endif %}
                             </td>
-                            <td class="py-4 px-6 text-right">
-                                <a href="{% url 'events:verify_checkin' event.slug rsvp.checkin_token %}" class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-3 py-1.5 rounded-lg text-xs transition">
+                            <td class="text-right">
+                                <a href="{% url 'events:verify_checkin' event.slug rsvp.checkin_token %}" class="door-action-btn">
                                     {% if rsvp.checked_in %}Re-verify{% else %}Check In{% endif %}
                                 </a>
                             </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="4" class="py-8 text-center text-slate-400">No matching guest records found.</td>
+                            <td colspan="4" class="py-8 text-center text-[var(--text-dimmed)] italic">No matching guest records found.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -108,5 +111,5 @@
         </div>
 
     </div>
-</body>
-</html>
+</main>
+{% endblock %}

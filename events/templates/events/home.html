@@ -1,10 +1,368 @@
-{% extends 'base.html' %}
+{% extends 'events/landing_base.html' %}
+{% load static %}
 
 {% block title %}Home | Manage My Event{% endblock %}
 
-{% block content %}
-<div class="max-w-4xl mx-auto my-12 p-8 bg-white rounded-xl shadow-sm border">
-    <h1 class="text-3xl font-bold mb-4">Welcome to Manage My Event</h1>
-    <p class="text-slate-600">Create, customize, and manage guest RSVPs effortlessly.</p>
-</div>
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'events/css/landing.css' %}">
 {% endblock %}
+
+{% block content %}
+<!-- Immersive Landing Container -->
+<div class="landing-container">
+
+    <!-- Ambient Hero Section -->
+    <section class="landing-hero-section">
+        <!-- Procedural Ambient Canvas -->
+        <canvas id="ambientHeroCanvas" class="ambient-canvas"></canvas>
+        
+        <!-- Ambient Glow Orbs (CSS Fallback & Depth Layers) -->
+        <div class="ambient-orb orb-primary"></div>
+        <div class="ambient-orb orb-secondary"></div>
+
+        <!-- Hero Content Layer -->
+        <div class="landing-hero-content">
+            <div class="hero-badge-wrapper">
+                <span class="card-tag tag-indigo">Next-Gen Event Architecture</span>
+            </div>
+            
+            <h1 class="hero-main-title">
+                Orchestrate Unforgettable <span class="text-gradient">Atmospheric Events</span>
+            </h1>
+            
+            <p class="hero-subtitle">
+                A precision-engineered platform combining high-performance guest management with immersive, groove-ambiance event design.
+            </p>
+
+            <div class="hero-action-group">
+                <a href="{% url 'register' %}" class="btn-glow">Start Hosting Free</a>
+                <a href="#features" class="btn-subtle">Explore Architecture</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Infinite Ambient Ticker Tape -->
+    <div class="ticker-wrapper">
+        <div class="animate-marquee ticker-track">
+            <span>✨ Zero Corporate Templates</span>
+            <span>•</span>
+            <span>📍 Live Embedded Maps</span>
+            <span>•</span>
+            <span>💬 Direct WhatsApp Chat</span>
+            <span>•</span>
+            <span>🎨 Fully Custom Theme Palettes</span>
+            <span>•</span>
+            <span>⚡ Built for Modern Communities</span>
+            <span>•</span>
+            <span>🚀 Skip Eventbrite Friction</span>
+            <span>•</span>
+            <span>✨ Zero Corporate Templates</span>
+            <span>•</span>
+            <span>📍 Live Embedded Maps</span>
+            <span>•</span>
+            <span>💬 Direct WhatsApp Chat</span>
+            <span>•</span>
+            <span>🎨 Fully Custom Theme Palettes</span>
+            <span>•</span>
+            <span>⚡ Built for Modern Communities</span>
+            <span>•</span>
+            <span>🚀 Skip Eventbrite Friction</span>
+        </div>
+    </div>
+
+    <!-- Animated Atmospheric Bento Section -->
+    <section class="bento-section animated-atmosphere-section">
+        <div class="section-header">
+            <h2 class="section-title">Designed for Atmosphere</h2>
+            <p class="section-subtitle">Every element is engineered to pull your guests into the mood before they even arrive.</p>
+        </div>
+
+        <div class="bento-grid">
+            <!-- Card 1: Cinematic Video Loop -->
+            <div class="bento-card bento-span-2 video-card" style="background-image: linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.85)), url('https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center;">
+                <div class="card-gradient-overlay"></div>
+                <div class="card-video-wrapper">
+                    <video autoplay muted loop playsinline class="card-video">
+                        <source src="https://assets.mixkit.co/videos/preview/mixkit-digital-animation-of-screens-and-lights-31911-large.mp4" type="video/mp4">
+                    </video>
+                </div>
+                <div class="card-content-relative">
+                    <span class="card-tag tag-indigo">Adaptive Architecture</span>
+                    <h3 class="card-title">Fluid Composition Engines for Immersive Event Identity</h3>
+                    <p class="card-description">Seamlessly toggle between striking split-screen storytelling, centered focal cards, and raw minimalist art direction.</p>
+                </div>
+            </div>
+
+            <!-- Card 2: Interactive Map Integration -->
+            <div class="bento-card map-card" style="background-image: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.9)), url('https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=800&q=80'); background-size: cover; background-position: center;">
+                <div class="card-ambient-blob"></div>
+                <div class="card-content-relative">
+                    <span class="card-tag tag-purple">Precision Location</span>
+                    <h3 class="card-title">Live Map Embeds</h3>
+                    <p class="card-description">Give attendees exact context with integrated mapping right inside your event details.</p>
+                </div>
+                <div class="map-mockup-box">
+                    <div class="map-icon">📍</div>
+                    <div class="map-text">
+                        <p class="map-title-text">Coordinates Loaded</p>
+                        <p class="map-sub-text">Zero setup friction</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: Host Connection -->
+            <div class="bento-card host-card" style="background-image: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.92)), url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80'); background-size: cover; background-position: center;">
+                <div class="card-content-relative">
+                    <span class="card-tag tag-emerald">Direct Comms</span>
+                    <h3 class="card-title">WhatsApp & Phone Integration</h3>
+                    <p class="card-description">Bridge the gap between host and guest instantly with native messaging links.</p>
+                </div>
+                <div class="card-content-relative pt-6">
+                    <div class="chat-ready-badge">
+                        <span class="badge-ping-dot"></span>
+                        Active Chat Ready
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4: Aesthetic Freedom -->
+            <div class="bento-card bento-span-2 palette-card" style="background-image: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.9)), url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center;">
+                <div class="card-ambient-blob-pink"></div>
+                <div class="card-content-relative">
+                    <span class="card-tag tag-pink">Total Customization</span>
+                    <h3 class="card-title">Your Palette, Your Rules</h3>
+                    <p class="card-description">Control primary accents, background tones, and typography styling without touching a line of CSS.</p>
+                </div>
+                <div class="card-content-relative palette-circles">
+                    <div class="circle-indigo"></div>
+                    <div class="circle-purple"></div>
+                    <div class="circle-pink"></div>
+                    <div class="circle-slate"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!--  -->
+   
+    <!--  -->
+
+    <!-- Deep Scroll Narrative -->
+    <section class="narrative-section" style="background-image: linear-gradient(to bottom, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.98)), url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1000&q=80'); background-size: cover; background-position: center;">
+        <div class="narrative-container">
+            <div class="narrative-text-side">
+                <span class="card-tag tag-pink">Why Hosts Switch</span>
+                <h2 class="narrative-heading">
+                    Traditional ticketing platforms treat your event like paperwork.
+                </h2>
+                <p class="narrative-body">
+                    Eventbrite and legacy directories lock you into standardized white-label boxes that kill your brand identity. Guests fill out a dry form and leave. 
+                </p>
+                <p class="narrative-body">
+                    Our platform builds anticipation from the moment someone opens your link. Immersive visuals, clean map guidance, and direct host communication lines turn attendees into a true community.
+                </p>
+                <div class="pt-2">
+                    <a href="{% url 'events:create_event' %}" class="narrative-link">
+                        Experience the Builder 
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="narrative-comparison-grid">
+                <div class="comparison-card legacy-card">
+                    <div class="comparison-header">
+                        <span class="comparison-tag-rose">Legacy Platforms</span>
+                        <span class="comparison-sub">Rigid & Clinical</span>
+                    </div>
+                    <p class="comparison-desc">Standard white backgrounds, forced logos, zero theme control, and buried venue coordinates.</p>
+                </div>
+                <div class="comparison-card platform-card">
+                    <div class="comparison-badge">Your Platform</div>
+                    <div class="comparison-header">
+                        <span class="comparison-tag-indigo">Atmospheric Engine</span>
+                        <span class="comparison-sub-indigo">Immersive & Branded</span>
+                    </div>
+                    <p class="comparison-desc-light">Custom color palettes, live embedded map cards, WhatsApp quick-chat hooks, and split aesthetic layouts.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Ambient Community Wall with Scroll & Hover Animations -->
+    <section class="bento-section animated-community-section">
+        <div class="section-header-compact">
+            <span class="card-tag tag-indigo">Community Vibe</span>
+            <h2 class="section-title">Crafted for Creators & Organizers</h2>
+        </div>
+
+        <div class="bento-grid">
+            <div class="testimonial-card">
+                <p class="testimonial-text">"Switching our workshop links over to custom split-screen layouts completely changed how people talk about our events before walking through the door."</p>
+                <div class="testimonial-author-box">
+                    <div class="avatar-indigo" style="width: 3.5rem; height: 3.5rem; border-radius: var(--radius-full); background-image: url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=90'); background-size: cover; background-position: center; color: transparent;">SK</div>
+                    <div class="author-info">
+                        <p class="author-name">Sasha K.</p>
+                        <p class="author-role">Community Curator</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <p class="testimonial-text">"The live map preview and direct host messaging eliminated 90% of the usual 'where is the venue?' text messages on event day."</p>
+                <div class="testimonial-author-box">
+                    <div class="avatar-purple" style="width: 3.5rem; height: 3.5rem; border-radius: var(--radius-full); background-image: url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=90'); background-size: cover; background-position: center; color: transparent;">DM</div>
+                    <div class="author-info">
+                        <p class="author-name">Darius M.</p>
+                        <p class="author-role">Underground Producer</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <p class="testimonial-text">"It feels like Partiful meets professional branding. Clean, fast, and completely free from corporate bloat."</p>
+                <div class="testimonial-author-box">
+                    <div class="avatar-pink" style="width: 3.5rem; height: 3.5rem; border-radius: var(--radius-full); background-image: url('https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=90'); background-size: cover; background-position: center; color: transparent;">EL</div>
+                    <div class="author-info">
+                        <p class="author-name">Elena L.</p>
+                        <p class="author-role">Tech Meetup Organizer</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!--  -->
+
+    <!-- Bottom Action CTA Banner -->
+    <section class="cta-banner">
+        <div class="cta-container">
+            <h2 class="section-title">Ready to build your next event?</h2>
+            <p class="section-subtitle-wide">Launch a fully customized event space in under two minutes. No rigid forms, just pure atmosphere.</p>
+            <div class="pt-4">
+                <a href="{% url 'events:create_event' %}" class="btn-primary inline-block">
+                    Create Event Now
+                </a>
+            </div>
+        </div>
+    </section>
+
+</div>
+<!-- Ambient Canvas Animation Engine -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const canvas = document.getElementById('ambientHeroCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let particles = [];
+        const particleCount = 45;
+        
+        let mouse = { x: null, y: null, radius: 150 };
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        window.addEventListener('mouseout', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        function resize() {
+            width = canvas.width = canvas.offsetWidth;
+            height = canvas.height = canvas.offsetHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                // Increased base velocity multipliers for a livelier drift
+                this.vx = (Math.random() - 0.5) * 1.2;
+                this.vy = (Math.random() - 0.5) * 1.2;
+                this.size = Math.random() * 2 + 1;
+                this.alpha = Math.random() * 0.5 + 0.3;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+
+                // Snappier mouse repulsion response
+                if (mouse.x !== null && mouse.y !== null) {
+                    let dx = mouse.x - this.x;
+                    let dy = mouse.y - this.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < mouse.radius) {
+                        let angle = Math.atan2(dy, dx);
+                        this.x -= Math.cos(angle) * 2.0;
+                        this.y -= Math.sin(angle) * 2.0;
+                    }
+                }
+            }
+
+            draw() {
+                ctx.fillStyle = `rgba(129, 140, 248, ${this.alpha})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function connectParticles() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    let dx = particles[i].x - particles[j].x;
+                    let dy = particles[i].y - particles[j].y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 130) {
+                        let alpha = (1 - (dist / 130)) * 0.2;
+                        ctx.strokeStyle = `rgba(99, 102, 241, ${alpha})`;
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            connectParticles();
+            requestAnimationFrame(animate);
+        }
+
+        initParticles();
+        animate();
+    });
+</script>
+
+{% endblock %}
+
+
+
+
