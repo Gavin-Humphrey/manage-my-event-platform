@@ -1,0 +1,44 @@
+{% extends 'events/landing_base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/css/landing.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="legal-page-container">
+    <main class="legal-wrapper">
+        <h1>Terms of Service & Master User Agreement</h1>
+        <div class="legal-updated">Last Updated: September 7, 2026 | Binding Legal Contract</div>
+
+        <p>Please read these Terms of Service ("Terms", "Agreement") carefully before accessing or utilizing our event invitation platform ("Service"). By registering an account, provisioning an event, or interacting with the software architecture, you enter into a legally binding contract with us. If you do not agree to every provision herein, you must immediately terminate use of the platform.</p>
+
+        <h2>Article I: Acceptance and Eligibility</h2>
+        <p>By using the Service, you warrant and represent that you are at least eighteen (18) years of age, possess full legal capacity to enter into binding contracts, and are not barred from receiving services under the laws of the United States, France, or other applicable jurisdictions.</p>
+
+        <h2>Article II: Account Registration and Security Obligations</h2>
+        <ul>
+            <li><strong>Credential Confidentiality:</strong> You are solely responsible for maintaining the strict confidentiality of your password and administrative credentials. Any actions executed under your account session are attributed directly to you.</li>
+            <li><strong>Immediate Breach Notification:</strong> You covenant to notify our engineering administration immediately upon discovering any unauthorized security breach, session hijacking, or compromise of your account parameters.</li>
+            <li><strong>Account Termination:</strong> We reserve the right to suspend, freeze, or terminate accounts instantly, without prior notice, if structural abuse, credential sharing, or malicious operational activity is detected.</li>
+        </ul>
+
+        <h2>Article III: Acceptable Use Policy and Prohibited Conduct</h2>
+        <p>You agree to utilize the platform strictly for lawful event planning, guest coordination, and administrative functions. You explicitly covenant <strong>not</strong> to engage in any of the following prohibited actions:</p>
+        <ul>
+            <li>Transmitting unsolicited commercial email (spam), phishing payloads, or deceptive invitations designed to harvest unauthorized third-party credentials.</li>
+            <li>Deploying automated scrapers, denial-of-service (DoS) scripts, SQL injection vectors, or unauthorized load-testing tools against our production infrastructure.</li>
+            <li>Hosting or distributing malicious files, viruses, trojans, or content that infringes upon the intellectual property, copyright, trademark, or privacy rights of third parties.</li>
+        </ul>
+
+        <h2>Article IV: Intellectual Property and Proprietary Rights</h2>
+        <p>All core software architecture, underlying database schemas, brand identities, custom Cascading Style Sheets (CSS), UI animations, and proprietary source code remain the exclusive intellectual property of the Platform. Users retain full copyright ownership over original user-generated event text and imagery uploaded to their independent event pages, granting the Platform a limited, non-exclusive license solely to host and render those assets.</p>
+
+        <h2>Article V: Limitation of Liability and Indemnification</h2>
+        <p>To the maximum extent permitted by applicable law, the Service is provided on an "AS IS" and "AS AVAILABLE" basis without warranties of any kind, whether express or implied. We disclaim all liability for unexpected service interruptions, database latency spikes, or third-party email delivery failures. You agree to indemnify, defend, and hold harmless the Platform, its developers, and corporate affiliates from any claims, liabilities, or expenses (including legal fees) arising from your breach of these Terms or misuse of the software.</p>
+
+        <h2>Article VI: Governing Law and Dispute Resolution</h2>
+        <p>This Agreement shall be governed by and construed in accordance with the laws of the jurisdiction where our primary corporate entity is registered, without regard to conflict of law principles. Any legal disputes arising out of these Terms shall be resolved exclusively through binding arbitration or competent courts within said jurisdiction.</p>
+    </main>
+</div>
+{% endblock %}

@@ -108,7 +108,7 @@
                 </div>
                 <p class="text-[11px] text-slate-400 mt-1 pl-7">Enables a dedicated text field on your public RSVP form for personal notes, displayed via a scrolling carousel on your event dashboard.</p>
             </div>
-            <!-- /////////// -->
+
             <!-- Enable QR Check-ins Checkbox -->
                 <div class="flex items-center space-x-3 mt-4">
                     {{ form.enable_qr_checkins }}
@@ -221,19 +221,26 @@
 
                 <!-- Color Palette & Background Controls -->
                 <div class="space-y-3 pt-4 border-t border-slate-100">
-                    <span class="block text-xs font-bold text-slate-600 uppercase tracking-wide">Color & Background Theme</span>
+                    <div class="flex items-center justify-between">
+                        <span class="block text-xs font-bold text-slate-600 uppercase tracking-wide">Color & Background Theme</span>
+                        <span class="text-[10px] text-indigo-600 font-medium">✨ Use dropdown choices or click the palette icon for custom hex codes</span>
+                    </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <!-- Primary Accent Color Picker -->
                         <div class="space-y-1">
-                            <label for="{{ form.theme_color.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                            <label for="{{ form.theme_color.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1 flex items-center justify-between">
                                 Primary Accent
+                                <button type="button" class="text-[10px] text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1" onclick="toggleColorPicker(this)">
+                                    🎨 Custom
+                                </button>
                             </label>
-                            <div class="flex items-center gap-3">
+                            <div class="relative">
                                 {{ form.theme_color }}
-                                <span class="text-xs text-slate-500 font-mono" id="theme_color_hex_display">
-                                    {{ form.theme_color.value|default:'#3b82f6' }}
-                                </span>
+                                <div class="custom-palette-popup absolute right-0 top-0 mt-1 z-20 bg-slate-900 border border-indigo-500/30 rounded-lg p-2 shadow-xl hidden items-center gap-2">
+                                    <input type="color" class="w-7 h-7 rounded border-0 cursor-pointer bg-transparent" onchange="applyCustomHex(this)">
+                                    <span class="text-xs font-mono text-slate-300 hex-label">#3b82f6</span>
+                                </div>
                             </div>
                             {% if form.theme_color.errors %}
                                 <p class="text-xs text-red-600 mt-1">{{ form.theme_color.errors.0 }}</p>
@@ -242,10 +249,19 @@
 
                         <!-- Page Background Dropdown -->
                         <div class="space-y-1">
-                            <label for="{{ form.page_bg_color.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                            <label for="{{ form.page_bg_color.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1 flex items-center justify-between">
                                 Page Background
+                                <button type="button" class="text-[10px] text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1" onclick="toggleColorPicker(this)">
+                                    🎨 Custom
+                                </button>
                             </label>
-                            {{ form.page_bg_color }}
+                            <div class="relative">
+                                {{ form.page_bg_color }}
+                                <div class="custom-palette-popup absolute right-0 top-0 mt-1 z-20 bg-slate-900 border border-indigo-500/30 rounded-lg p-2 shadow-xl hidden items-center gap-2">
+                                    <input type="color" class="w-7 h-7 rounded border-0 cursor-pointer bg-transparent" onchange="applyCustomHex(this)">
+                                    <span class="text-xs font-mono text-slate-300 hex-label">#0f172a</span>
+                                </div>
+                            </div>
                             {% if form.page_bg_color.errors %}
                                 <p class="text-xs text-red-600 mt-1">{{ form.page_bg_color.errors.0 }}</p>
                             {% endif %}
@@ -253,10 +269,19 @@
 
                         <!-- Section / Card Background Dropdown -->
                         <div class="space-y-1">
-                            <label for="{{ form.section_bg_color.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                            <label for="{{ form.section_bg_color.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1 flex items-center justify-between">
                                 Section / Card Color
+                                <button type="button" class="text-[10px] text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1" onclick="toggleColorPicker(this)">
+                                    🎨 Custom
+                                </button>
                             </label>
-                            {{ form.section_bg_color }}
+                            <div class="relative">
+                                {{ form.section_bg_color }}
+                                <div class="custom-palette-popup absolute right-0 top-0 mt-1 z-20 bg-slate-900 border border-indigo-500/30 rounded-lg p-2 shadow-xl hidden items-center gap-2">
+                                    <input type="color" class="w-7 h-7 rounded border-0 cursor-pointer bg-transparent" onchange="applyCustomHex(this)">
+                                    <span class="text-xs font-mono text-slate-300 hex-label">#ffffff</span>
+                                </div>
+                            </div>
                             {% if form.section_bg_color.errors %}
                                 <p class="text-xs text-red-600 mt-1">{{ form.section_bg_color.errors.0 }}</p>
                             {% endif %}
@@ -266,30 +291,57 @@
                     <!-- Typography Color Controls -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3">
                         <div class="space-y-1">
-                            <label for="{{ form.heading_color.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                            <label for="{{ form.heading_color.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1 flex items-center justify-between">
                                 Heading Color
+                                <button type="button" class="text-[10px] text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1" onclick="toggleColorPicker(this)">
+                                    🎨 Custom
+                                </button>
                             </label>
-                            {{ form.heading_color }}
+                            <div class="relative">
+                                {{ form.heading_color }}
+                                <div class="custom-palette-popup absolute right-0 top-0 mt-1 z-20 bg-slate-900 border border-indigo-500/30 rounded-lg p-2 shadow-xl hidden items-center gap-2">
+                                    <input type="color" class="w-7 h-7 rounded border-0 cursor-pointer bg-transparent" onchange="applyCustomHex(this)">
+                                    <span class="text-xs font-mono text-slate-300 hex-label">#0f172a</span>
+                                </div>
+                            </div>
                             {% if form.heading_color.errors %}
                                 <p class="text-xs text-red-600 mt-1">{{ form.heading_color.errors.0 }}</p>
                             {% endif %}
                         </div>
 
                         <div class="space-y-1">
-                            <label for="{{ form.body_color.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                            <label for="{{ form.body_color.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1 flex items-center justify-between">
                                 Body Text Color
+                                <button type="button" class="text-[10px] text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1" onclick="toggleColorPicker(this)">
+                                    🎨 Custom
+                                </button>
                             </label>
-                            {{ form.body_color }}
+                            <div class="relative">
+                                {{ form.body_color }}
+                                <div class="custom-palette-popup absolute right-0 top-0 mt-1 z-20 bg-slate-900 border border-indigo-500/30 rounded-lg p-2 shadow-xl hidden items-center gap-2">
+                                    <input type="color" class="w-7 h-7 rounded border-0 cursor-pointer bg-transparent" onchange="applyCustomHex(this)">
+                                    <span class="text-xs font-mono text-slate-300 hex-label">#475569</span>
+                                </div>
+                            </div>
                             {% if form.body_color.errors %}
                                 <p class="text-xs text-red-600 mt-1">{{ form.body_color.errors.0 }}</p>
                             {% endif %}
                         </div>
 
                         <div class="space-y-1">
-                            <label for="{{ form.muted_color.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                            <label for="{{ form.muted_color.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1 flex items-center justify-between">
                                 Muted Text Color
+                                <button type="button" class="text-[10px] text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1" onclick="toggleColorPicker(this)">
+                                    🎨 Custom
+                                </button>
                             </label>
-                            {{ form.muted_color }}
+                            <div class="relative">
+                                {{ form.muted_color }}
+                                <div class="custom-palette-popup absolute right-0 top-0 mt-1 z-20 bg-slate-900 border border-indigo-500/30 rounded-lg p-2 shadow-xl hidden items-center gap-2">
+                                    <input type="color" class="w-7 h-7 rounded border-0 cursor-pointer bg-transparent" onchange="applyCustomHex(this)">
+                                    <span class="text-xs font-mono text-slate-300 hex-label">#94a3b8</span>
+                                </div>
+                            </div>
                             {% if form.muted_color.errors %}
                                 <p class="text-xs text-red-600 mt-1">{{ form.muted_color.errors.0 }}</p>
                             {% endif %}
@@ -324,31 +376,31 @@
             </div>
 
             <!--  -->
-        <!-- Organizer Contact Footer Configuration -->
-        <div class="space-y-3 pt-4 border-t border-slate-100">
-            <span class="block text-xs font-bold text-slate-600 uppercase tracking-wide">Questions or Enquiries?</span>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <!-- <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">Organizer Name</label>
-                    <input type="text" name="organizer_name" value="{{ form.instance.theme_settings.organizer_contacts.name }}" placeholder="e.g. Jane Doe" class="w-full px-3 py-1.5 border rounded-lg text-sm bg-white">
-                </div> -->
-                <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">Phone Number</label>
-                    <input type="text" name="organizer_phone" value="{{ form.instance.theme_settings.organizer_contacts.phone }}" placeholder="+33 6 00 00 00 00" class="w-full px-3 py-1.5 border rounded-lg text-sm bg-white">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-700 mb-1">WhatsApp Number</label>
-                    <input type="text" name="organizer_whatsapp" value="{{ form.instance.theme_settings.organizer_contacts.whatsapp }}" placeholder="+33600000000" class="w-full px-3 py-1.5 border rounded-lg text-sm bg-white">
+            <!-- Organizer Contact Footer Configuration -->
+            <div class="space-y-3 pt-4 border-t border-slate-100">
+                <span class="block text-xs font-bold text-slate-600 uppercase tracking-wide">Questions or Enquiries?</span>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <!-- <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Organizer Name</label>
+                        <input type="text" name="organizer_name" value="{{ form.instance.theme_settings.organizer_contacts.name }}" placeholder="e.g. Jane Doe" class="w-full px-3 py-1.5 border rounded-lg text-sm bg-white">
+                    </div> -->
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Phone Number</label>
+                        <input type="text" name="organizer_phone" value="{{ form.instance.theme_settings.organizer_contacts.phone }}" placeholder="+33 6 00 00 00 00" class="w-full px-3 py-1.5 border rounded-lg text-sm bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">WhatsApp Number</label>
+                        <input type="text" name="organizer_whatsapp" value="{{ form.instance.theme_settings.organizer_contacts.whatsapp }}" placeholder="+33600000000" class="w-full px-3 py-1.5 border rounded-lg text-sm bg-white">
+                    </div>
                 </div>
             </div>
-        </div>
-        <!--  -->
+            <!--  -->
 
-            <!-- Submit Button -->
-            <button type="submit" class="w-full py-3.5 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition cursor-pointer">
-                {% if form.instance.pk %}Update Event Details{% else %}Save Event & Publish Page{% endif %}
-            </button>
-        </form>
+                <!-- Submit Button -->
+                <button type="submit" class="w-full py-3.5 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition cursor-pointer">
+                    {% if form.instance.pk %}Update Event Details{% else %}Save Event & Publish Page{% endif %}
+                </button>
+            </form>
 
     
         <!-- Footer / Navigation -->
@@ -490,5 +542,39 @@
             }
         }
     });
+
+    ////CUSTOM COLOR PALLETE
+    function toggleColorPicker(btn) {
+        const wrapper = btn.closest('.space-y-1');
+        const popup = wrapper.querySelector('.custom-palette-popup');
+        // Toggle display
+        popup.classList.toggle('hidden');
+        popup.classList.toggle('flex');
+    }
+
+    function applyCustomHex(colorInput) {
+        const hex = colorInput.value;
+        const popup = colorInput.closest('.custom-palette-popup');
+        const wrapper = colorInput.closest('.space-y-1');
+        const hexLabel = popup.querySelector('.hex-label');
+        hexLabel.textContent = hex;
+
+        const selectField = wrapper.querySelector('select, input[type="text"]');
+        if (selectField) {
+            if (selectField.tagName === 'SELECT') {
+                let existingOpt = Array.from(selectField.options).find(opt => opt.value.toLowerCase() === hex.toLowerCase());
+                if (!existingOpt) {
+                    let newOpt = new Option(hex + ' (Custom)', hex);
+                    selectField.add(newOpt);
+                }
+            }
+            selectField.value = hex;
+            selectField.dispatchEvent(new Event('change'));
+        }
+        
+        // Hide popup after picking
+        popup.classList.add('hidden');
+        popup.classList.remove('flex');
+    }
 </script>
 {% endblock %}

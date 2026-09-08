@@ -1,0 +1,47 @@
+{% extends 'events/landing_base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/css/landing.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="legal-page-container">
+    <main class="legal-wrapper">
+        <h1>Cookie Settings & Preference Center</h1>
+        <div class="legal-updated">Manage tracking authorizations and data storage preferences.</div>
+
+        <p>In compliance with modern privacy directives, we provide granular control over the data cookies stored on your local browser. You may adjust or revoke your consent preferences at any time below.</p>
+
+        <h2>Article I: Cookie Classification Architecture</h2>
+        <p>Our platform categorizes browser storage cookies based on operational necessity, functional requirement, and analytical tracking purpose:</p>
+
+        <div class="cookie-toggle-box">
+            <div>
+                <strong>Essential Authentication & Security Cookies</strong>
+                <p>Required for core platform functionality, CSRF tokens, secure session management, and encrypted database handshakes.</p>
+            </div>
+            <span>Always Active</span>
+        </div>
+
+        <div class="cookie-toggle-box">
+            <div>
+                <strong>Analytics & Performance Telemetry</strong>
+                <p>Allows us to anonymously measure page load speeds, track aggregate interaction metrics, and debug event invitation workflows.</p>
+            </div>
+            <input type="checkbox" checked style="transform: scale(1.3); accent-color: var(--accent-indigo); cursor: pointer;">
+        </div>
+
+        <div class="cookie-toggle-box">
+            <div>
+                <strong>Personalization & UI Preferences</strong>
+                <p>Stores custom theme choices, layout configurations, and localized session tokens to streamline your return visits.</p>
+            </div>
+            <input type="checkbox" checked style="transform: scale(1.3); accent-color: var(--accent-indigo); cursor: pointer;">
+        </div>
+
+        <h2>Article II: Browser-Level Exclusions</h2>
+        <p>You retain the ultimate authority to clear, block, or restrict cookies entirely through your browser's global security parameters (e.g., Chrome, Safari, Firefox). Note that disabling essential cookies may degrade core authentication workflows and prevent successful login sessions.</p>
+    </main>
+</div>
+{% endblock %}

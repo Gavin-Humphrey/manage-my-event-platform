@@ -84,6 +84,30 @@
           <p class="dashboard-metric-value dashboard-metric-success">{{ total_headcount }}</p>
         </div>
       </div>
+      {% if event.max_capacity %}
+        <div class="dashboard-metric-card">
+            <div class="dashboard-metric-icon-wrap 
+                {% if capacity_status == 'full' %}rose-glow
+                {% elif capacity_status == 'warning' %}amber-glow
+                {% else %}emerald-glow{% endif %}"
+                {% if capacity_status == 'full' %}style="color: #f87171 !important;"
+                {% elif capacity_status == 'warning' %}style="color: #fbbf24 !important;"
+                {% elif capacity_status == 'safe' %}style="color: #34d399 !important;"
+                {% endif %}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+            </div>
+            <div>
+                <p class="dashboard-metric-label">Max Capacity</p>
+                <p class="dashboard-metric-value 
+                    {% if capacity_status == 'safe' %}dashboard-metric-success{% endif %}"
+                    {% if capacity_status == 'full' %}style="color: #f87171 !important;"
+                    {% elif capacity_status == 'warning' %}style="color: #fbbf24 !important;"
+                    {% endif %}>
+                    {{ event.max_capacity }}
+                </p>
+            </div>
+        </div>
+    {% endif %}
     </div>
 
     <!-- RSVP List Table Card -->

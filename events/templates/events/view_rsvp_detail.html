@@ -9,7 +9,13 @@
       <div>
         <h1 class="rsvp-title">{{ rsvp.first_name }} {{ rsvp.last_name }}</h1>
         <p class="rsvp-meta-text">{{ rsvp.email|default:"No email provided" }}</p>
-        <p class="rsvp-meta-text">{{ rsvp.phone|default:"No phone provided" }}</p> 
+        <p class="rsvp-meta-text">
+          {% if rsvp.phone %}
+            {{ rsvp.phone|cut:"OTHER "|cut:"OTHER" }}
+          {% else %}
+            No phone provided
+          {% endif %}
+        </p>
       </div>
       
       <span class="rsvp-status-badge 

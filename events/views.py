@@ -436,6 +436,15 @@ def event_rsvps_management(request, slug):
     )['total']
     total_headcount += (extra or 0)
 
+    capacity_ratio = (total_headcount / event.max_capacity) if event.max_capacity and event.max_capacity > 0 else 0
+
+    if total_headcount >= event.max_capacity:
+        capacity_status = 'full'      # Red
+    elif capacity_ratio >= 0.8:
+        capacity_status = 'warning'   # Orange (80%+ full)
+    else:
+        capacity_status = 'safe'      # Green
+
     context = {
         'event': event,
         'rsvps': rsvps,
@@ -444,6 +453,7 @@ def event_rsvps_management(request, slug):
         'total_rsvps': total_rsvps,
         'attending_count': attending_count,
         'total_headcount': total_headcount,
+        'capacity_status': capacity_status,
     }
     return render(request, 'events/event_rsvps_management.html', context)
 
@@ -633,3 +643,27 @@ def event_door_dashboard(request, slug):
 
 def features_view(request):
     return render(request, 'events/features_page.html')
+
+def event_cookies (request):
+    return render(request, 'legal/cookies.html')
+
+def event_privacy(request):
+    return render(request, 'legal/privacy.html')
+
+def event_terms(request):
+    return render(request, 'legal/terms.html')
+# 
+def conference(request):
+    return render(request, 'solutions/conference.html')
+
+def gig(request):
+    return render(request, 'solutions/gig.html')
+
+def live_stream(request):
+    return render(request, 'solutions/live_stream.html')
+
+def private_event(request):
+    return render(request, 'solutions/private_event.html')
+
+def summit(request):
+    return render(request, 'solutions/summit.html')

@@ -186,8 +186,7 @@ class RSVP(models.Model):
         img.save(buffer, format="PNG")
         encoded_img = base64.b64encode(buffer.getvalue()).decode('utf-8')
         return f"data:image/png;base64,{encoded_img}"
-
-
+    
 
 class RSVPGuest(models.Model):
     rsvp = models.ForeignKey(RSVP, on_delete=models.CASCADE, related_name='plus_ones')

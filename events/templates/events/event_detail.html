@@ -564,7 +564,8 @@
                         <p class="mt-1 font-medium" style="color: {{ style_body }} !important;">{{ event.location_name }}</p>
                         {% if event.address %}<p class="text-xs mt-0.5" style="color: {{ style_muted }} !important;">{{ event.address }}</p>{% endif %}
                     </div>
-                    <!--  -->
+                </div>
+                <!--  -->
                     <!-- Embedded Map Box -->
                     <div class="mt-4 w-full h-48 rounded-xl overflow-hidden border border-slate-200 shadow-sm relative z-10">
                         <iframe 
@@ -576,7 +577,6 @@
                         </iframe>
                     </div>
                     <!--  -->
-                </div>
                  <!-- Calendar Sync Actions -->
                 <div class="calendar-actions mt-4 flex flex-wrap justify-center items-center gap-3">
                     <!-- Google Calendar Button -->
@@ -931,7 +931,7 @@
                         container.classList.remove('hidden');
                         const labelTitle = document.createElement('label');
                         labelTitle.className = 'block text-xs font-semibold uppercase mb-1';
-                        labelTitle.style.color = '{{ style_muted }}';
+                        labelTitle.style.color = '{{ event.theme_settings.muted_color|default:"#94a3b8" }}';
                         labelTitle.innerText = 'Additional Guest Name(s)';
                         container.appendChild(labelTitle);
 
@@ -945,7 +945,9 @@
                             nameInput.placeholder = `Guest ${i} Full Name *`;
                             nameInput.required = true;
                             nameInput.className = 'w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none';
-                            nameInput.style.cssText = `color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;`;
+                            
+                            // Pull directly from event.theme_settings with safe fallbacks
+                            nameInput.style.cssText = `color: {{ event.theme_settings.body_color|default:'#475569' }} !important; background-color: {{ event.theme_settings.section_bg_color|default:'#ffffff' }} !important;`;
                             
                             inputWrapper.appendChild(nameInput);
                             container.appendChild(inputWrapper);
@@ -956,6 +958,7 @@
                 });
             }
         });
+
     });
 
     //PREFIX
@@ -975,7 +978,6 @@
             toggleCustom();
         }
     });
-
 
     // Max-capacity
     /// plus_ones_count

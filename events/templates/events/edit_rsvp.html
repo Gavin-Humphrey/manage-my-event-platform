@@ -15,20 +15,47 @@
       
       {{ form.non_field_errors }}
 
-      {% for field in form %}
+      <!-- Explicitly render fields instead of a blind loop to keep phone and prefix inputs aligned -->
       <div class="rsvp-form-group">
-        <label class="rsvp-form-label" for="{{ field.id_for_label }}">
-          {{ field.label }}
-        </label>
-        {{ field|add_class:"rsvp-form-input" }}
-        {% if field.help_text %}
-          <p class="rsvp-field-help">{{ field.help_text }}</p>
-        {% endif %}
-        {% for error in field.errors %}
-          <p class="rsvp-field-error">{{ error }}</p>
-        {% endfor %}
+        <label class="rsvp-form-label" for="{{ form.first_name.id_for_label }}">First Name *</label>
+        {{ form.first_name|add_class:"rsvp-form-input" }}
+        {% for error in form.first_name.errors %}<p class="rsvp-field-error">{{ error }}</p>{% endfor %}
       </div>
-      {% endfor %}
+
+      <div class="rsvp-form-group">
+        <label class="rsvp-form-label" for="{{ form.last_name.id_for_label }}">Last Name *</label>
+        {{ form.last_name|add_class:"rsvp-form-input" }}
+        {% for error in form.last_name.errors %}<p class="rsvp-field-error">{{ error }}</p>{% endfor %}
+      </div>
+
+      <div class="rsvp-form-group">
+        <label class="rsvp-form-label" for="{{ form.email.id_for_label }}">Email</label>
+        {{ form.email|add_class:"rsvp-form-input" }}
+        {% for error in form.email.errors %}<p class="rsvp-field-error">{{ error }}</p>{% endfor %}
+      </div>
+
+      <div class="rsvp-form-group">
+        <label class="rsvp-form-label" for="{{ form.status.id_for_label }}">Attendance Status *</label>
+        {{ form.status|add_class:"rsvp-form-input" }}
+        {% for error in form.status.errors %}<p class="rsvp-field-error">{{ error }}</p>{% endfor %}
+      </div>
+
+      <!-- Clean Phone Number & Prefix Grid Grouping -->
+      <div class="rsvp-form-group">
+        <label class="rsvp-form-label">Phone Number & Prefix</label>
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+            <div class="sm:col-span-1">{{ form.phone_prefix|add_class:"rsvp-form-input w-full" }}</div>
+            <div class="sm:col-span-1">{{ form.custom_phone_prefix|add_class:"rsvp-form-input w-full" }}</div>
+            <div class="sm:col-span-2">{{ form.phone|add_class:"rsvp-form-input w-full" }}</div>
+        </div>
+        {% for error in form.phone.errors %}<p class="rsvp-field-error">{{ error }}</p>{% endfor %}
+      </div>
+
+      <div class="rsvp-form-group">
+        <label class="rsvp-form-label" for="{{ form.dietary_restrictions.id_for_label }}">Dietary Restrictions / Notes</label>
+        {{ form.dietary_restrictions|add_class:"rsvp-form-input" }}
+        {% for error in form.dietary_restrictions.errors %}<p class="rsvp-field-error">{{ error }}</p>{% endfor %}
+      </div>
 
       <!-- Plus-Ones & Guest Count Section -->
       {% if event.allow_plus_ones and event.max_plus_ones_per_guest > 0 %}
@@ -39,9 +66,9 @@
                    class="rsvp-form-input md:w-1/2">
           </div>
 
-          <div id="edit-guest-name-container" class="rsvp-dynamic-names-container">
+          <div id="edit-guest-name-container" class="rsvp-dynamic-names-container pt-3">
             {% for guest in rsvp.plus_ones.all %}
-              <div class="space-y-1">
+              <div class="space-y-1 mb-2">
                 <label class="rsvp-form-label mb-1">Guest {{ forloop.counter }} Full Name</label>
                 <input type="text" name="plus_one_name_{{ forloop.counter }}" value="{{ guest.full_name }}" required
                        class="rsvp-form-input">

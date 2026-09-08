@@ -29,11 +29,16 @@ class MultipleFileField(forms.FileField):
             return cleaned_list
         return single_file_clean(data, initial)
 
-
+import re
 class EventForm(forms.ModelForm):
     PAGE_BG_CHOICES = [
+        # Landing Page Special Backgrounds
+        ('#020617', 'Landing Page Deep Space (Default)'),
+        ('#0f172a', 'Landing Page Surface Dark'),
+        ('#1e293b', 'Landing Page Surface Muted'),
+        
         # Neutrals
-        ('#f8fafc', 'Slate Light (Default)'),
+        ('#f8fafc', 'Slate Light'),
         ('#ffffff', 'Pure White'),
         ('#f1f5f9', 'Cool Gray'),
         ('#f5f5f4', 'Warm Stone'),
@@ -76,6 +81,11 @@ class EventForm(forms.ModelForm):
     ]
 
     SECTION_BG_CHOICES = [
+        # Landing Page Card Backgrounds
+        ('rgba(15, 23, 42, 0.75)', 'Landing Page Glass Dark Card'),
+        ('rgba(30, 41, 59, 0.85)', 'Landing Page Glass Surface Card'),
+        ('rgba(255, 255, 255, 0.03)', 'Landing Page Subtle Frosted Glass'),
+
         # Neutrals
         ('#ffffff', 'White Card (Default)'),
         ('#f8fafc', 'Slate White Card'),
@@ -127,8 +137,13 @@ class EventForm(forms.ModelForm):
     ]
 
     BODY_COLOR_CHOICES = [
+        # Landing Page Body Text & Subtitles
+        ('#cbd5e1', 'Landing Page Slate Subtitle (Default)'),
+        ('#94a3b8', 'Landing Page Muted Body Text'),
+        ('#f1f5f9', 'Landing Page Bright Body Text'),
+
         # Neutrals
-        ('#475569', 'Standard Slate (Default)'),
+        ('#475569', 'Standard Slate'),
         ('#334155', 'Darker Slate'),
         ('#64748b', 'Medium Slate'),
         ('#52525b', 'Zinc Gray'),
@@ -220,8 +235,13 @@ class EventForm(forms.ModelForm):
     ]
 
     HEADING_COLOR_CHOICES = [
+        # Landing Page Headings & Titles
+        ('#ffffff', 'Landing Page Pure White Heading (Default)'),
+        ('#f8fafc', 'Landing Page Soft White Heading'),
+        ('#e2e8f0', 'Landing Page Off-White Heading'),
+
         # Neutrals / Slate
-        ('#0f172a', 'Dark Slate (Default)'),
+        ('#0f172a', 'Dark Slate'),
         ('#1e293b', 'Deep Slate'),
         ('#334155', 'Slate'),
         ('#18181b', 'Charcoal'),
@@ -382,6 +402,19 @@ class EventForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        if self.data:
+            color_choice_fields = ['page_bg_color', 'section_bg_color', 'heading_color', 'body_color', 'muted_color']
+            for field_name in color_choice_fields:
+                submitted_val = self.data.get(field_name)
+                if submitted_val and re.match(r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$', submitted_val):
+                    field = self.fields.get(field_name)
+                    if field and hasattr(field, 'choices'):
+                        existing_values = [choice[0] for choice in field.choices]
+                        if submitted_val not in existing_values:
+                            # Append the custom color to choices so Django validation passes
+                            field.choices = list(field.choices) + [(submitted_val, f"{submitted_val} (Custom)")]
+  
         if self.instance and self.instance.pk and self.instance.theme_settings:
             theme = self.instance.theme_settings
             self.fields['theme_color'].initial = theme.get('primary_color', '#3b82f6')
@@ -545,11 +578,21 @@ class RSVPForm(forms.ModelForm):
         custom_prefix = cleaned_data.get('custom_phone_prefix')
         phone = cleaned_data.get('phone')
         
-        # Use custom prefix if 'OTHER' was chosen
-        active_prefix = custom_prefix.strip() if prefix == 'OTHER' and custom_prefix else prefix
-        
+        # Fix: Ensure 'OTHER' string is never used as a prefix value if custom_prefix is blank
+        if prefix == 'OTHER':
+            active_prefix = custom_prefix.strip() if custom_prefix else ''
+        else:
+            active_prefix = prefix.strip() if prefix else ''
+            
         if phone:
             clean_phone = phone.strip()
+            
+            # Strip out any accidental duplicate prefixes if re-saving
+            if clean_phone.upper().startswith('OTHER'):
+                clean_phone = clean_phone.replace('OTHER', '').strip()
+            if prefix and clean_phone.startswith(str(prefix)):
+                clean_phone = clean_phone.replace(str(prefix), '').strip()
+
             cleaned_data['phone'] = f"{active_prefix} {clean_phone}" if active_prefix else clean_phone
             
         return cleaned_data

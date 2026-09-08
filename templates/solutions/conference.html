@@ -1,0 +1,48 @@
+{% extends 'events/landing_base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/css/landing.css' %}">
+
+{% endblock %}
+
+{% block content %}
+<div class="legal-page-container">
+    <main class="legal-wrapper" style="max-width: 1050px;">
+        <div class="vertical-hero">
+            <img src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=1600&q=80" alt="Academic Conferences">
+            <div class="vertical-hero-content">
+                <h1>Academic Conferences & Research Symposia</h1>
+                <div class="legal-updated">Abstract Submissions, Peer Review Workflows, & Scholar Networking</div>
+            </div>
+        </div>
+
+        <p>Built for university symposia, international research congresses, and scholarly associations. Our platform streamlines the entire academic lifecycle—from abstract submission and double-blind peer review routing to multi-track presentation scheduling and registration.</p>
+
+        <h2>Phase I: Abstract Intake & Peer Review Pipelines</h2>
+        <p>Manage rigorous scholarly submissions with built-in metadata tagging, author affiliation tracking, and automated reviewer assignment routing designed to support large-scale academic committees.</p>
+
+        <div class="feature-matrix">
+            <div class="matrix-card">
+                <h3>Blind Review Portal</h3>
+                <p>Sanitize document submissions automatically to ensure impartial double-blind evaluation by review panels.</p>
+            </div>
+            <div class="matrix-card">
+                <h3>Schedule Matrix</h3>
+                <p>Build intricate multi-room session grids categorized by research disciplines, posters, and keynote plenaries.</p>
+            </div>
+            <div class="matrix-card">
+                <h3>Institutional Verification</h3>
+                <p>Validate academic credentials and student discount statuses against recognized university databases.</p>
+            </div>
+        </div>
+
+        <h2>Phase II: Immersive Scholar Portals</h2>
+        <p>Provide attendees with comprehensive digital program books, speaker bios, downloadable proceeding papers, and interactive Q&A submission tools embedded directly into their personal schedule dashboards.</p>
+
+        <h2>Phase III: Proceedings Archiving & Certification</h2>
+        <p>Automate attendance certificate generation, Continuing Education Unit (CEU) tracking, and persistent archive links for conference proceedings and presentation slide decks.</p>
+    </main>
+</div>
+
+{% endblock %}

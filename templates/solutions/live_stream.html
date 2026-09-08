@@ -1,0 +1,48 @@
+{% extends 'events/landing_base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/css/landing.css' %}">
+
+{% endblock %}
+
+{% block content %}
+<div class="legal-page-container">
+    <main class="legal-wrapper" style="max-width: 1050px;">
+        <div class="vertical-hero">
+            <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1600&q=80" alt="Hybrid Live Streams">
+            <div class="vertical-hero-content">
+                <h1>Hybrid Live Streams & Omnichannel Events</h1>
+                <div class="legal-updated">Synchronized In-Person & Virtual Experiences with Real-Time Telemetry</div>
+            </div>
+        </div>
+
+        <p>Bridging physical venues and digital audiences into a unified broadcast ecosystem. Our hybrid streaming infrastructure synchronizes live video feeds, interactive chat moderation, virtual backstage lounges, and real-time polling across global participant bases.</p>
+
+        <h2>Phase I: Omnichannel Registration & Stream Access Control</h2>
+        <p>Deliver distinct onboarding flows for physical venue attendees versus remote digital participants, issuing unique tokenized stream keys and encrypted player embeds automatically upon RSVP confirmation.</p>
+
+        <div class="feature-matrix">
+            <div class="matrix-card">
+                <h3>Tokenized Streaming</h3>
+                <p>Prevent stream hijacking and unauthorized rebroadcasting with secure, session-locked HLS video player tokens.</p>
+            </div>
+            <div class="matrix-card">
+                <h3>Dual-Audience Q&A</h3>
+                <p>Unified moderation dashboards allowing stage hosts to field questions seamlessly from both room floors and chat feeds.</p>
+            </div>
+            <div class="matrix-card">
+                <h3>Global CDN Routing</h3>
+                <p>Low-latency video content delivery networks ensuring crystal-clear playback across international time zones.</p>
+            </div>
+        </div>
+
+        <h2>Phase II: Interactive Virtual Lounges & Networking</h2>
+        <p>Keep remote participants engaged with breakout rooms, virtual sponsor booths, and moderated networking tables that replicate the organic serendipity of in-person conference hallways.</p>
+
+        <h2>Phase III: Comprehensive Engagement Analytics</h2>
+        <p>Analyze peak viewership retention intervals, chat interaction volumes, and polling responses to evaluate digital ROI and optimize future hybrid production formats.</p>
+    </main>
+</div>
+
+{% endblock %}

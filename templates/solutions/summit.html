@@ -1,0 +1,48 @@
+{% extends 'events/landing_base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/css/landing.css' %}">
+
+{% endblock %}
+
+{% block content %}
+<div class="legal-page-container">
+    <main class="legal-wrapper" style="max-width: 1050px;">
+        <div class="vertical-hero">
+            <img src="https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=1600&q=80" alt="Corporate Summits">
+            <div class="vertical-hero-content">
+                <h1>Corporate Summits & Enterprise Keynotes</h1>
+                <div class="legal-updated">Executive Governance, Precision Security, & C-Suite Orchestration</div>
+            </div>
+        </div>
+
+        <p>Tailored for high-stakes enterprise summits, board retreats, and global shareholder conferences. Our architecture delivers enterprise-grade access control, strict NDA enforcement interfaces, and bespoke branding matching your corporate identity standards.</p>
+
+        <h2>Phase I: Enterprise Identity Validation & Domain Filtering</h2>
+        <p>Corporate events require precise guest validation to protect intellectual property and strategic disclosures. We deploy advanced authentication barriers, corporate email domain verification, and role-based clearance tiers.</p>
+
+        <div class="feature-matrix">
+            <div class="matrix-card">
+                <h3>Domain Restriction</h3>
+                <p>Enforce strict access rules allowing only verified corporate domain email vectors to register.</p>
+            </div>
+            <div class="matrix-card">
+                <h3>Encrypted NDA Wrappers</h3>
+                <p>Require electronic cryptographic signature agreements before unlocking keynote room keys or venue coordinates.</p>
+            </div>
+            <div class="matrix-card">
+                <h3>VIP Badging Automation</h3>
+                <p>Automate priority check-in badges, dietary tracking logs, and executive seating charts.</p>
+            </div>
+        </div>
+
+        <h2>Phase II: Multi-Track Agenda Orchestration</h2>
+        <p>Complex summits feature concurrent breakout sessions, keynote stages, and VIP networking lounges. Our modular layout engine lets delegates curate personalized itineraries with automated conflict alerts and room capacity limits.</p>
+
+        <h2>Phase III: Executive Reporting & Compliance Audits</h2>
+        <p>Generate certified attendance manifests, security clearance logs, and engagement audit reports formatted to satisfy corporate governance and regulatory compliance frameworks.</p>
+    </main>
+</div>
+
+{% endblock %}
