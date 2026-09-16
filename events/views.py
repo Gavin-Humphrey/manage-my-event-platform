@@ -7,13 +7,17 @@ from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
-from .models import Event, RSVP, RSVPGuest
-from .forms import EventForm, RSVPForm
+from .models import Event, RSVP, RSVPGuest, TicketTier
+from .forms import EventForm, RSVPForm, TicketTierFormSet, EventTicketingForm
 from django.utils.text import slugify
 from django.db.models import Q, Value, Sum
 from django.db.models.functions import Concat
 
 from .utils import send_rsvp_confirmation
+from .stripe_utils import create_checkout_session
+import stripe
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 
@@ -247,7 +251,8 @@ def public_rsvp(request, slug):
                 plus_one_names = request.POST.getlist('plus_one_names[]')
                 for name in plus_one_names:
                     if name.strip():
-                        PlusOne.objects.create(rsvp=rsvp, full_name=name.strip())
+                        #PlusOne.objects.create(rsvp=rsvp, full_name=name.strip())
+                        RSVPGuest.objects.create(rsvp=rsvp, full_name=name.strip())
                 
                 try:
                     send_rsvp_confirmation(rsvp)
@@ -290,6 +295,278 @@ def public_rsvp(request, slug):
     return render(request, 'events/public_rsvp.html', context)
 
 
+# def submit_rsvp(request, slug):
+#     event = get_object_or_404(Event, slug=slug)
+
+#     if event.is_past:
+#         messages.error(request, "This event has concluded. RSVPs are closed.")
+#         return redirect('events:public_rsvp', slug=event.slug)
+    
+#     if request.method == 'POST':
+#         email = request.POST.get('email', '').strip().lower()
+#         full_name = request.POST.get('full_name', '').strip()
+#         first_name = request.POST.get('first_name') or (full_name.split(' ', 1)[0] if full_name else '')
+#         last_name = request.POST.get('last_name') or (full_name.split(' ', 1)[1] if len(full_name.split(' ', 1)) > 1 else '')
+        
+#         phone_prefix = request.POST.get('phone_prefix', '').strip()
+#         custom_prefix = request.POST.get('custom_phone_prefix', '').strip()
+#         raw_phone = request.POST.get('phone', '').strip()
+
+#         active_prefix = custom_prefix if phone_prefix == 'OTHER' and custom_prefix else phone_prefix
+#         phone = f"{active_prefix} {raw_phone}".strip() if raw_phone else ''
+
+#         status = request.POST.get('status', 'ATTENDING').upper()
+#         guest_message = request.POST.get('guest_message', '').strip()
+#         dietary = request.POST.get('dietary_restrictions', '').strip()
+
+#         try:
+#             plus_ones_count = int(request.POST.get('plus_ones_count') or request.POST.get('guest_count', 0))
+#             if event.allow_plus_ones:
+#                 plus_ones_count = min(plus_ones_count, event.max_plus_ones_per_guest)
+#             else:
+#                 plus_ones_count = 0
+#         except ValueError:
+#             plus_ones_count = 0
+
+#         errors = {}
+
+#         if not email:
+#             errors['email'] = "Email is required."
+#         elif RSVP.objects.filter(event=event, email=email).exists():
+#             errors['email'] = "This email address has already been used to RSVP for this event."
+
+#         if not first_name and not full_name:
+#             errors['full_name'] = "Full name is required."
+
+#         # Maximum venue capacity validation check
+#         if not errors and event.max_capacity and status == 'ATTENDING':
+#             incoming_headcount = 1 + plus_ones_count
+            
+#             current_headcount = event.rsvps.filter(status='ATTENDING').aggregate(
+#                 total=Sum('plus_ones_count')
+#             )['total'] or 0
+#             current_primary_count = event.rsvps.filter(status='ATTENDING').count()
+#             total_current_attendees = current_primary_count + current_headcount
+
+#             if (total_current_attendees + incoming_headcount) > event.max_capacity:
+#                 remaining_spots = max(0, event.max_capacity - total_current_attendees)
+#                 errors['plus_ones_count'] = f"Sorry, this event has reached its maximum venue capacity of {event.max_capacity} guests. Only {remaining_spots} spot(s) remaining."
+
+#         # If there are errors, re-render the template with the user's input intact
+#         if errors:
+#             raw_theme = event.theme_settings() if callable(getattr(event, 'theme_settings', None)) else getattr(event, 'theme_settings', None)
+#             theme = raw_theme.copy() if isinstance(raw_theme, dict) else (raw_theme or {})
+#             if isinstance(theme, dict):
+#                 theme['theme_color'] = theme.get('theme_color') or theme.get('primary_color') or '#3b82f6'
+
+#             raw_gallery = theme.get('gallery_slides') or theme.get('gallery_images', [])
+#             normalized_gallery = []
+#             for item in raw_gallery:
+#                 if isinstance(item, str):
+#                     normalized_gallery.append({'url': item, 'caption': ''})
+#                 elif isinstance(item, dict):
+#                     url = item.get('url') or item.get('image') or ''
+#                     caption = item.get('description') or item.get('caption') or item.get('text') or ''
+#                     if url:
+#                         normalized_gallery.append({'url': url, 'caption': caption})
+
+#             context = {
+#                 'event': event,
+#                 'theme': theme,
+#                 'guest_messages': event.rsvps.exclude(guest_message__isnull=True).exclude(guest_message__exact=''),
+#                 'normalized_gallery': normalized_gallery,
+#                 'form_data': request.POST,  
+#                 'form_errors': errors,      
+#             }
+#             return render(request, 'events/public_rsvp.html', context)
+
+#         rsvp = RSVP.objects.create(
+#             event=event,
+#             email=email,
+#             first_name=first_name,
+#             last_name=last_name,
+#             phone=phone,
+#             status=status,
+#             plus_ones_allowed=getattr(event, 'max_plus_ones_per_guest', 0),
+#             plus_ones_count=plus_ones_count,
+#             guest_message=guest_message,
+#             dietary_restrictions=dietary,
+#         )
+
+#         if status == 'ATTENDING' and event.allow_plus_ones:
+#             for i in range(1, plus_ones_count + 1):
+#                 guest_name = request.POST.get(f'guest_name_{i}')
+#                 if guest_name:
+#                     RSVPGuest.objects.create(rsvp=rsvp, full_name=guest_name)
+
+#         try:
+#             send_rsvp_confirmation(rsvp)
+#         except Exception as e:
+#             print(f"Email delivery error: {e}")
+        
+#         messages.success(request, "Your RSVP has been recorded successfully!")
+#         return redirect('events:rsvp_confirmed', pk=rsvp.pk)
+
+#     return redirect('events:public_rsvp', slug=slug)
+
+
+# def submit_rsvp(request, slug):
+#     event = get_object_or_404(Event, slug=slug)
+
+#     if event.is_past:
+#         messages.error(request, "This event has concluded. RSVPs are closed.")
+#         return redirect('events:public_rsvp', slug=event.slug)
+    
+#     if request.method == 'POST':
+#         email = request.POST.get('email', '').strip().lower()
+#         full_name = request.POST.get('full_name', '').strip()
+#         first_name = request.POST.get('first_name') or (full_name.split(' ', 1)[0] if full_name else '')
+#         last_name = request.POST.get('last_name') or (full_name.split(' ', 1)[1] if len(full_name.split(' ', 1)) > 1 else '')
+        
+#         phone_prefix = request.POST.get('phone_prefix', '').strip()
+#         custom_prefix = request.POST.get('custom_phone_prefix', '').strip()
+#         raw_phone = request.POST.get('phone', '').strip()
+
+#         active_prefix = custom_prefix if phone_prefix == 'OTHER' and custom_prefix else phone_prefix
+#         phone = f"{active_prefix} {raw_phone}".strip() if raw_phone else ''
+
+#         raw_status = request.POST.get('status', 'ATTENDING').upper()
+#         guest_message = request.POST.get('guest_message', '').strip()
+#         dietary = request.POST.get('dietary_restrictions', '').strip()
+
+#         # Parse ticket selection from dropdown if event is ticketed
+#         selected_tier = None
+#         status = 'ATTENDING'
+        
+#         if raw_status == 'DECLINED':
+#             status = 'DECLINED'
+#         elif raw_status.startswith('TICKET_'):
+#             try:
+#                 tier_id = int(raw_status.split('_')[1])
+#                 selected_tier = TicketTier.objects.get(id=tier_id, event=event)
+#                 status = 'ATTENDING'
+#             except (IndexError, ValueError, TicketTier.DoesNotExist):
+#                 selected_tier = None
+#         else:
+#             status = raw_status
+
+#         try:
+#             plus_ones_count = int(request.POST.get('plus_ones_count') or request.POST.get('guest_count', 0))
+#             if event.allow_plus_ones:
+#                 plus_ones_count = min(plus_ones_count, event.max_plus_ones_per_guest)
+#             else:
+#                 plus_ones_count = 0
+#         except ValueError:
+#             plus_ones_count = 0
+
+#         errors = {}
+
+#         if not email:
+#             errors['email'] = "Email is required."
+#         elif RSVP.objects.filter(event=event, email=email).exists():
+#             errors['email'] = "This email address has already been used to RSVP for this event."
+
+#         if not first_name and not full_name:
+#             errors['full_name'] = "Full name is required."
+
+#         # Validate ticket tier capacity if a ticket was chosen
+#         if not errors and selected_tier:
+#             if selected_tier.sold_count >= selected_tier.capacity:
+#                 errors['email'] = f"Sorry, the '{selected_tier.name}' pass is completely sold out."
+
+#         # Maximum venue capacity validation check
+#         if not errors and event.max_capacity and status == 'ATTENDING':
+#             incoming_headcount = 1 + plus_ones_count
+            
+#             current_headcount = event.rsvps.filter(status='ATTENDING').aggregate(
+#                 total=Sum('plus_ones_count')
+#             )['total'] or 0
+#             current_primary_count = event.rsvps.filter(status='ATTENDING').count()
+#             total_current_attendees = current_primary_count + current_headcount
+
+#             if (total_current_attendees + incoming_headcount) > event.max_capacity:
+#                 remaining_spots = max(0, event.max_capacity - total_current_attendees)
+#                 errors['plus_ones_count'] = f"Sorry, this event has reached its maximum venue capacity of {event.max_capacity} guests. Only {remaining_spots} spot(s) remaining."
+
+#         # If there are errors, re-render template with user input intact
+#         if errors:
+#             raw_theme = event.theme_settings() if callable(getattr(event, 'theme_settings', None)) else getattr(event, 'theme_settings', None)
+#             theme = raw_theme.copy() if isinstance(raw_theme, dict) else (raw_theme or {})
+#             if isinstance(theme, dict):
+#                 theme['theme_color'] = theme.get('theme_color') or theme.get('primary_color') or '#3b82f6'
+
+#             raw_gallery = theme.get('gallery_slides') or theme.get('gallery_images', [])
+#             normalized_gallery = []
+#             for item in raw_gallery:
+#                 if isinstance(item, str):
+#                     normalized_gallery.append({'url': item, 'caption': ''})
+#                 elif isinstance(item, dict):
+#                     url = item.get('url') or item.get('image') or ''
+#                     caption = item.get('description') or item.get('caption') or item.get('text') or ''
+#                     if url:
+#                         normalized_gallery.append({'url': url, 'caption': caption})
+
+#             context = {
+#                 'event': event,
+#                 'theme': theme,
+#                 'guest_messages': event.rsvps.exclude(guest_message__isnull=True).exclude(guest_message__exact=''),
+#                 'normalized_gallery': normalized_gallery,
+#                 'form_data': request.POST,  
+#                 'form_errors': errors,      
+#             }
+#             return render(request, 'events/public_rsvp.html', context)
+
+#         # Determine payment status based on ticket price and test simulation toggle
+#         is_simulated = request.POST.get('simulate_payment') == 'on'
+#         is_paid = False
+
+#         if selected_tier and selected_tier.price == 0:
+#             is_paid = True
+#         elif selected_tier and selected_tier.price > 0 and is_simulated:
+#             is_paid = True
+
+#         # Create RSVP record and attach ticket tier & payment flag
+#         rsvp = RSVP.objects.create(
+#             event=event,
+#             ticket_tier=selected_tier,
+#             is_paid=is_paid,
+#             email=email,
+#             first_name=first_name,
+#             last_name=last_name,
+#             phone=phone,
+#             status=status,
+#             plus_ones_allowed=getattr(event, 'max_plus_ones_per_guest', 0),
+#             plus_ones_count=plus_ones_count,
+#             guest_message=guest_message,
+#             dietary_restrictions=dietary,
+#         )
+
+#         if status == 'ATTENDING' and event.allow_plus_ones:
+#             for i in range(1, plus_ones_count + 1):
+#                 guest_name = request.POST.get(f'guest_name_{i}')
+#                 if guest_name:
+#                     RSVPGuest.objects.create(rsvp=rsvp, full_name=guest_name)
+
+#         # Increment sold count if ticketed and paid/simulated
+#         if selected_tier and is_paid:
+#             selected_tier.sold_count += 1
+#             selected_tier.save()
+
+#         # Stripe integration hook (active when live keys are configured and not simulating)
+#         stripe_is_configured = False  
+#         if selected_tier and selected_tier.price > 0 and stripe_is_configured and not is_simulated:
+#             return redirect('events:create_stripe_checkout', rsvp_id=rsvp.pk)
+
+#         try:
+#             send_rsvp_confirmation(rsvp)
+#         except Exception as e:
+#             print(f"Email delivery error: {e}")
+        
+#         messages.success(request, "Your RSVP and ticket selection have been recorded successfully!")
+#         return redirect('events:rsvp_confirmed', pk=rsvp.pk)
+
+#     return redirect('events:public_rsvp', slug=slug)
+##############
 def submit_rsvp(request, slug):
     event = get_object_or_404(Event, slug=slug)
 
@@ -310,9 +587,24 @@ def submit_rsvp(request, slug):
         active_prefix = custom_prefix if phone_prefix == 'OTHER' and custom_prefix else phone_prefix
         phone = f"{active_prefix} {raw_phone}".strip() if raw_phone else ''
 
-        status = request.POST.get('status', 'ATTENDING').upper()
+        raw_status = request.POST.get('status', 'ATTENDING').upper()
         guest_message = request.POST.get('guest_message', '').strip()
         dietary = request.POST.get('dietary_restrictions', '').strip()
+
+        selected_tier = None
+        status = 'ATTENDING'
+        
+        if raw_status == 'DECLINED':
+            status = 'DECLINED'
+        elif raw_status.startswith('TICKET_'):
+            try:
+                tier_id = int(raw_status.split('_')[1])
+                selected_tier = TicketTier.objects.get(id=tier_id, event=event)
+                status = 'ATTENDING'
+            except (IndexError, ValueError, TicketTier.DoesNotExist):
+                selected_tier = None
+        else:
+            status = raw_status
 
         try:
             plus_ones_count = int(request.POST.get('plus_ones_count') or request.POST.get('guest_count', 0))
@@ -333,7 +625,10 @@ def submit_rsvp(request, slug):
         if not first_name and not full_name:
             errors['full_name'] = "Full name is required."
 
-        # Maximum venue capacity validation check
+        if not errors and selected_tier:
+            if selected_tier.sold_count >= selected_tier.capacity:
+                errors['email'] = f"Sorry, the '{selected_tier.name}' pass is completely sold out."
+
         if not errors and event.max_capacity and status == 'ATTENDING':
             incoming_headcount = 1 + plus_ones_count
             
@@ -347,7 +642,6 @@ def submit_rsvp(request, slug):
                 remaining_spots = max(0, event.max_capacity - total_current_attendees)
                 errors['plus_ones_count'] = f"Sorry, this event has reached its maximum venue capacity of {event.max_capacity} guests. Only {remaining_spots} spot(s) remaining."
 
-        # If there are errors, re-render the template with the user's input intact
         if errors:
             raw_theme = event.theme_settings() if callable(getattr(event, 'theme_settings', None)) else getattr(event, 'theme_settings', None)
             theme = raw_theme.copy() if isinstance(raw_theme, dict) else (raw_theme or {})
@@ -375,8 +669,15 @@ def submit_rsvp(request, slug):
             }
             return render(request, 'events/public_rsvp.html', context)
 
+        # Payment Status Initialization (Free tiers start paid, paid tiers start unpaid)
+        is_paid = False
+        if selected_tier and selected_tier.price == 0:
+            is_paid = True
+
         rsvp = RSVP.objects.create(
             event=event,
+            ticket_tier=selected_tier,
+            is_paid=is_paid,
             email=email,
             first_name=first_name,
             last_name=last_name,
@@ -394,15 +695,31 @@ def submit_rsvp(request, slug):
                 if guest_name:
                     RSVPGuest.objects.create(rsvp=rsvp, full_name=guest_name)
 
+        if selected_tier and is_paid:
+            selected_tier.sold_count += 1
+            selected_tier.save()
+
+        stripe_is_configured = bool(getattr(settings, 'STRIPE_SECRET_KEY', None))
+        
+        if selected_tier and selected_tier.price > 0 and stripe_is_configured:
+            checkout_url = create_checkout_session(request, event, rsvp, selected_tier)
+            if checkout_url:
+                return redirect(checkout_url, code=303)
+            else:
+                messages.error(request, "Could not initiate payment session. Please try again.")
+                return redirect('events:public_rsvp', slug=event.slug)
+
         try:
             send_rsvp_confirmation(rsvp)
         except Exception as e:
             print(f"Email delivery error: {e}")
         
-        messages.success(request, "Your RSVP has been recorded successfully!")
+        messages.success(request, "Your RSVP and ticket selection have been recorded successfully!")
         return redirect('events:rsvp_confirmed', pk=rsvp.pk)
 
     return redirect('events:public_rsvp', slug=slug)
+
+#########
 
 
 @login_required
@@ -438,7 +755,8 @@ def event_rsvps_management(request, slug):
 
     capacity_ratio = (total_headcount / event.max_capacity) if event.max_capacity and event.max_capacity > 0 else 0
 
-    if total_headcount >= event.max_capacity:
+    # if total_headcount >= event.max_capacity:
+    if event.max_capacity is not None and total_headcount >= event.max_capacity:
         capacity_status = 'full'      # Red
     elif capacity_ratio >= 0.8:
         capacity_status = 'warning'   # Orange (80%+ full)
@@ -580,6 +898,23 @@ END:VCALENDAR"""
 
 def rsvp_confirmed_view(request, pk):
     rsvp = get_object_or_404(RSVP, pk=pk)
+    
+    # Sync-on-Redirect fallback fallback: check Stripe session directly if not yet paid
+    session_id = request.GET.get('session_id')
+    if session_id and not rsvp.is_paid:
+        try:
+            stripe.api_key = settings.STRIPE_SECRET_KEY
+            session = stripe.checkout.Session.retrieve(session_id)
+            if session.payment_status == 'paid':
+                rsvp.is_paid = True
+                rsvp.save()
+                
+                if rsvp.ticket_tier:
+                    rsvp.ticket_tier.sold_count += 1
+                    rsvp.ticket_tier.save()
+        except Exception as e:
+            print(f"Stripe Session Verification Error: {e}")
+
     return render(request, 'events/rsvp_confirmed.html', {'rsvp': rsvp})
 
 
@@ -606,7 +941,8 @@ def verify_checkin(request, slug, token):
 
 def event_door_dashboard(request, slug):
     event = get_object_or_404(Event, slug=slug, host=request.user)
-    rsvps = event.rsvps.all()
+    #rsvps = event.rsvps.all()
+    rsvps = event.rsvps.select_related('ticket_tier').all()
 
     search_query = request.GET.get('q', '').strip()
     if search_query:
@@ -645,25 +981,134 @@ def features_view(request):
     return render(request, 'events/features_page.html')
 
 def event_cookies (request):
-    return render(request, 'legal/cookies.html')
+    return render(request, 'events/legal/cookies.html')
 
 def event_privacy(request):
-    return render(request, 'legal/privacy.html')
+    return render(request, 'events/legal/privacy.html')
 
 def event_terms(request):
-    return render(request, 'legal/terms.html')
+    return render(request, 'events/legal/terms.html')
 # 
 def conference(request):
-    return render(request, 'solutions/conference.html')
+    return render(request, 'events/solutions/conference.html')
 
 def gig(request):
-    return render(request, 'solutions/gig.html')
+    return render(request, 'events/solutions/gig.html')
 
 def live_stream(request):
-    return render(request, 'solutions/live_stream.html')
+    return render(request, 'events/solutions/live_stream.html')
 
 def private_event(request):
-    return render(request, 'solutions/private_event.html')
+    return render(request, 'events/solutions/private_event.html')
 
 def summit(request):
-    return render(request, 'solutions/summit.html')
+    return render(request, 'events/solutions/summit.html')
+
+
+def architecture_theme_engines(request):
+    return render(request, 'events/architectures/theme_engines.html')
+
+def architecture_split_screen(request):
+    return render(request, 'events/architectures/split_screen_layouts.html')
+
+def architecture_dynamic_rsvp(request):
+    return render(request, 'events/architectures/dynamic_rsvp_pipeline.html')
+
+def architecture_glassmorphic_ui(request):
+    return render(request, 'events/architectures/glassmorphic_ui_components.html')
+
+def architecture_changelog_releases(request):
+    return render(request, 'events/architectures/changelog_and_releases.html')
+
+def platform_architecture(request):
+    return render(request, 'events/resources/platform_architecture.html')
+
+def event_api(request):
+    return render(request, 'events/resources/event_api.html')
+
+def security_compliance(request):
+    return render(request, 'events/resources/security_compliance.html')
+
+def organizer_community(request):
+    return render(request, 'events/resources/organizer_community.html')
+
+def system_status(request):
+    return render(request, 'events/resources/system_status.html')
+
+
+
+@login_required
+def manage_event_tiers(request, slug):
+    event = get_object_or_404(Event, slug=slug, host=request.user)
+    
+    if request.method == 'POST':
+        # Use the lightweight form instead of the full EventForm
+        form = EventTicketingForm(request.POST, instance=event)
+        formset = TicketTierFormSet(request.POST, instance=event)
+        
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            messages.success(request, "Ticket tiers updated successfully!")
+            return redirect('events:event_rsvps_management', slug=event.slug)
+        else:
+            print("Form errors:", form.errors)
+            print("Formset errors:", formset.errors)
+    else:
+        form = EventTicketingForm(instance=event)
+        formset = TicketTierFormSet(instance=event)
+        
+    context = {
+        'event': event,
+        'form': form,
+        'formset': formset,
+    }
+    return render(request, 'events/manage_event_tiers.html', context)
+
+
+
+
+import csv
+from django.http import HttpResponse
+
+
+@login_required
+def export_rsvps_csv(request, slug):
+    event = get_object_or_404(Event, slug=slug, host=request.user)
+    rsvps = event.rsvps.all()
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{event.slug}_rsvps.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['First Name', 'Last Name', 'Email', 'Status', 'Updated At'])
+
+    for rsvp in rsvps:
+        writer.writerow([
+            rsvp.first_name,
+            rsvp.last_name,
+            rsvp.email or 'N/A',
+            rsvp.status,
+            rsvp.updated_at
+        ])
+
+    return response
+
+
+############################
+
+
+def bento_view(request):
+    return render(request, 'events/layouts/bento.html')
+
+def editorial_minimalist_view(request):
+    return render(request, 'events/layouts/editorial_and_minimalist.html')
+
+def neon_and_dark_view(request):
+    return render(request, 'events/layouts/immersive_neon_and_dark_mode.html')
+
+def split_screen_conference_view(request):
+    return render(request, 'events/layouts/split_screen_conference.html')
+
+def story_teller_view(request):
+    return render(request, 'events/layouts/story_teller_festival.html')

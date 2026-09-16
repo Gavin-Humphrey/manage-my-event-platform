@@ -37,14 +37,5 @@ urlpatterns = [
     # App-specific Routes
     path('', include('events.urls')),
 
-    path('cookies/', event_views.event_cookies, name='cookies'),
-    path('privacy/', event_views.event_privacy, name='privacy'),
-    path('terms/', event_views.event_terms, name='terms'),
-
-
-    path('conference/', event_views.conference, name='conference'),
-    path('gig/', event_views.gig, name='gig'),
-    path('live_stream/', event_views.live_stream, name='live_stream'),
-    path('private_event/', event_views.private_event, name='private_event'),
-    path('summit/', event_views.summit, name='summit'),
+    
 ]

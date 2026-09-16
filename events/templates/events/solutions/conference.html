@@ -3,20 +3,20 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'events/css/landing.css' %}">
-
+<link rel="stylesheet" href="{% static 'events/css/solutions.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="legal-page-container">
-    <main class="legal-wrapper" style="max-width: 1050px;">
-        <div class="vertical-hero">
-            <img src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=1600&q=80" alt="Academic Conferences">
-            <div class="vertical-hero-content">
-                <h1>Academic Conferences & Research Symposia</h1>
-                <div class="legal-updated">Abstract Submissions, Peer Review Workflows, & Scholar Networking</div>
-            </div>
+<div class="solutions-page-container">
+    <div class="vertical-hero">
+        <img src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&w=1600&q=80" alt="Academic Conferences">
+        <div class="vertical-hero-content">
+            <h1>Academic Conferences & Research Symposia</h1>
+            <div class="solutions-updated">Abstract Submissions, Peer Review Workflows, & Scholar Networking</div>
         </div>
+    </div>
 
+    <main class="solutions-wrapper">
         <p>Built for university symposia, international research congresses, and scholarly associations. Our platform streamlines the entire academic lifecycle—from abstract submission and double-blind peer review routing to multi-track presentation scheduling and registration.</p>
 
         <h2>Phase I: Abstract Intake & Peer Review Pipelines</h2>
@@ -44,5 +44,4 @@
         <p>Automate attendance certificate generation, Continuing Education Unit (CEU) tracking, and persistent archive links for conference proceedings and presentation slide decks.</p>
     </main>
 </div>
-
 {% endblock %}

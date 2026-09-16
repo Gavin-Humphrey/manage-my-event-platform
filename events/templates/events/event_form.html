@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load widget_tweaks %}
 
 {% block title %}{% if form.instance.pk %}Edit{% else %}Create{% endif %} Event | Manage My Event{% endblock %}
 
@@ -53,9 +54,22 @@
                     {% if form.address.errors %}<p class="text-xs text-red-600 mt-1">{{ form.address.errors.0 }}</p>{% endif %}
                 </div>
             </div>
+            <!--  -->
+            <div class="flex items-start gap-3 p-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface-muted)]">
+                <div class="flex items-center h-5 mt-0.5">
+                    {{ form.is_ticketed|attr:"class:h-4 w-4 rounded border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--accent-indigo)] focus:ring-0 focus:ring-offset-0 cursor-pointer" }}
+                </div>
+                <div>
+                    <h2 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3">1.5. Enable Paid Ticketing</h2>
+                    <label for="{{ form.is_ticketed.id_for_label }}" class="text-sm font-semibold text-[var(--text-main)] cursor-pointer"></label>
+                    
+                    <p class="text-xs text-[var(--text-muted)] mt-0.5"> When enabled, the public page renders pricing cards and switches the RSVP form to a secure Stripe checkout flow.</p>
+                </div>
+            </div>
+            <!--  -->
 
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <h2 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3">1.5. Maximum Venue Capacity</h2>
+                <h2 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3">2. Maximum Venue Capacity</h2>
                 <div>
                     <label for="{{ form.max_capacity.id_for_label }}" class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Maximum Venue Capacity (Optional)</label>
                     {{ form.max_capacity }}
@@ -66,7 +80,7 @@
 
             <!-- Section 2: Plus-One & Guest Options -->
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <h2 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3">2. Plus-One & Guest Options</h2>
+                <h2 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3">2.5 Plus-One & Guest Options</h2>
 
                 <!-- Allow Plus Ones Checkbox -->
                 <div class="flex items-center space-x-3">
@@ -94,7 +108,7 @@
 
             <!-- Section 2.5: Guest Message Options -->
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <h2 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3">2.5. Guest Message Options</h2>
+                <h2 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3">3. Guest Message Options</h2>
 
                 <!-- Allow Guest Messages Checkbox -->
                 <div class="flex items-center space-x-3">
@@ -108,6 +122,48 @@
                 </div>
                 <p class="text-[11px] text-slate-400 mt-1 pl-7">Enables a dedicated text field on your public RSVP form for personal notes, displayed via a scrolling carousel on your event dashboard.</p>
             </div>
+
+            <!-- ///////////////////////// -->
+            <!-- Section: Announcement Banner Controls -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <h2 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3">4. Live Announcement Banner</h2>
+
+                <!-- Show Announcement Checkbox (Draft Toggle) -->
+                <div class="flex items-center space-x-3">
+                    {{ form.show_announcement }}
+                    <label for="{{ form.show_announcement.id_for_label }}" class="text-sm font-semibold text-slate-700 select-none cursor-pointer">
+                        Display active announcement banner on public page
+                    </label>
+                    {% if form.show_announcement.errors %}
+                        <p class="text-xs text-red-600 mt-1">{{ form.show_announcement.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1 pl-7">Allows you to draft announcements and toggle them live or off instantly without deleting your copy.</p>
+
+                <!-- Announcement Title -->
+                <div class="space-y-1 pt-2">
+                    <label for="{{ form.announcement_title.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                        Announcement Header Title
+                    </label>
+                    {{ form.announcement_title }}
+                    {% if form.announcement_title.errors %}
+                        <p class="text-xs text-red-600 mt-1">{{ form.announcement_title.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Announcement Text Content -->
+                <div class="space-y-1">
+                    <label for="{{ form.announcement_text.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                        Announcement Message
+                    </label>
+                    {{ form.announcement_text }}
+                    <p class="text-[11px] text-slate-400 mt-1">Provide real-time updates for guests (e.g. parking directions, schedule adjustments, gate info).</p>
+                    {% if form.announcement_text.errors %}
+                        <p class="text-xs text-red-600 mt-1">{{ form.announcement_text.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            <!-- ///////////////////////// -->
 
             <!-- Enable QR Check-ins Checkbox -->
                 <div class="flex items-center space-x-3 mt-4">
@@ -125,7 +181,7 @@
             <!-- Section 3: Visual Customization & Theme -->
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
                 <h2 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3">
-                    3. Theme & Custom Design Options
+                    3.5. Theme & Custom Design Options
                 </h2>
 
                 <!-- Hero Image Upload -->

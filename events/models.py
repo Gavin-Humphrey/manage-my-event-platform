@@ -19,6 +19,12 @@ class Event(models.Model):
     event_date = models.DateTimeField()
     location_name = models.CharField(max_length=255)
     address = models.TextField(blank=True, null=True)
+    #######
+    is_ticketed = models.BooleanField(
+        default=False, 
+        help_text="Enable paid ticketing and advanced inventory tracking for this event."
+    )
+    ########
     max_capacity = models.PositiveIntegerField(null=True, blank=True, help_text="Maximum total venue capacity")
     
     theme_settings = models.JSONField(
@@ -58,6 +64,11 @@ class Event(models.Model):
         default=False, 
         help_text="Allow guests to leave a special message for the celebrant"
     )
+    #################
+    announcement_title = models.CharField(max_length=150, blank=True, null=True, default="Announcement")
+    announcement_text = models.TextField(blank=True, null=True)
+    show_announcement = models.BooleanField(default=False)
+    ################
 
     enable_qr_checkins = models.BooleanField(
         default=False,
@@ -130,6 +141,13 @@ class Event(models.Model):
     def __str__(self):
         return f"{self.title} ({self.host.username})"
 
+class TicketTier(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='ticket_tiers')
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    capacity = models.PositiveIntegerField()
+    sold_count = models.PositiveIntegerField(default=0)
 
 class RSVP(models.Model):
     STATUS_CHOICES = [
@@ -139,6 +157,10 @@ class RSVP(models.Model):
     ]
 
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='rsvps')
+    # ticket relation and payment status tracking
+    ticket_tier = models.ForeignKey('TicketTier', on_delete=models.SET_NULL, null=True, blank=True, related_name='rsvps')
+    is_paid = models.BooleanField(default=False)
+
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField(blank=True, null=True)

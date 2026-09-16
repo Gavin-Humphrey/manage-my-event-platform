@@ -1,0 +1,55 @@
+{% extends 'events/landing_base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/css/landing.css' %}">
+<link rel="stylesheet" href="{% static 'events/css/resources.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="resources-page-container">
+    <div class="resources-hero">
+        <div class="resources-hero-glow"></div>
+        <div class="resources-hero-content">
+            <div class="resources-badge"><span class="pulse-dot"></span> SOC 2 Type II Certified</div>
+            <h1>Security & Attendee Data Compliance</h1>
+            <p>Enterprise data protection frameworks, GDPR privacy governance, end-to-end payment encryption, and rigorous infrastructure audits.</p>
+        </div>
+    </div>
+
+    <main class="resources-wrapper">
+        <section class="resources-section animate-fade-up">
+            <h2>Payment & Attendee Data Encryption</h2>
+            <p class="section-lead">All ticket-buyer profiles, financial transaction logs, and gate-scanning records are safeguarded using industry-standard cryptographic controls.</p>
+            
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <div class="card-meta">ENCRYPT // 256</div>
+                    <h3>Data at Rest & Transit</h3>
+                    <p>Full database volume encryption via AES-256 combined with strict TLS 1.3 transport security across all checkout terminals.</p>
+                </div>
+                <div class="tech-card">
+                    <div class="card-meta">PRIVACY // GDPR</div>
+                    <h3>Attendee Data Rights</h3>
+                    <p>Self-service export tools and automated compliance pipelines supporting verifiable right-to-be-forgotten deletion routines.</p>
+                </div>
+                <div class="tech-card">
+                    <div class="card-meta">AUDIT // SEC</div>
+                    <h3>Continuous Monitoring</h3>
+                    <p>Automated vulnerability testing, dependency tracking, and real-time intrusion detection across all production servers.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="resources-section animate-fade-up">
+            <h2>Organizer Account Access Control (IAM)</h2>
+            <p>Mandate multi-factor authentication (MFA) across all staff and box-office portals, maintaining immutable audit trails to track role assignments and permission changes.</p>
+        </section>
+
+        <section class="resources-section animate-fade-up">
+            <h2>Disaster Recovery & Uptime Safeguards</h2>
+            <p>Review our rigorous recovery time objectives (RTO), point-in-time database backup strategies, and multi-region failover protocols designed for absolute event-day reliability.</p>
+        </section>
+    </main>
+</div>
+{% endblock %}

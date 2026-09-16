@@ -91,14 +91,17 @@
         </div>
     </div>
 
-    <!-- ================= LAYOUT CONDITIONALS ================= -->
+  <!-- ================= LAYOUT CONDITIONALS ================= -->
     {% if theme.layout_style == 'split' %}
         <!-- SPLIT TWO-COLUMN LAYOUT -->
         <div class="max-w-6xl mx-auto px-4 py-8 md:py-12 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- Left Column: Media, Info, Bio & Gallery -->
             <div class="lg:col-span-6 space-y-6">
-                <div class="relative w-full rounded-2xl overflow-hidden border border-slate-200 shadow-lg bg-slate-900 aspect-[16/9] md:aspect-[4/3] lg:aspect-[4/5] lg:min-h-[480px]">
+                <!-- Hero Image Banner with Zoom-In Effect -->
+                <div class="relative w-full rounded-2xl overflow-hidden border border-slate-200 shadow-lg bg-slate-900 aspect-[16/9] md:aspect-[4/3] lg:aspect-[4/5] lg:min-h-[480px] group">
                     {% if theme.hero_image_url %}
-                        <img src="{{ theme.hero_image_url }}" alt="{{ event.title }}" class="w-full h-full object-cover">
+                        <img src="{{ theme.hero_image_url }}" alt="{{ event.title }}" class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105">
                     {% else %}
                         <div class="w-full h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-6 text-center">
                             <span class="text-slate-400 text-sm font-medium">No Image Provided</span>
@@ -106,6 +109,7 @@
                     {% endif %}
                 </div>
 
+                <!-- Event Details Card -->
                 <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4" style="background-color: {{ style_section_bg }} !important;">
                     <span class="inline-block px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white rounded-full" style="background-color: {{ style_primary }} !important;">
                         {{ event.event_date|date:"F j, Y @ g:i A" }}
@@ -121,20 +125,332 @@
                             <p class="mt-0.5 font-medium" style="color: {{ style_body }} !important;">{{ event.location_name }}</p>
                             {% if event.address %}<p class="text-xs mt-0.5" style="color: {{ style_muted }} !important;">{{ event.address }}</p>{% endif %}
                         </div>
-                        <!--  -->
-                        <!-- Embedded Map Box -->
-                        <div class="mt-4 w-full h-48 rounded-xl overflow-hidden border border-slate-200 shadow-sm relative z-10">
-                            <iframe 
-                                width="100%" 
-                                height="100%" 
-                                style="border:0;" 
-                                loading="lazy" 
-                                src="https://www.google.com/maps?q={{ event.address|urlencode|default:event.location_name|urlencode }}&output=embed">
-                            </iframe>
+                        
+                        <!-- Embedded Map Box with Pop-Out -->
+                        <div
+                            class="mt-4 w-full h-48 relative z-30"
+                            style="overflow: visible;"
+                        >
+                            <div
+                                id="event-map-box"
+                                class="w-full h-full rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-slate-900"
+                                style="
+                                    position: relative;
+                                    z-index: 30;
+                                    transform: scale(1);
+                                    transform-origin: center center;
+                                    transition: transform 0.4s ease, box-shadow 0.4s ease;
+                                    cursor: zoom-in;
+                                "
+                                onmouseenter="
+                                    this.style.transform='scale(1.18)';
+                                    this.style.zIndex='9999';
+                                    this.style.boxShadow='0 25px 50px rgba(0,0,0,0.28)';
+                                "
+                                onmouseleave="
+                                    this.style.transform='scale(1)';
+                                    this.style.zIndex='30';
+                                    this.style.boxShadow='';
+                                "
+                            >
+                                <iframe
+                                    width="100%"
+                                    height="100%"
+                                    style="border:0; display:block;"
+                                    loading="lazy"
+                                    src="https://www.google.com/maps?q={{ event.address|urlencode|default:event.location_name|urlencode }}&output=embed">
+                                </iframe>
+                            </div>
                         </div>
                         <!--  -->
                     </div>
-                     <!-- Calendar Sync Actions -->
+
+                    <!-- Calendar Sync Actions -->
+                    <div class="calendar-actions mt-4 flex flex-wrap justify-center items-center gap-3">
+                        <a href="{{ event.google_calendar_url }}" target="_blank" rel="noopener noreferrer" style="background-color: {{ style_card_bg }}; color: {{ style_body }}; border-color: rgba(255,255,255,0.2); transition: all 0.2s ease-in-out;" onmouseover="this.style.filter='brightness(1.15)'; this.style.boxShadow='0 0 12px {{ style_body }}';" onmouseout="this.style.filter='none'; this.style.boxShadow='none';" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-lg border shadow-sm">
+                            <svg class="w-3.5 h-3.5" style="color: {{ style_body }};" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span>Add to Google Calendar</span>
+                        </a>
+                        <a href="{% url 'events:download_ics' event.slug %}" style="background-color: {{ style_card_bg }}; color: {{ style_body }}; border-color: rgba(255,255,255,0.2); transition: all 0.2s ease-in-out;" onmouseover="this.style.filter='brightness(1.15)'; this.style.boxShadow='0 0 12px {{ style_body }}';" onmouseout="this.style.filter='none'; this.style.boxShadow='none';" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-lg border shadow-sm">
+                            <svg class="w-3.5 h-3.5" style="color: {{ style_body }};" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            <span>Download .ics File</span>
+                        </a>
+                    </div>
+                </div>
+
+                {% if event.description %}
+                    <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-3" style="background-color: {{ style_section_bg }} !important;">
+                        <h2 class="text-lg font-bold border-b border-slate-100 pb-2" style="color: {{ style_heading }} !important;">About This Event</h2>
+                        <div class="text-sm leading-relaxed whitespace-pre-line" style="color: {{ style_body }} !important;">{{ event.description }}</div>
+                    </div>
+                {% endif %}
+
+                {% if event.show_about_section and event.about_text %}
+                    <div class="p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6" style="background-color: {{ style_section_bg }} !important;">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
+                            
+                            <!-- Host Bio Box (Scoped container) -->
+                            <div class="space-y-3 bio-container">
+                                <h2 class="text-xl font-bold border-b border-slate-100 pb-2" style="color: {{ style_heading }} !important;">
+                                    {{ event.about_title|default:"About the Host" }}
+                                </h2>
+                                <div class="prose max-w-none text-sm leading-relaxed" style="color: {{ style_body }} !important; font-family: {{ event.theme_settings.font_family|default:'sans-serif' }} !important;">
+                                    
+                                    <div class="bio-short-text" style="display: block;">
+                                        {{ event.about_text|truncatewords:75|linebreaks }}
+                                    </div>
+                                    
+                                    <div class="bio-full-text" style="display: none;">
+                                        {{ event.about_text|linebreaks }}
+                                    </div>
+
+                                    {% if event.about_text|wordcount > 75 %}
+                                    <button type="button" onclick="toggleBioText(this)" class="mt-2 text-xs font-semibold hover:opacity-80 inline-flex items-center gap-1 cursor-pointer transition" style="color: {{ style_primary }} !important;">
+                                        <span>Read More</span>
+                                        <svg class="w-3.5 h-3.5 transition-transform duration-200 bio-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Photo Gallery Swiper using event.normalized_gallery property -->
+                            {% if event.normalized_gallery %}
+                                <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-xl space-y-4" style="background-color: {{ style_section_bg }} !important;">
+                                    <h2 class="text-xl font-bold border-b border-slate-100 pb-3" style="color: {{ style_heading }} !important;">Photo Gallery</h2>
+                                    <div class="swiper gallery-swiper-split rounded-xl overflow-hidden relative aspect-video w-full">
+                                        <div class="swiper-wrapper">
+                                            {% for item in event.normalized_gallery %}
+                                                <div class="swiper-slide relative bg-slate-900 overflow-hidden rounded-xl">
+                                                    <img src="{{ item.url }}" alt="Gallery Image" class="w-full h-full object-cover">
+                                                    {% if item.caption %}
+                                                        <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 z-20">
+                                                            <p class="text-white text-xs sm:text-sm font-medium drop-shadow-sm line-clamp-2">{{ item.caption }}</p>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                        <div class="swiper-pagination"></div>
+                                        <div class="swiper-button-prev text-white bg-black/40 p-3 rounded-full hover:bg-black/60 transition !w-8 !h-8 after:!text-xs"></div>
+                                        <div class="swiper-button-next text-white bg-black/40 p-3 rounded-full hover:bg-black/60 transition !w-8 !h-8 after:!text-xs"></div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Right Column: Ticket Tiers & RSVP Form -->
+            <div class="lg:col-span-6 sticky top-8 space-y-6">
+                
+                <!-- Ticketed Tiers Card -->
+                {% if event.is_ticketed and event.ticket_tiers.all %}
+                <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4" style="background-color: {{ style_section_bg }} !important;">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <h3 class="text-lg font-bold" style="color: {{ style_heading }} !important;">Available Passes</h3>
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full text-white" style="background-color: {{ style_primary }} !important;">Ticketed Event</span>
+                    </div>
+                    <div class="grid grid-cols-1 gap-3">
+                        {% for tier in event.ticket_tiers.all %}
+                        <div class="rounded-xl border border-slate-200/80 p-4 shadow-sm flex flex-col justify-between transition hover:border-slate-300" style="background-color: {{ style_section_bg }} !important;">
+                            <div class="flex items-center justify-between mb-1">
+                                <h4 class="text-sm font-bold" style="color: {{ style_heading }} !important;">{{ tier.name }}</h4>
+                                <span class="text-base font-bold" style="color: {{ style_primary }} !important;">${{ tier.price }}</span>
+                            </div>
+                            {% if tier.description %}
+                            <p class="text-xs mb-2 opacity-80" style="color: {{ style_body }} !important;">{{ tier.description }}</p>
+                            {% endif %}
+                            <div class="text-[11px] opacity-70" style="color: {{ style_muted }} !important;">
+                                {% if tier.capacity %}Limit: {{ tier.capacity }} seats{% else %}Unlimited Capacity{% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- RSVP Form Card -->
+                <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-xl space-y-5" style="background-color: {{ style_section_bg }} !important;">
+                    <h2 class="text-xl font-bold border-b border-slate-100 pb-3" style="color: {{ style_heading }} !important;">RSVP For This Event</h2>
+                    <form method="post" action="{% url 'events:submit_rsvp' slug=event.slug %}" class="space-y-4" id="rsvpFormSplit">
+                        {% csrf_token %}
+                        <div>
+                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Full Name *</label>
+                            <input type="text" name="full_name" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Email Address *</label>
+                            <input type="email" name="email" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                        </div>
+                        <!--  -->
+                        <div style="display: grid; grid-template-columns: 1fr 3fr; gap: 1rem; width: 100%; position: relative; z-index: 50; min-width: 0;">
+                            <div style="min-width: 0;">
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Prefix</label>
+                                {{ form.phone_prefix }}
+                                {{ form.custom_phone_prefix }}
+                            </div>
+                            <div style="min-width: 0;">
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Phone Number</label>
+                                <input type="tel" name="phone" value="{{ form_data.phone|default:'' }}" placeholder="6 12 34 56 78" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important; box-sizing: border-box;">
+                            </div>
+                        </div>
+
+                        <div class="w-full min-w-0 pt-1">
+                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Attendance Status *</label>
+                            <div class="w-full max-w-full overflow-hidden box-border">
+                                <select name="status" required class="w-full max-w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none box-border" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                                    {% if event.is_ticketed and event.ticket_tiers.all %}
+                                        <option value="" disabled selected>Select a ticket pass...</option>
+                                        {% for tier in event.ticket_tiers.all %}
+                                            <option value="TICKET_{{ tier.id }}">Attending - {{ tier.name }} (${{ tier.price }})</option>
+                                        {% endfor %}
+                                        <option value="DECLINED">Sorry, I cannot make it</option>
+                                    {% else %}
+                                        <option value="ATTENDING">Yes, I will be attending</option>
+                                        <option value="DECLINED">Sorry, I cannot make it</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <style>
+                            select[name="phone_prefix"], select[name="status"] {
+                                color: {{ style_body }} !important;
+                                -webkit-text-fill-color: {{ style_body }} !important;
+                                background-color: {{ style_section_bg }} !important;
+                                opacity: 1 !important;
+                                -webkit-appearance: none !important;
+                                appearance: none !important;
+                                background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+                                background-repeat: no-repeat !important;
+                                background-position: right 0.75rem center !important;
+                                background-size: 1rem !important;
+                                width: 100% !important;
+                                max-width: 100% !important;
+                                box-sizing: border-box !important;
+                                padding: 0.625rem 2.5rem 0.625rem 0.875rem !important;
+                                border: 1px solid #cbd5e1 !important;
+                                border-radius: 0.5rem !important;
+                                font-size: 0.875rem !important;
+                                line-height: 1.25rem !important;
+                            }
+                            select[name="phone_prefix"] option, select[name="status"] option {
+                                background-color: {{ style_section_bg }};
+                                color: {{ style_body }};
+                            }
+                            select[name="phone_prefix"] option {
+                                background-color: {{ style_section_bg }} !important;
+                                color: {{ style_body }} !important;
+                            }
+                            /* Target custom prefix inputs if rendered as text fields or inputs */
+                            input[name="custom_phone_prefix"] {
+                                background-color: {{ style_section_bg }} !important;
+                                color: {{ style_body }} !important;
+                            }
+                        </style>
+                        <!--  -->
+                        {% if event.allow_plus_ones and event.max_plus_ones_per_guest > 0 %}
+                            <div>
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">
+                                    Number of Additional Guests (Max: {{ event.max_plus_ones_per_guest }})
+                                </label>
+                                <input type="number" name="guest_count" id="id_guest_count_split" min="0" max="{{ event.max_plus_ones_per_guest }}" value="{{ form_data.guest_count|default:'0' }}" 
+                                    class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none custom-guest-input" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                                
+                                {% if form_errors.plus_ones_count %}
+                                    <p class="text-xs text-red-600 mt-1">{{ form_errors.plus_ones_count }}</p>
+                                {% endif %}
+                                <p class="text-[11px] mt-1" style="color: {{ style_muted }} !important;">You can bring up to {{ event.max_plus_ones_per_guest }} additional guest(s).</p>
+                            </div>
+
+                            <style>
+                                .custom-guest-input {
+                                    color-scheme: light dark; 
+                                }
+                                .custom-guest-input::-webkit-inner-spin-button,
+                                .custom-guest-input::-webkit-outer-spin-button {
+                                    background-color: {{ style_section_bg }} !important;
+                                    background: {{ style_section_bg }} !important;
+                                    opacity: 1 !important;
+                                }
+                            </style>
+
+                            <div id="guest-name-container-split" class="space-y-2 hidden pt-2 border-t border-dashed border-slate-200"></div>
+                        {% else %}
+                            <input type="hidden" name="guest_count" value="0">
+                        {% endif %}
+
+                        <div>
+                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Dietary Restrictions / Notes</label>
+                            <textarea name="dietary_restrictions" rows="2" placeholder="Dietary notes or special requests..." class="w-full px-3.5 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important; border-color: {{ style_muted }}60 !important;"></textarea>
+                        </div>
+
+                        {% if event.allow_guest_messages %}
+                            <div class="space-y-4 pt-4 border-t border-slate-200">
+                                <div>
+                                    <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</label>
+                                    <textarea name="guest_message" rows="3" placeholder="Write a short message or note..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">{{ form_data.guest_message }}</textarea>
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <button type="submit" style="background-color: {{ style_primary }} !important;" class="w-full py-3.5 text-white font-semibold text-sm rounded-xl shadow-md transition hover:opacity-95 focus:ring-4 focus:ring-blue-200 cursor-pointer">Confirm RSVP</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {% elif theme.layout_style == 'minimal' %}
+            <!-- MINIMALIST CLEAN LAYOUT -->
+            <div class="max-w-3xl mx-auto px-4 py-12 space-y-8">
+                <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-3 text-center" style="background-color: {{ style_section_bg }} !important;">
+                    <span class="inline-block px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white rounded-full" style="background-color: {{ style_primary }} !important;">{{ event.event_date|date:"F j, Y @ g:i A" }}</span>
+                    <h1 class="text-4xl font-black tracking-tight" style="color: {{ style_heading }} !important;">{{ event.title }}</h1>
+                    <p class="text-sm font-medium" style="color: {{ style_body }} !important;">📍 {{ event.location_name }}{% if event.address %} — {{ event.address }}{% endif %}</p>
+                    <!--  -->
+                    <!-- Embedded Map Box with Magnify Effect -->
+                    <div class="mt-4 w-full h-48 relative" style="z-index: 999; overflow: visible !important;">
+                        <div
+                            id="event-map-box"
+                            class="w-full h-full rounded-xl border border-slate-200 shadow-sm bg-slate-900"
+                            style="
+                                position: relative;
+                                z-index: 999;
+                                overflow: hidden;
+                                transform: scale(1);
+                                transform-origin: center center;
+                                transition: transform 0.4s ease, box-shadow 0.4s ease;
+                                cursor: zoom-in;
+                            "
+                            onmouseenter="
+                                this.style.transform='scale(1.18)';
+                                this.style.zIndex='99999';
+                                this.style.boxShadow='0 25px 50px rgba(0,0,0,0.35)';
+                            "
+                            onmouseleave="
+                                this.style.transform='scale(1)';
+                                this.style.zIndex='999';
+                                this.style.boxShadow='';
+                            "
+                        >
+                            <iframe
+                                width="100%"
+                                height="100%"
+                                style="border:0; display:block; pointer-events: none;"
+                                loading="lazy"
+                                src="https://www.google.com/maps?q={{ event.address|urlencode|default:event.location_name|urlencode }}&output=embed">
+                            </iframe>
+                        </div>
+                    </div>
+                    <!--  -->
+                    <!-- Calendar Sync Actions -->
                     <div class="calendar-actions mt-4 flex flex-wrap justify-center items-center gap-3">
                         <!-- Google Calendar Button -->
                         <a href="{{ event.google_calendar_url }}" target="_blank" rel="noopener noreferrer" style="background-color: {{ style_card_bg }}; color: {{ style_body }}; border-color: rgba(255,255,255,0.2); transition: all 0.2s ease-in-out;" onmouseover="this.style.filter='brightness(1.15)'; this.style.boxShadow='0 0 12px {{ style_body }}';" onmouseout="this.style.filter='none'; this.style.boxShadow='none';" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-lg border shadow-sm">
@@ -153,38 +469,67 @@
                         </a>
                     </div>
                 </div>
-
-                {% if event.description %}
-                    <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-3" style="background-color: {{ style_section_bg }} !important;">
-                        <h2 class="text-lg font-bold border-b border-slate-100 pb-2" style="color: {{ style_heading }} !important;">About This Event</h2>
-                        <div class="text-sm leading-relaxed whitespace-pre-line" style="color: {{ style_body }} !important;">{{ event.description }}</div>
+                
+                {% if theme.hero_image_url %}
+                    <div class="w-full relative" style="z-index: 999; overflow: visible !important;">
+                        <div
+                            class="w-full rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-slate-900 aspect-[16/9] lg:aspect-[21/9] lg:min-h-[400px]"
+                            style="
+                                position: relative;
+                                z-index: 999;
+                                transform: scale(1);
+                                transform-origin: center center;
+                                transition: transform 0.4s ease, box-shadow 0.4s ease;
+                                cursor: zoom-in;
+                            "
+                            onmouseenter="
+                                this.style.transform='scale(1.05)';
+                                this.style.zIndex='99999';
+                                this.style.boxShadow='0 25px 50px rgba(0,0,0,0.35)';
+                            "
+                            onmouseleave="
+                                this.style.transform='scale(1)';
+                                this.style.zIndex='999';
+                                this.style.boxShadow='';
+                            "
+                        >
+                            <img src="{{ theme.hero_image_url }}" alt="{{ event.title }}" class="w-full h-full object-cover">
+                        </div>
                     </div>
                 {% endif %}
-                {% if event.show_about_section %}
+
+                {% if event.description %}
+                <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-3" style="background-color: {{ style_section_bg }} !important;">
+                    <h2 class="text-sm font-bold uppercase tracking-wider" style="color: {{ style_muted }} !important;">About</h2>
+                    <div class="text-sm leading-relaxed whitespace-pre-line" style="color: {{ style_body }} !important;">{{ event.description }}</div>
+                </div>
+                {% endif %}
+
+                {% if event.show_about_section and event.about_text %}
                     <div class="p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6" style="background-color: {{ style_section_bg }} !important;">
                         
                         <!-- Responsive Side-by-Side Grid (Bio on left, Gallery on right) -->
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
                             
-                            <!-- Host Bio Box -->
-                            <div class="space-y-3">
+                            <!-- Host Bio Box (Scoped container) -->
+                            <div class="space-y-3 bio-container">
                                 <h2 class="text-xl font-bold border-b border-slate-100 pb-2" style="color: {{ style_heading }} !important;">
                                     {{ event.about_title|default:"About the Host" }}
                                 </h2>
                                 <div class="prose max-w-none text-sm leading-relaxed" style="color: {{ style_body }} !important; font-family: {{ event.theme_settings.font_family|default:'sans-serif' }} !important;">
                                     
-                                    <div id="bio-short-text">
+                                    <div class="bio-short-text" style="display: block;">
                                         {{ event.about_text|truncatewords:75|linebreaks }}
                                     </div>
                                     
-                                    {% if event.about_text|wordcount > 75 %}
-                                    <div id="bio-full-text" class="hidden">
+                                    <div class="bio-full-text" style="display: none;">
                                         {{ event.about_text|linebreaks }}
                                     </div>
                                     
-                                    <button type="button" onclick="toggleBioText()" id="bioToggleBtn" class="mt-2 text-xs font-semibold hover:opacity-80 inline-flex items-center gap-1 cursor-pointer transition" style="color: {{ style_primary }} !important;">
+                                    {% if event.about_text|wordcount > 75 %}
+                                    <button type="button" onclick="toggleBioText(this)" class="mt-2 text-xs font-semibold hover:opacity-80 inline-flex items-center gap-1 cursor-pointer transition" style="color: {{ style_primary }} !important;">
                                         <span>Read More</span>
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-3.5 h-3.5 transition-transform duration-200 bio-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
@@ -193,7 +538,7 @@
                                 </div>
                             </div>
 
-                            <!-- Photo Gallery Swiper using normalized_gallery property -->
+                            <!-- Photo Gallery Swiper using event.normalized_gallery property -->
                             {% if event.normalized_gallery %}
                                 <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-xl space-y-4" style="background-color: {{ style_section_bg }} !important;">
                                     <h2 class="text-xl font-bold border-b border-slate-100 pb-3" style="color: {{ style_heading }} !important;">Photo Gallery</h2>
@@ -201,19 +546,19 @@
                                     <div class="swiper gallery-swiper-split rounded-xl overflow-hidden relative aspect-video w-full">
                                         <div class="swiper-wrapper">
                                             
-                                    {% for item in normalized_gallery %}
-                                        <div class="swiper-slide relative bg-slate-900 overflow-hidden rounded-xl">
-                                            <img src="{{ item.url }}" alt="Gallery Image" class="w-full h-full object-cover">
-                                            
-                                            {% if item.caption %}
-                                                <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 z-20">
-                                                    <p class="text-white text-xs sm:text-sm font-medium drop-shadow-sm line-clamp-2">
-                                                        {{ item.caption }}
-                                                    </p>
+                                            {% for item in event.normalized_gallery %}
+                                                <div class="swiper-slide relative bg-slate-900 overflow-hidden rounded-xl">
+                                                    <img src="{{ item.url }}" alt="Gallery Image" class="w-full h-full object-cover">
+                                                    
+                                                    {% if item.caption %}
+                                                        <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 z-20">
+                                                            <p class="text-white text-xs sm:text-sm font-medium drop-shadow-sm line-clamp-2">
+                                                                {{ item.caption }}
+                                                            </p>
+                                                        </div>
+                                                    {% endif %}
                                                 </div>
-                                            {% endif %}
-                                        </div>
-                                    {% endfor %}
+                                            {% endfor %}
 
                                         </div>
                                         
@@ -227,21 +572,48 @@
                         </div>
                     </div>
                 {% endif %}
-            </div>
 
-            <!-- Right Column: RSVP Form -->
-            <div class="lg:col-span-6 sticky top-8">
-                <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-xl space-y-5" style="background-color: {{ style_section_bg }} !important;">
-                    <h2 class="text-xl font-bold border-b border-slate-100 pb-3" style="color: {{ style_heading }} !important;">RSVP For This Event</h2>
-                    <form method="post" action="{% url 'events:submit_rsvp' slug=event.slug %}" class="space-y-4" id="rsvpFormSplit">
-                        {% csrf_token %}
-                        <div>
-                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Full Name *</label>
-                            <input type="text" name="full_name" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                <!--  -->
+                <!-- Ticketed Tiers Card -->
+                {% if event.is_ticketed and event.ticket_tiers.all %}
+                <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4" style="background-color: {{ style_section_bg }} !important;">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <h3 class="text-lg font-bold" style="color: {{ style_heading }} !important;">Available Passes</h3>
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full text-white" style="background-color: {{ style_primary }} !important;">Ticketed Event</span>
+                    </div>
+                    <div class="grid grid-cols-1 gap-3">
+                        {% for tier in event.ticket_tiers.all %}
+                        <div class="rounded-xl border border-slate-200/80 p-4 shadow-sm flex flex-col justify-between transition hover:border-slate-300" style="background-color: {{ style_section_bg }} !important;">
+                            <div class="flex items-center justify-between mb-1">
+                                <h4 class="text-sm font-bold" style="color: {{ style_heading }} !important;">{{ tier.name }}</h4>
+                                <span class="text-base font-bold" style="color: {{ style_primary }} !important;">${{ tier.price }}</span>
+                            </div>
+                            {% if tier.description %}
+                            <p class="text-xs mb-2 opacity-80" style="color: {{ style_body }} !important;">{{ tier.description }}</p>
+                            {% endif %}
+                            <div class="text-[11px] opacity-70" style="color: {{ style_muted }} !important;">
+                                {% if tier.capacity %}Limit: {{ tier.capacity }} seats{% else %}Unlimited Capacity{% endif %}
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Email Address *</label>
-                            <input type="email" name="email" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                <!--  -->
+
+                <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6" style="background-color: {{ style_section_bg }} !important;">
+                    <h2 class="text-xl font-bold border-b border-slate-100 pb-3" style="color: {{ style_heading }} !important;">RSVP For This Event</h2>
+                    <form method="post" action="{% url 'events:submit_rsvp' slug=event.slug %}" class="space-y-4" id="rsvpFormMinimal">
+                        {% csrf_token %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">Full Name *</label>
+                                <input type="text" name="full_name" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">Email Address *</label>
+                                <input type="email" name="email" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                            </div>
                         </div>
                         
                         <div style="display: grid; grid-template-columns: 1fr 3fr; gap: 1rem; width: 100%; position: relative; z-index: 50;">
@@ -256,56 +628,97 @@
                             </div>
                         </div>
                     
+                        <!--  -->
+                        <div class="w-full min-w-0 pt-1">
+                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Attendance Status *</label>
+                            <div class="w-full max-w-full overflow-hidden box-border">
+                                <select name="status" required class="w-full max-w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none box-border" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                                    {% if event.is_ticketed and event.ticket_tiers.all %}
+                                        <option value="" disabled selected>Select a ticket pass...</option>
+                                        {% for tier in event.ticket_tiers.all %}
+                                            <option value="TICKET_{{ tier.id }}">Attending - {{ tier.name }} (${{ tier.price }})</option>
+                                        {% endfor %}
+                                        <option value="DECLINED">Sorry, I cannot make it</option>
+                                    {% else %}
+                                        <option value="ATTENDING">Yes, I will be attending</option>
+                                        <option value="DECLINED">Sorry, I cannot make it</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                        </div>
+
                         <style>
-                            select[name="phone_prefix"] {
+                            select[name="phone_prefix"], select[name="status"] {
                                 color: {{ style_body }} !important;
+                                -webkit-text-fill-color: {{ style_body }} !important;
                                 background-color: {{ style_section_bg }} !important;
-                                appearance: auto !important;
-                                -webkit-appearance: auto !important;
-                                -moz-appearance: auto !important;
+                                opacity: 1 !important;
+                                -webkit-appearance: none !important;
+                                appearance: none !important;
+                                background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+                                background-repeat: no-repeat !important;
+                                background-position: right 0.75rem center !important;
+                                background-size: 1rem !important;
                                 width: 100% !important;
-                                padding: 0.625rem 0.875rem !important;
+                                max-width: 100% !important;
+                                box-sizing: border-box !important;
+                                padding: 0.625rem 2.5rem 0.625rem 0.875rem !important;
                                 border: 1px solid #cbd5e1 !important;
                                 border-radius: 0.5rem !important;
                                 font-size: 0.875rem !important;
+                                line-height: 1.25rem !important;
+                            }
+                            select[name="phone_prefix"] option, select[name="status"] option {
+                                background-color: {{ style_section_bg }};
+                                color: {{ style_body }};
+                            }                        
+                            select[name="phone_prefix"] option {
+                                background-color: {{ style_section_bg }} !important;
+                                color: {{ style_body }} !important;
+                            }
+                            /* Target custom prefix inputs if rendered as text fields or inputs */
+                            input[name="custom_phone_prefix"] {
+                                background-color: {{ style_section_bg }} !important;
+                                color: {{ style_body }} !important;
                             }
                         </style>
                         <!--  -->
-                        <div>
-                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Attendance Status *</label>
-                            <select name="status" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
-                                <option value="ATTENDING">Yes, I will be attending</option>
-                                <option value="DECLINED">Sorry, I cannot make it</option>
-                            </select>
-                        </div>
-
                         {% if event.allow_plus_ones and event.max_plus_ones_per_guest > 0 %}
                             <div>
                                 <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">
                                     Number of Additional Guests (Max: {{ event.max_plus_ones_per_guest }})
                                 </label>
                                 <input type="number" name="guest_count" id="id_guest_count_split" min="0" max="{{ event.max_plus_ones_per_guest }}" value="{{ form_data.guest_count|default:'0' }}" 
-                                    class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                                    class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none custom-guest-input" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
                                 
                                 {% if form_errors.plus_ones_count %}
                                     <p class="text-xs text-red-600 mt-1">{{ form_errors.plus_ones_count }}</p>
                                 {% endif %}
-
                                 <p class="text-[11px] mt-1" style="color: {{ style_muted }} !important;">You can bring up to {{ event.max_plus_ones_per_guest }} additional guest(s).</p>
                             </div>
 
-                            <div id="guest-name-container-split" class="space-y-2 hidden pt-2 border-t border-dashed border-slate-200">
-                                <!-- Dynamic guest name fields injected here -->
-                            </div>
+                            <style>
+                                .custom-guest-input {
+                                    color-scheme: light dark; 
+                                }
+                                .custom-guest-input::-webkit-inner-spin-button,
+                                .custom-guest-input::-webkit-outer-spin-button {
+                                    background-color: {{ style_section_bg }} !important;
+                                    background: {{ style_section_bg }} !important;
+                                    opacity: 1 !important;
+                                }
+                            </style>
+
+                            <div id="guest-name-container-split" class="space-y-2 hidden pt-2 border-t border-dashed border-slate-200"></div>
                         {% else %}
                             <input type="hidden" name="guest_count" value="0">
                         {% endif %}
 
                         <div>
-                            <!-- <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Dietary Restrictions / Notes</label> -->
-                             <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">Dietary Restrictions / Notes</label>
+                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Dietary Restrictions / Notes</label>
                             <textarea name="dietary_restrictions" rows="2" placeholder="Dietary notes or special requests..." class="w-full px-3.5 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important; border-color: {{ style_muted }}60 !important;"></textarea>
                         </div>
+                        <!--  -->
                         {% if event.allow_guest_messages %}
                             <div class="space-y-4 pt-4 border-t border-slate-200">
                                 <div>
@@ -314,236 +727,24 @@
                                 </div>
                             </div>
                         {% endif %}
-                        <button type="submit" style="background-color: {{ style_primary }} !important;" class="w-full py-3.5 text-white font-semibold text-sm rounded-xl shadow-md transition hover:opacity-95 focus:ring-4 focus:ring-blue-200 cursor-pointer">Confirm RSVP</button>
+                        <button type="submit" style="background-color: {{ style_primary }} !important;" class="w-full py-3 text-white font-semibold text-sm rounded-lg shadow transition hover:opacity-95 cursor-pointer">Submit RSVP</button>
                     </form>
                 </div>
             </div>
-        </div>
 
-    {% elif theme.layout_style == 'minimal' %}
-        <!-- MINIMALIST CLEAN LAYOUT -->
-        <div class="max-w-3xl mx-auto px-4 py-12 space-y-8">
-            <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-3 text-center" style="background-color: {{ style_section_bg }} !important;">
-                <span class="inline-block px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white rounded-full" style="background-color: {{ style_primary }} !important;">{{ event.event_date|date:"F j, Y @ g:i A" }}</span>
-                <h1 class="text-4xl font-black tracking-tight" style="color: {{ style_heading }} !important;">{{ event.title }}</h1>
-                <p class="text-sm font-medium" style="color: {{ style_body }} !important;">📍 {{ event.location_name }}{% if event.address %} — {{ event.address }}{% endif %}</p>
-                <!--  -->
-                 <!-- Embedded Map Box -->
-                <div class="mt-4 w-full h-48 rounded-xl overflow-hidden border border-slate-200 shadow-sm relative z-10">
-                    <iframe 
-                        width="100%" 
-                        height="100%" 
-                        style="border:0;" 
-                        loading="lazy" 
-                        src="https://www.google.com/maps?q={{ event.address|urlencode|default:event.location_name|urlencode }}&output=embed">
-                    </iframe>
-                </div>
-                <!--  -->
-                 <!-- Calendar Sync Actions -->
-                <div class="calendar-actions mt-4 flex flex-wrap justify-center items-center gap-3">
-                    <!-- Google Calendar Button -->
-                    <a href="{{ event.google_calendar_url }}" target="_blank" rel="noopener noreferrer" style="background-color: {{ style_card_bg }}; color: {{ style_body }}; border-color: rgba(255,255,255,0.2); transition: all 0.2s ease-in-out;" onmouseover="this.style.filter='brightness(1.15)'; this.style.boxShadow='0 0 12px {{ style_body }}';" onmouseout="this.style.filter='none'; this.style.boxShadow='none';" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-lg border shadow-sm">
-                        <svg class="w-3.5 h-3.5" style="color: {{ style_body }};" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                        <span>Add to Google Calendar</span>
-                    </a>
-
-                    <!-- Download .ics Button -->
-                    <a href="{% url 'events:download_ics' event.slug %}" style="background-color: {{ style_card_bg }}; color: {{ style_body }}; border-color: rgba(255,255,255,0.2); transition: all 0.2s ease-in-out;" onmouseover="this.style.filter='brightness(1.15)'; this.style.boxShadow='0 0 12px {{ style_body }}';" onmouseout="this.style.filter='none'; this.style.boxShadow='none';" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-lg border shadow-sm">
-                        <svg class="w-3.5 h-3.5" style="color: {{ style_body }};" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                        </svg>
-                        <span>Download .ics File</span>
-                    </a>
-                </div>
-            </div>
-
-            {% if theme.hero_image_url %}
-                <div class="w-full rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-slate-900 aspect-[16/9] lg:aspect-[21/9] lg:min-h-[400px]">
-                    <img src="{{ theme.hero_image_url }}" alt="{{ event.title }}" class="w-full h-full object-cover">
-                </div>
-            {% endif %}
-
-            {% if event.description %}
-            <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-3" style="background-color: {{ style_section_bg }} !important;">
-                <h2 class="text-sm font-bold uppercase tracking-wider" style="color: {{ style_muted }} !important;">About</h2>
-                <div class="text-sm leading-relaxed whitespace-pre-line" style="color: {{ style_body }} !important;">{{ event.description }}</div>
-            </div>
-            {% endif %}
-
-            {% if event.show_about_section %}
-                <div class="p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6" style="background-color: {{ style_section_bg }} !important;">
-                    
-                    <!-- Responsive Side-by-Side Grid (Bio on left, Gallery on right) -->
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
-                        
-                        <!-- Host Bio Box -->
-                        <div class="space-y-3">
-                            <h2 class="text-xl font-bold border-b border-slate-100 pb-2" style="color: {{ style_heading }} !important;">
-                                {{ event.about_title|default:"About the Host" }}
-                            </h2>
-                            <div class="prose max-w-none text-sm leading-relaxed" style="color: {{ style_body }} !important; font-family: {{ event.theme_settings.font_family|default:'sans-serif' }} !important;">
-                                
-                                <div id="bio-short-text">
-                                    {{ event.about_text|truncatewords:75|linebreaks }}
-                                </div>
-                                
-                                {% if event.about_text|wordcount > 75 %}
-                                <div id="bio-full-text" class="hidden">
-                                    {{ event.about_text|linebreaks }}
-                                </div>
-                                
-                                <button type="button" onclick="toggleBioText()" id="bioToggleBtn" class="mt-2 text-xs font-semibold hover:opacity-80 inline-flex items-center gap-1 cursor-pointer transition" style="color: {{ style_primary }} !important;">
-                                    <span>Read More</span>
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </button>
-                                {% endif %}
-
-                            </div>
-                        </div>
-
-                        <!-- Photo Gallery Swiper using normalized_gallery property -->
-                        {% if event.normalized_gallery %}
-                            <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-xl space-y-4" style="background-color: {{ style_section_bg }} !important;">
-                                <h2 class="text-xl font-bold border-b border-slate-100 pb-3" style="color: {{ style_heading }} !important;">Photo Gallery</h2>
-                                
-                                <div class="swiper gallery-swiper-split rounded-xl overflow-hidden relative aspect-video w-full">
-                                    <div class="swiper-wrapper">
-                                        
-                                        {% for item in normalized_gallery %}
-                                            <div class="swiper-slide relative bg-slate-900 overflow-hidden rounded-xl">
-                                                <img src="{{ item.url }}" alt="Gallery Image" class="w-full h-full object-cover">
-                                                
-                                                {% if item.caption %}
-                                                    <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 z-20">
-                                                        <p class="text-white text-xs sm:text-sm font-medium drop-shadow-sm line-clamp-2">
-                                                            {{ item.caption }}
-                                                        </p>
-                                                    </div>
-                                                {% endif %}
-                                            </div>
-                                        {% endfor %}
-
-                                    </div>
-                                    
-                                    <div class="swiper-pagination"></div>
-                                    <div class="swiper-button-prev text-white bg-black/40 p-3 rounded-full hover:bg-black/60 transition !w-8 !h-8 after:!text-xs"></div>
-                                    <div class="swiper-button-next text-white bg-black/40 p-3 rounded-full hover:bg-black/60 transition !w-8 !h-8 after:!text-xs"></div>
-                                </div>
-                            </div>
-                        {% endif %}
-
-                    </div>
-                </div>
-            {% endif %}
-
-            <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6" style="background-color: {{ style_section_bg }} !important;">
-                <h2 class="text-xl font-bold border-b border-slate-100 pb-3" style="color: {{ style_heading }} !important;">Will you be attending?</h2>
-                <form method="post" action="{% url 'events:submit_rsvp' slug=event.slug %}" class="space-y-4" id="rsvpFormMinimal">
-                    {% csrf_token %}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">Full Name *</label>
-                            <input type="text" name="full_name" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">Email Address *</label>
-                            <input type="email" name="email" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
-                        </div>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 3fr; gap: 1rem; width: 100%; position: relative; z-index: 50;">
-                        <div>
-                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Prefix</label>
-                            {{ form.phone_prefix }}
-                            {{ form.custom_phone_prefix }}
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Phone Number</label>
-                            <input type="tel" name="phone" value="{{ form_data.phone|default:'' }}" placeholder="6 12 34 56 78" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
-                        </div>
-                    </div>
-                   
-                    <style>
-                        select[name="phone_prefix"] {
-                            color: {{ style_body }} !important;
-                            background-color: {{ style_section_bg }} !important;
-                            appearance: auto !important;
-                            -webkit-appearance: auto !important;
-                            -moz-appearance: auto !important;
-                            width: 100% !important;
-                            padding: 0.625rem 0.875rem !important;
-                            border: 1px solid #cbd5e1 !important;
-                            border-radius: 0.5rem !important;
-                            font-size: 0.875rem !important;
-                        }
-                    </style>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">Attendance Status *</label>
-                            <select name="status" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
-                                <option value="ATTENDING">Yes, attending</option>
-                                <option value="DECLINED">Cannot attend</option>
-                            </select>
-                        </div>
-
-                        {% if event.allow_plus_ones and event.max_plus_ones_per_guest > 0 %}
-                            <div>
-                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">
-                                    Guests (Max: {{ event.max_plus_ones_per_guest }})
-                                </label>
-                                <input type="number" name="guest_count" id="id_guest_count_minimal" min="0" max="{{ event.max_plus_ones_per_guest }}" value="{{ form_data.guest_count|default:'0' }}" 
-                                    class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
-                                
-                                {% if form_errors.plus_ones_count %}
-                                    <p class="text-xs text-red-600 mt-1">{{ form_errors.plus_ones_count }}</p>
-                                {% endif %}
-                            </div>
-                        {% else %}
-                            <input type="hidden" name="guest_count" value="0">
-                        {% endif %}
-                    </div>
-
-                    {% if event.allow_plus_ones and event.max_plus_ones_per_guest > 0 %}
-                        <div id="guest-name-container-minimal" class="space-y-2 hidden pt-2 border-t border-dashed border-slate-200">
-                        </div>
-                    {% endif %}
-
-                    <div>
-                        <!-- <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Dietary Restrictions / Notes</label> -->
-                        <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_heading }} !important;">Dietary Restrictions / Notes</label>
-                        <textarea name="dietary_restrictions" rows="2" placeholder="Dietary notes or special requests..." class="w-full px-3.5 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important; border-color: {{ style_muted }}60 !important;"></textarea>
-                    </div>
-                    {% if event.allow_guest_messages %}
-                        <div class="space-y-4 pt-4 border-t border-slate-200">
-                            <div>
-                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</label>
-                                <textarea name="guest_message" rows="3" placeholder="Write a short message or note..." class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">{{ form_data.guest_message }}</textarea>
-                            </div>
-                        </div>
-                    {% endif %}
-                    <button type="submit" style="background-color: {{ style_primary }} !important;" class="w-full py-3 text-white font-semibold text-sm rounded-lg shadow transition hover:opacity-95 cursor-pointer">Submit RSVP</button>
-                </form>
-            </div>
-        </div>
-
-    {% else %}
+    {% elif theme.layout_style == 'centered' %} <!--centered-->
         <!-- CENTERED / DEFAULT LAYOUT -->
-        <div class="relative w-full min-h-[320px] md:min-h-[480px] lg:min-h-[560px] bg-slate-900 flex items-center justify-center overflow-hidden py-12">
+        <div class="relative w-full min-h-[280px] sm:min-h-[320px] md:min-h-[480px] lg:min-h-[560px] bg-slate-900 flex items-center justify-center overflow-hidden py-8 sm:py-12 mt-4 sm:mt-0">
             {% if theme.hero_image_url %}
                 <img src="{{ theme.hero_image_url }}" alt="{{ event.title }}" class="absolute inset-0 w-full h-full object-cover">
             {% else %}
                 <div class="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 opacity-90"></div>
             {% endif %}
             <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/40 to-black/30 z-10"></div>
-            <div class="relative z-20 text-center px-4 max-w-3xl mt-auto pb-6">
-                <span class="inline-block px-3 py-1 mb-3 text-xs font-semibold uppercase tracking-wider text-white bg-black/50 backdrop-blur-md rounded-full border border-white/20 shadow-sm">{{ event.event_date|date:"F j, Y @ g:i A" }}</span>
-                <h1 class="text-3xl md:text-5xl font-extrabold text-white tracking-tight drop-shadow-lg">{{ event.title }}</h1>
-                <p class="text-sm md:text-base text-slate-200 mt-2 flex items-center justify-center gap-2 drop-shadow">📍 {{ event.location_name }}</p>
+            <div class="relative z-20 text-center px-3 sm:px-4 max-w-3xl mt-auto pb-4 sm:pb-6">
+                <span class="inline-block px-3 py-1 mb-2 sm:mb-3 text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-white bg-black/50 backdrop-blur-md rounded-full border border-white/20 shadow-sm">{{ event.event_date|date:"F j, Y @ g:i A" }}</span>
+                <h1 class="text-2xl sm:text-3xl md:text-5xl font-extrabold text-white tracking-tight drop-shadow-lg break-words">{{ event.title }}</h1>
+                <p class="text-xs sm:text-sm md:text-base text-slate-200 mt-1.5 sm:mt-2 flex items-center justify-center gap-2 drop-shadow break-words px-2">📍 {{ event.location_name }}</p>
             </div>
         </div>
 
@@ -566,17 +767,41 @@
                     </div>
                 </div>
                 <!--  -->
-                    <!-- Embedded Map Box -->
-                    <div class="mt-4 w-full h-48 rounded-xl overflow-hidden border border-slate-200 shadow-sm relative z-10">
-                        <iframe 
-                            width="100%" 
-                            height="100%" 
-                            style="border:0;" 
-                            loading="lazy" 
+                <!-- Embedded Map Box with Magnify Effect -->
+                <div class="mt-4 w-full h-48 relative" style="z-index: 999; overflow: visible !important;">
+                    <div
+                        id="event-map-box"
+                        class="w-full h-full rounded-xl border border-slate-200 shadow-sm bg-slate-900"
+                        style="
+                            position: relative;
+                            z-index: 999;
+                            overflow: hidden;
+                            transform: scale(1);
+                            transform-origin: center center;
+                            transition: transform 0.4s ease, box-shadow 0.4s ease;
+                            cursor: zoom-in;
+                        "
+                        onmouseenter="
+                            this.style.transform='scale(1.18)';
+                            this.style.zIndex='99999';
+                            this.style.boxShadow='0 25px 50px rgba(0,0,0,0.35)';
+                        "
+                        onmouseleave="
+                            this.style.transform='scale(1)';
+                            this.style.zIndex='999';
+                            this.style.boxShadow='';
+                        "
+                    >
+                        <iframe
+                            width="100%"
+                            height="100%"
+                            style="border:0; display:block; pointer-events: none;"
+                            loading="lazy"
                             src="https://www.google.com/maps?q={{ event.address|urlencode|default:event.location_name|urlencode }}&output=embed">
                         </iframe>
                     </div>
-                    <!--  -->
+                </div>
+                <!--  -->
                  <!-- Calendar Sync Actions -->
                 <div class="calendar-actions mt-4 flex flex-wrap justify-center items-center gap-3">
                     <!-- Google Calendar Button -->
@@ -596,6 +821,22 @@
                     </a>
                 </div>
             </div>
+            
+            <!--  -->
+            <!-- FLOATING SIDE ANNOUNCEMENT CARD -->
+            {% if event.show_announcement and event.announcement_text %}
+            <div class="xl:absolute xl:right-[-320px] xl:top-[20%] xl:w-72 p-6 rounded-2xl border border-slate-200 shadow-xl space-y-3 z-40 my-6 xl:my-0" style="background-color: {{ style_section_bg }} !important;">
+                <span class="text-[10px] font-semibold uppercase tracking-widest block" style="color: {{ style_muted }} !important;">
+                    {{ event.announcement_title|default:"Announcement" }}
+                </span>
+                <span class="text-2xl font-serif block opacity-40 leading-none">“</span>
+                <p class="text-xs font-serif italic leading-relaxed" style="color: {{ style_heading }} !important;">
+                    {{ event.announcement_text|linebreaksbr }}
+                </p>
+                <span class="text-[9px] font-semibold uppercase tracking-widest block pt-1 border-t border-slate-100" style="color: {{ style_muted }} !important;">— Broadcast Update</span>
+            </div>
+            {% endif %}
+            <!--  -->
 
             {% if event.description %}
             <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-xl space-y-4" style="background-color: {{ style_section_bg }} !important;">
@@ -604,31 +845,31 @@
             </div>
             {% endif %}
 
-            {% if event.show_about_section %}
+            {% if event.show_about_section and event.about_text %}
                 <div class="p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6" style="background-color: {{ style_section_bg }} !important;">
                     
                     <!-- Responsive Side-by-Side Grid (Bio on left, Gallery on right) -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
                         
-                        <!-- Host Bio Box -->
-                        <div class="space-y-3">
+                        <!-- Host Bio Box (Scoped with bio-container) -->
+                        <div class="space-y-3 bio-container">
                             <h2 class="text-xl font-bold border-b border-slate-100 pb-2" style="color: {{ style_heading }} !important;">
                                 {{ event.about_title|default:"About the Host" }}
                             </h2>
                             <div class="prose max-w-none text-sm leading-relaxed" style="color: {{ style_body }} !important; font-family: {{ event.theme_settings.font_family|default:'sans-serif' }} !important;">
                                 
-                                <div id="bio-short-text">
+                                <div class="bio-short-text" style="display: block;">
                                     {{ event.about_text|truncatewords:75|linebreaks }}
                                 </div>
                                 
-                                {% if event.about_text|wordcount > 75 %}
-                                <div id="bio-full-text" class="hidden">
+                                <div class="bio-full-text" style="display: none;">
                                     {{ event.about_text|linebreaks }}
                                 </div>
                                 
-                                <button type="button" onclick="toggleBioText()" id="bioToggleBtn" class="mt-2 text-xs font-semibold hover:opacity-80 inline-flex items-center gap-1 cursor-pointer transition" style="color: {{ style_primary }} !important;">
+                                {% if event.about_text|wordcount > 75 %}
+                                <button type="button" onclick="toggleBioText(this)" class="mt-2 text-xs font-semibold hover:opacity-80 inline-flex items-center gap-1 cursor-pointer transition" style="color: {{ style_primary }} !important;">
                                     <span>Read More</span>
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-3.5 h-3.5 transition-transform duration-200 bio-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                     </svg>
                                 </button>
@@ -645,19 +886,19 @@
                                 <div class="swiper gallery-swiper-split rounded-xl overflow-hidden relative aspect-video w-full">
                                     <div class="swiper-wrapper">
                                         
-                                {% for item in normalized_gallery %}
-                                    <div class="swiper-slide relative bg-slate-900 overflow-hidden rounded-xl">
-                                        <img src="{{ item.url }}" alt="Gallery Image" class="w-full h-full object-cover">
-                                        
-                                        {% if item.caption %}
-                                            <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 z-20">
-                                                <p class="text-white text-xs sm:text-sm font-medium drop-shadow-sm line-clamp-2">
-                                                    {{ item.caption }}
-                                                </p>
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                {% endfor %}
+                                    {% for item in event.normalized_gallery %}
+                                        <div class="swiper-slide relative bg-slate-900 overflow-hidden rounded-xl">
+                                            <img src="{{ item.url }}" alt="Gallery Image" class="w-full h-full object-cover">
+                                            
+                                            {% if item.caption %}
+                                                <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 z-20">
+                                                    <p class="text-white text-xs sm:text-sm font-medium drop-shadow-sm line-clamp-2">
+                                                        {{ item.caption }}
+                                                    </p>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
 
                                     </div>
                                     
@@ -671,6 +912,34 @@
                     </div>
                 </div>
             {% endif %}
+
+            <!--  -->
+            <!-- Ticketed Tiers Card -->
+            {% if event.is_ticketed and event.ticket_tiers.all %}
+            <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4" style="background-color: {{ style_section_bg }} !important;">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h3 class="text-lg font-bold" style="color: {{ style_heading }} !important;">Available Passes</h3>
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full text-white" style="background-color: {{ style_primary }} !important;">Ticketed Event</span>
+                </div>
+                <div class="grid grid-cols-1 gap-3">
+                    {% for tier in event.ticket_tiers.all %}
+                    <div class="rounded-xl border border-slate-200/80 p-4 shadow-sm flex flex-col justify-between transition hover:border-slate-300" style="background-color: {{ style_section_bg }} !important;">
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="text-sm font-bold" style="color: {{ style_heading }} !important;">{{ tier.name }}</h4>
+                            <span class="text-base font-bold" style="color: {{ style_primary }} !important;">${{ tier.price }}</span>
+                        </div>
+                        {% if tier.description %}
+                        <p class="text-xs mb-2 opacity-80" style="color: {{ style_body }} !important;">{{ tier.description }}</p>
+                        {% endif %}
+                        <div class="text-[11px] opacity-70" style="color: {{ style_muted }} !important;">
+                            {% if tier.capacity %}Limit: {{ tier.capacity }} seats{% else %}Unlimited Capacity{% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            <!--  -->
 
             <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-xl space-y-4" style="background-color: {{ style_section_bg }} !important;">
                 <h2 class="text-xl font-bold border-b border-slate-100 pb-3" style="color: {{ style_heading }} !important;">RSVP For This Event</h2>
@@ -704,58 +973,97 @@
                             <input type="tel" name="phone" value="{{ form_data.phone|default:'' }}" placeholder="6 12 34 56 78" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
                         </div>
                     </div>
+                    <!--  -->
+                    <div class="w-full min-w-0 pt-1">
+                        <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Attendance Status *</label>
+                        <div class="w-full max-w-full overflow-hidden box-border">
+                            <select name="status" required class="w-full max-w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none box-border" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                                {% if event.is_ticketed and event.ticket_tiers.all %}
+                                    <option value="" disabled selected>Select a ticket pass...</option>
+                                    {% for tier in event.ticket_tiers.all %}
+                                        <option value="TICKET_{{ tier.id }}">Attending - {{ tier.name }} (${{ tier.price }})</option>
+                                    {% endfor %}
+                                    <option value="DECLINED">Sorry, I cannot make it</option>
+                                {% else %}
+                                    <option value="ATTENDING">Yes, I will be attending</option>
+                                    <option value="DECLINED">Sorry, I cannot make it</option>
+                                {% endif %}
+                            </select>
+                        </div>
+                    </div>
+
                     <style>
-                        select[name="phone_prefix"] {
+                        select[name="phone_prefix"], select[name="status"] {
                             color: {{ style_body }} !important;
+                            -webkit-text-fill-color: {{ style_body }} !important;
                             background-color: {{ style_section_bg }} !important;
-                            appearance: auto !important;
-                            -webkit-appearance: auto !important;
-                            -moz-appearance: auto !important;
+                            opacity: 1 !important;
+                            -webkit-appearance: none !important;
+                            appearance: none !important;
+                            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+                            background-repeat: no-repeat !important;
+                            background-position: right 0.75rem center !important;
+                            background-size: 1rem !important;
                             width: 100% !important;
-                            padding: 0.625rem 0.875rem !important;
+                            max-width: 100% !important;
+                            box-sizing: border-box !important;
+                            padding: 0.625rem 2.5rem 0.625rem 0.875rem !important;
                             border: 1px solid #cbd5e1 !important;
                             border-radius: 0.5rem !important;
                             font-size: 0.875rem !important;
+                            line-height: 1.25rem !important;
+                        }
+                        select[name="phone_prefix"] option, select[name="status"] option {
+                            background-color: {{ style_section_bg }};
+                            color: {{ style_body }};
+                        }                        
+                        select[name="phone_prefix"] option {
+                            background-color: {{ style_section_bg }} !important;
+                            color: {{ style_body }} !important;
+                        }
+                        /* Target custom prefix inputs if rendered as text fields or inputs */
+                        input[name="custom_phone_prefix"] {
+                            background-color: {{ style_section_bg }} !important;
+                            color: {{ style_body }} !important;
                         }
                     </style>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Attendance Status *</label>
-                            <select name="status" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
-                                <option value="ATTENDING">Yes, attending</option>
-                                <option value="DECLINED">Cannot attend</option>
-                            </select>
-                        </div>
-
-                        {% if event.allow_plus_ones and event.max_plus_ones_per_guest > 0 %}
-                            <div>
-                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">
-                                    Number of Guests (Max: {{ event.max_plus_ones_per_guest }})
-                                </label>
-                                <input type="number" name="guest_count" id="id_guest_count_default" min="0" max="{{ event.max_plus_ones_per_guest }}" value="{{ form_data.guest_count|default:'0' }}" 
-                                    class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
-                                
-                                {% if form_errors.plus_ones_count %}
-                                    <p class="text-xs text-red-600 mt-1">{{ form_errors.plus_ones_count }}</p>
-                                {% endif %}
-                            </div>
-                        {% else %}
-                            <input type="hidden" name="guest_count" value="0">
-                        {% endif %}
-                    </div>
-
-                    {% if event.allow_plus_ones and event.max_plus_ones_per_guest > 0 %}
-                        <div id="guest-name-container-default" class="space-y-2 hidden pt-2 border-t border-dashed border-slate-200">
-                            <!-- Dynamic full-width name inputs injected here -->
-                        </div>
-                    {% endif %}
                     <!--  -->
+                    {% if event.allow_plus_ones and event.max_plus_ones_per_guest > 0 %}
+                        <div>
+                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">
+                                Number of Additional Guests (Max: {{ event.max_plus_ones_per_guest }})
+                            </label>
+                            <input type="number" name="guest_count" id="id_guest_count_split" min="0" max="{{ event.max_plus_ones_per_guest }}" value="{{ form_data.guest_count|default:'0' }}" 
+                                class="w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none custom-guest-input" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                            
+                            {% if form_errors.plus_ones_count %}
+                                <p class="text-xs text-red-600 mt-1">{{ form_errors.plus_ones_count }}</p>
+                            {% endif %}
+                            <p class="text-[11px] mt-1" style="color: {{ style_muted }} !important;">You can bring up to {{ event.max_plus_ones_per_guest }} additional guest(s).</p>
+                        </div>
+
+                        <style>
+                            .custom-guest-input {
+                                color-scheme: light dark; 
+                            }
+                            .custom-guest-input::-webkit-inner-spin-button,
+                            .custom-guest-input::-webkit-outer-spin-button {
+                                background-color: {{ style_section_bg }} !important;
+                                background: {{ style_section_bg }} !important;
+                                opacity: 1 !important;
+                            }
+                        </style>
+
+                        <div id="guest-name-container-split" class="space-y-2 hidden pt-2 border-t border-dashed border-slate-200"></div>
+                    {% else %}
+                        <input type="hidden" name="guest_count" value="0">
+                    {% endif %}
 
                     <div>
                         <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Dietary Restrictions / Notes</label>
                         <textarea name="dietary_restrictions" rows="2" placeholder="Dietary notes or special requests..." class="w-full px-3.5 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important; border-color: {{ style_muted }}60 !important;"></textarea>
                     </div>
+                    <!--  -->
 
                     {% if event.allow_guest_messages %}
                         <div class="space-y-4 pt-4 border-t border-slate-200">
@@ -770,11 +1078,897 @@
                 </form>
             </div>
         </div>
-    {% endif %}
+
+
+        <!-- ===================NEW LAYOUTS START========================= -->
+        {% elif theme.layout_style == 'editorial' %} 
+        <!-- ================= EDITORIAL & MINIMALIST LAYOUT CONTAINER ================= -->
+        <div class="max-w-5xl mx-auto px-4 py-12 space-y-12 font-sans" style="color: {{ style_body }} !important;">
+
+            <div class="text-center space-y-6 max-w-3xl mx-auto p-8 rounded-3xl border border-slate-200/80 shadow-sm relative overflow-hidden" style="background-color: {{ style_section_bg }} !important; border-radius: 1rem !important;">
+                {% if theme.hero_image_url %}
+                    <div class="rounded-2xl overflow-hidden mb-8 shadow-sm border border-slate-100 bg-slate-950 flex items-center justify-center" style="max-height: 420px; border-radius: 1rem;">
+                        <img src="{{ theme.hero_image_url }}" alt="{{ event.title }}" style="width: 100%; height: 100%; object-fit: contain; border-radius: 1rem;">
+                    </div>
+                {% endif %}
+                
+                <div class="space-y-3">
+                    <span class="tracking-widest uppercase text-xs font-semibold px-4 py-1.5 rounded-full inline-block text-white shadow-xs" style="background-color: {{ style_primary }} !important;">
+                        {{ event.event_date|date:"F j, Y @ g:i A" }}
+                    </span>
+                    <h1 class="text-4xl md:text-6xl font-serif tracking-tight font-normal leading-tight" style="color: {{ style_heading }} !important;">{{ event.title }}</h1>
+                    
+                    <!-- Bio text with support for toggleBioText() script -->
+                    <div class="text-sm md:text-base leading-relaxed italic max-w-xl mx-auto opacity-90" style="color: {{ style_body }} !important;">
+                        <div id="bio-short-text">
+                            {{ event.description|default:event.location_name|truncatechars:150 }}
+                        </div>
+                        <div id="bio-full-text" class="hidden">
+                            {{ event.description|default:event.location_name }}
+                        </div>
+                        {% if event.description|length > 150 %}
+                        <button id="bioToggleBtn" onclick="toggleBioText()" class="mt-2 text-xs font-semibold uppercase tracking-wider underline focus:outline-none" style="color: {{ style_primary }} !important;">
+                            <span>Read More</span>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="pt-6 border-t border-slate-100 flex flex-wrap justify-center items-center gap-4 text-xs font-medium tracking-wide" style="color: {{ style_muted }} !important;">
+                    <span>📍 {{ event.location_name }}{% if event.address %} — {{ event.address }}{% endif %}</span>
+                    <span>•</span>
+                </div>
+                <!--  -->
+                <!-- Calendar Sync Actions -->
+                        <div class="calendar-actions mt-4 flex flex-wrap justify-center items-center gap-2 sm:gap-3">
+                            <!-- Google Calendar Button -->
+                            <a href="{{ event.google_calendar_url }}" target="_blank" rel="noopener noreferrer" style="background-color: {{ style_card_bg }}; color: {{ style_body }}; border-color: rgba(255,255,255,0.2); transition: all 0.2s ease-in-out;" onmouseover="this.style.filter='brightness(1.15)'; this.style.boxShadow='0 0 12px {{ style_body }}';" onmouseout="this.style.filter='none'; this.style.boxShadow='none';" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-lg border shadow-sm">
+                                <svg class="w-3.5 h-3.5 flex-shrink-0" style="color: {{ style_body }};" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <span>Add to Google Calendar</span>
+                            </a>
+
+                            <!-- Download .ics Button -->
+                            <a href="{% url 'events:download_ics' event.slug %}" style="background-color: {{ style_card_bg }}; color: {{ style_body }}; border-color: rgba(255,255,255,0.2); transition: all 0.2s ease-in-out;" onmouseover="this.style.filter='brightness(1.15)'; this.style.boxShadow='0 0 12px {{ style_body }}';" onmouseout="this.style.filter='none'; this.style.boxShadow='none';" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-lg border shadow-sm">
+                                <svg class="w-3.5 h-3.5 flex-shrink-0" style="color: {{ style_body }};" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                </svg>
+                                <span>Download .ics File</span>
+                            </a>
+                        </div>
+                <!--  -->
+            </div>
+
+            <!-- Main Wrapper for Sections 2, 3, and 4 to constrain all content uniformly to 50% max-width -->
+        <div class="w-full md:max-w-[50%] mx-auto space-y-8">
+
+        <!-- 2. Admission / Pass Tiers & Quick Action Section -->
+        <div class="custom-section-width">
+            <div style="display: grid; grid-template-columns: 1fr; gap: 2rem;">
+            {% if event.is_ticketed and event.ticket_tiers.all %}
+                <div class="ticket-card-responsive" style="grid-column: span 1 / -1; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid rgba(226, 232, 240, 0.8); display: flex; flex-direction: column; align-items: stretch; justify-content: space-between; gap: 1.5rem; background-color: {{ style_section_bg }} !important;">
+                    <div>
+                        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; color: {{ style_muted }} !important;">Standard Admission — ${{ event.ticket_tiers.all.0.price }}</span>
+                        <h3 style="font-size: 1.35rem; font-family: serif; margin-top: 0.25rem; color: {{ style_heading }} !important; word-break: break-word;">{{ event.ticket_tiers.all.0.name }}</h3>
+                        {% if event.ticket_tiers.all.0.description %}
+                            <p style="font-size: 0.75rem; margin-top: 0.25rem; line-height: 1.6; opacity: 0.8; word-break: break-word;">{{ event.ticket_tiers.all.0.description }}</p>
+                        {% endif %}
+                    </div>
+                    <a href="#rsvpEditorialSection" onclick="toggleRsvpForm(event)" style="width: 100%; text-align: center; box-sizing: border-box; padding: 0.875rem 1.5rem; border-radius: 0.75rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #ffffff; background-color: {{ style_primary }} !important; text-decoration: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); flex-shrink: 0;">
+                        Reserve Invitation
+                    </a>
+                </div>
+            {% else %}
+                <div class="ticket-card-responsive" style="grid-column: span 1 / -1; padding: 1.5rem; border-radius: 1.5rem; border: 1px solid rgba(226, 232, 240, 0.8); display: flex; flex-direction: column; align-items: stretch; justify-content: space-between; gap: 1.5rem; background-color: {{ style_section_bg }} !important;">
+                    <div>
+                        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; color: {{ style_muted }} !important;">Event Status</span>
+                        <h3 style="font-size: 1.35rem; font-family: serif; margin-top: 0.25rem; color: {{ style_heading }} !important; word-break: break-word;">Open RSVP & Registration</h3>
+                        <p style="font-size: 0.75rem; margin-top: 0.25rem; line-height: 1.6; opacity: 0.8; word-break: break-word;">Secure your attendance immediately through our curated registration system below.</p>
+                    </div>
+                    <a href="#rsvpEditorialSection" onclick="toggleRsvpForm(event)" style="width: 100%; text-align: center; box-sizing: border-box; padding: 0.875rem 1.5rem; border-radius: 0.75rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #ffffff; background-color: {{ style_primary }} !important; text-decoration: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); flex-shrink: 0;">
+                        Register Now
+                    </a>
+                </div>
+            {% endif %}
+            </div>
+        </div>
+        <style>
+            @media (min-width: 640px) {
+                .ticket-card-responsive {
+                    flex-direction: row !important;
+                    align-items: center !important;
+                    padding: 2rem !important;
+                }
+                .ticket-card-responsive a {
+                    width: auto !important;
+                    text-align: inherit !important;
+                    padding: 0.875rem 2rem !important;
+                }
+                .ticket-card-responsive h3 {
+                    font-size: 1.5rem !important;
+                }
+            }
+        </style>
+
+
+        <!-- 5. Host About Section (If enabled) -->
+        {% if event.show_about_section and event.about_text %}
+            <div class="custom-section-width">
+                <!-- Outer container box with padding and border -->
+                <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6" style="background-color: {{ style_section_bg }} !important;" data-controller="read-more">                
+                    <!-- Inner nested card with a slightly smaller width -->
+                    <div class="inner-description-card p-6 md:p-8 rounded-2xl border border-slate-200/80 shadow-sm space-y-3" style="background-color: rgba(255, 255, 255, 0.02); text-align: left;">
+                        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; color: {{ style_muted }} !important; display: block; margin-bottom: 0.5rem;">Background</span>
+                        <h3 style="font-size: 1.875rem; font-family: serif; color: {{ style_heading }} !important; margin-bottom: 1rem;">{{ event.about_title|default:"About the Host" }}</h3>
+                        
+                        <!-- Notice we use a class container (.bio-container) instead of risky global IDs -->
+                        <div class="prose max-w-none text-sm leading-relaxed bio-container" style="color: {{ style_body }} !important; font-family: {{ event.theme_settings.font_family|default:'sans-serif' }} !important;">                       
+                            <!-- Short preview text -->
+                            <div class="bio-short-text" style="display: block;">
+                                {{ event.about_text|truncatewords:35|linebreaks }}
+                            </div>
+
+                            <!-- Full text block (Hidden by default via inline style) -->
+                            <div class="bio-full-text" style="display: none;">
+                                {{ event.about_text|linebreaks }}
+                            </div>
+
+                            {% if event.about_text|wordcount > 35 %}
+                                <button type="button" onclick="toggleBioText(this)" class="mt-2 text-xs font-semibold hover:opacity-80 inline-flex items-center gap-1 cursor-pointer transition" style="color: {{ style_primary }} !important;">
+                                    <span>Read More</span>
+                                    <svg class="w-3.5 h-3.5 transition-transform duration-200 bio-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Photo Gallery Swiper -->
+                    {% if event.normalized_gallery %}
+                    <div class="space-y-2">
+                        <div style="text-align: center; margin-bottom: 1rem;">
+                            <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; color: {{ style_muted }} !important; display: block; margin-bottom: 0.25rem;">Visual Archive</span>
+                            <h3 style="font-size: 1.5rem; font-family: serif; color: {{ style_heading }} !important;">Image Spotlight</h3>
+                        </div>
+                        <div class="swiper gallery-swiper-split rounded-xl overflow-hidden relative aspect-video w-full">
+                            <div class="swiper-wrapper h-full">
+                                {% for item in event.normalized_gallery %}
+                                <div class="swiper-slide relative bg-slate-900 overflow-hidden rounded-xl">
+                                    <img src="{{ item.url }}" alt="Gallery Image" class="w-full h-full object-cover">
+                                    {% if item.caption %}
+                                        <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 z-20">
+                                            <p class="text-white text-xs sm:text-sm font-medium drop-shadow-sm line-clamp-2">
+                                                {{ item.caption }}
+                                            </p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <div class="swiper-pagination"></div>
+                            <div class="swiper-button-prev text-white bg-black/40 p-3 rounded-full hover:bg-black/60 transition !w-8 !h-8 after:!text-xs"></div>
+                            <div class="swiper-button-next text-white bg-black/40 p-3 rounded-full hover:bg-black/60 transition !w-8 !h-8 after:!text-xs"></div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Fallback if gallery is empty -->
+        {% if event.show_about_section and event.about_text and not event.normalized_gallery %}
+        <div class="custom-section-width" style="margin-top: 1.5rem;">
+            <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-row justify-between items-center gap-6" style="background-color: {{ style_section_bg }} !important;">
+                <div>
+                    <span class="text-[11px] uppercase tracking-wider font-semibold block mb-1" style="color: {{ style_muted }} !important;">Curated Location</span>
+                    <h3 class="text-xl font-bold font-serif mb-2" style="color: {{ style_heading }} !important;">Venue Architecture & Ambiance</h3>
+                    <p class="text-xs leading-relaxed opacity-80 max-w-xl" style="color: {{ style_body }} !important;">Equipped with high-end acoustic engineering, curated lighting installations, and dedicated hospitality lounges.</p>
+                </div>
+                <div class="text-xs uppercase tracking-wider font-semibold flex-shrink-0" style="color: {{ style_muted }} !important;">Host: {{ event.host.get_full_name|default:event.host.username }}</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Fallback if gallery is empty -->
+        {% if event.show_about_section and event.about_text and not event.normalized_gallery %}
+        <div class="custom-section-width" style="margin-top: 1.5rem;">
+            <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-row justify-between items-center gap-6" style="background-color: {{ style_section_bg }} !important;">
+                <div>
+                    <span class="text-[11px] uppercase tracking-wider font-semibold block mb-1" style="color: {{ style_muted }} !important;">Curated Location</span>
+                    <h3 class="text-xl font-bold font-serif mb-2" style="color: {{ style_heading }} !important;">Venue Architecture & Ambiance</h3>
+                    <p class="text-xs leading-relaxed opacity-80 max-w-xl" style="color: {{ style_body }} !important;">Equipped with high-end acoustic engineering, curated lighting installations, and dedicated hospitality lounges.</p>
+                </div>
+                <div class="text-xs uppercase tracking-wider font-semibold flex-shrink-0" style="color: {{ style_muted }} !important;">Host: {{ event.host.get_full_name|default:event.host.username }}</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 3. Photo Gallery Editorial Showcase (Fallback if gallery is empty) -->
+        <!-- {% if not event.normalized_gallery %}
+        <div class="custom-section-width">
+            <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-row justify-content: space-between items-center gap-6" style="background-color: {{ style_section_bg }} !important;">
+                <div>
+                    <span class="text-[11px] uppercase tracking-wider font-semibold block mb-1" style="color: {{ style_muted }} !important;">Curated Location</span>
+                    <h3 class="text-xl font-bold font-serif mb-2" style="color: {{ style_heading }} !important;">Venue Architecture & Ambiance</h3>
+                    <p class="text-xs leading-relaxed opacity-80 max-w-xl" style="color: {{ style_body }} !important;">Equipped with high-end acoustic engineering, curated lighting installations, and dedicated hospitality lounges.</p>
+                </div>
+                <div class="text-xs uppercase tracking-wider font-semibold flex-shrink-0" style="color: {{ style_muted }} !important;">Host: {{ event.host.get_full_name|default:event.host.username }}</div>
+            </div>
+        </div>
+        {% endif %} -->
+
+        <!-- 4. Map & Guest Spotlight Dual Column -->
+        <div class="custom-grid-wrapper">
+            <!-- Location Map Card -->
+            <div style="padding: 1.5rem; border-radius: 1.5rem; border: 1px solid rgba(226, 232, 240, 0.8); display: flex; flex-direction: column; justify-content: space-between; gap: 1rem; background-color: {{ style_section_bg }} !important;">
+                <div style="margin-top: 1rem; width: 100%; height: 14rem; position: relative; overflow: hidden; border-radius: 0.75rem; z-index: 999;">
+                    <div
+                        id="event-map-box"
+                        style="
+                            width: 100%;
+                            height: 100%;
+                            border-radius: 0.75rem;
+                            border: 1px solid #e2e8f0;
+                            background-color: #0f172a;
+                            overflow: hidden;
+                            position: relative;
+                            z-index: 999;
+                            transform: scale(1);
+                            transform-origin: center center;
+                            transition: transform 0.4s ease, box-shadow 0.4s ease;
+                            cursor: zoom-in;
+                        "
+                        onmouseenter="
+                            if (window.innerWidth > 768) {
+                                this.style.transform='scale(1.18)';
+                                this.style.zIndex='99999';
+                                this.style.boxShadow='0 25px 50px rgba(0,0,0,0.35)';
+                            }
+                        "
+                        onmouseleave="
+                            this.style.transform='scale(1)';
+                            this.style.zIndex='999';
+                            this.style.boxShadow='';
+                        "
+                    >
+                        <iframe
+                            width="100%"
+                            height="100%"
+                            style="border:0; display:block; pointer-events: none;"
+                            loading="lazy"
+                            src="https://www.google.com/maps?q={{ event.address|urlencode|default:event.location_name|urlencode }}&output=embed">
+                        </iframe>
+                    </div>
+                </div>
+                <div style="padding-top: 0.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div>
+                        <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; display: block; color: {{ style_muted }} !important;">Location Locator</span>
+                        <h4 style="font-family: serif; font-size: 1rem; margin-top: 0.125rem; color: {{ style_heading }} !important;">{{ event.location_name }}</h4>
+                    </div>
+                    {% if event.address %}
+                        <span style="font-size: 0.75rem; opacity: 0.75; text-align: right;">{{ event.address }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Guest Spotlight / Messages Swiper -->
+            <div style="padding: 2rem; border-radius: 1.5rem; border: 1px solid rgba(226, 232, 240, 0.8); display: flex; flex-direction: column; justify-content: space-between; text-align: center; position: relative; background-color: {{ style_section_bg }} !important;">
+                <div class="swiper messages-swiper" style="width: 100%; margin: auto; padding: 1.5rem 0;">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide" style="display: flex; flex-direction: column; gap: 1rem; align-items: center;">
+                            <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; display: block; color: {{ style_muted }} !important;">Guest Spotlight</span>
+                            <span style="font-size: 1.875rem; font-family: serif; display: block; opacity: 0.4; line-height: 1;">“</span>
+                            <p style="font-size: 0.95rem; font-family: serif; font-style: italic; line-height: 1.6; max-width: 28rem; margin: 0 auto; color: {{ style_heading }} !important;">
+                                An exquisite exhibition, a true celebration of form, elegance, and timeless curation.
+                            </p>
+                            <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; display: block; padding-top: 0.5rem; color: {{ style_muted }} !important;">— Art Connoisseur & Critic</span>
+                        </div>
+                        
+                        {% if event.show_announcement and event.announcement_text %}
+                        <div class="swiper-slide" style="display: flex; flex-direction: column; gap: 1rem; align-items: center;">
+                            <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; display: block; color: {{ style_muted }} !important;">
+                                {{ event.announcement_title|default:"Announcement" }}
+                            </span>
+                            <span style="font-size: 1.875rem; font-family: serif; display: block; opacity: 0.4; line-height: 1;">“</span>
+                            <p style="font-size: 0.95rem; font-family: serif; font-style: italic; line-height: 1.6; max-width: 28rem; margin: 0 auto; color: {{ style_heading }} !important;">
+                                {{ event.announcement_text|linebreaksbr }}
+                            </p>
+                            <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; display: block; padding-top: 0.5rem; color: {{ style_muted }} !important;">— Broadcast Update</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="swiper-pagination" style="margin-top: 1rem;"></div>
+                </div>
+                <div style="padding-top: 1rem; border-top: 1px solid rgba(226, 232, 240, 0.5); display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; opacity: 0.6;">
+                    <span>Exhibition Update</span>
+                    <span style="cursor: pointer; color: {{ style_primary }} !important;">Catalog Available</span>
+                </div>
+            </div>
+        </div>
+        <style>
+            /* Tuned width overrides (75%) */
+            .custom-section-width {
+                width: 100% !important;
+                max-width: 70% !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+                margin-top: 3rem !important;
+            }
+            .inner-description-card {
+                width: 100% !important;
+                max-width: 70% !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+            .custom-grid-wrapper {
+                display: grid !important;
+                grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+                gap: 3rem !important;
+                width: 100% !important;
+                max-width: 75% !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+            @media (min-width: 768px) {
+                .custom-grid-wrapper {
+                    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                }
+                
+            }
+
+            /* ======== */
+            /* Responsive adjustments and container overrides */
+            .custom-section-width {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            @media (min-width: 768px) {
+                .custom-section-width {
+                    max-width: 70% !important;
+                    margin-left: auto !important;
+                    margin-right: auto !important;
+                    margin-top: 3rem !important;
+                }
+                
+            }
+            .inner-description-card {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            @media (min-width: 768px) {
+                .inner-description-card {
+                    max-width: 70% !important;
+                    margin-left: auto !important;
+                    margin-right: auto !important;
+                }
+            }
+            .custom-grid-wrapper {
+                display: grid !important;
+                grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+                gap: 2rem !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+            @media (min-width: 768px) {
+                .custom-grid-wrapper {
+                    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                    gap: 3rem !important;
+                    max-width: 75% !important;
+                }
+            }
+            
+        </style>
+
+            <!-- 6. Full RSVP Form Card (Initially hidden, matching toggleRsvpForm and layout selector ids like id_guest_count_centered) -->
+            <div id="rsvpEditorialSection" class="p-8 md:p-12 rounded-3xl border border-slate-200/80 shadow-xl space-y-8 max-w-3xl mx-auto hidden" style="background-color: {{ style_section_bg }} !important;">
+                <div class="text-center space-y-2">
+                    <span class="text-[11px] uppercase tracking-widest font-semibold" style="color: {{ style_primary }} !important;">Secure Registration</span>
+                    <h2 class="text-3xl font-serif tracking-tight" style="color: {{ style_heading }} !important;">RSVP For This Event</h2>
+                    <p class="text-xs md:text-sm opacity-80 max-w-md mx-auto" style="color: {{ style_muted }} !important;">Please fill in your correct credentials to confirm your attendance profile.</p>
+                </div>
+
+                <form method="post" action="{% url 'events:submit_rsvp' slug=event.slug %}" class="space-y-4 w-full box-border" id="rsvpFormDefault">
+                    {% csrf_token %}
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                        <div class="w-full min-w-0">
+                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Full Name *</label>
+                            <input type="text" name="full_name" value="{{ form_data.full_name|default:'' }}" required class="w-full max-w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none box-border" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                        </div>
+                        <div class="w-full min-w-0">
+                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Email Address *</label>
+                            <input type="email" name="email" value="{{ form_data.email|default:'' }}" required class="w-full max-w-full px-3.5 py-2.5 border {% if form_errors.email %}border-red-500{% else %}border-slate-300{% endif %} rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none box-border" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                            {% if form_errors.email %}
+                                <p class="mt-1 text-xs text-red-600 font-medium">{{ form_errors.email }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Fully responsive phone grid: stacks vertically on mobile, side-by-side on sm+ -->
+                    <div class="grid grid-cols-1 sm:grid-cols-[120px_1fr] gap-3 w-full box-border items-start">
+                        <div class="w-full min-w-0">
+                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Prefix</label>
+                            <div class="w-full max-w-full overflow-hidden box-border">
+                                {{ form.phone_prefix }}
+                            </div>
+                            <div class="w-full max-w-full mt-2">
+                                {{ form.custom_phone_prefix }}
+                            </div>
+                        </div>
+                        <div class="w-full min-w-0">
+                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Phone Number</label>
+                            <input type="tel" name="phone" value="{{ form_data.phone|default:'' }}" placeholder="6 12 34 56 78" class="w-full max-w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none box-border" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                        </div>
+                    </div>
+
+                    <div class="w-full min-w-0 pt-1">
+                        <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Attendance Status *</label>
+                        <div class="w-full max-w-full overflow-hidden box-border">
+                            <select name="status" required class="w-full max-w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none box-border" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                                {% if event.is_ticketed and event.ticket_tiers.all %}
+                                    <option value="" disabled selected>Select a ticket pass...</option>
+                                    {% for tier in event.ticket_tiers.all %}
+                                        <option value="TICKET_{{ tier.id }}">Attending - {{ tier.name }} (${{ tier.price }})</option>
+                                    {% endfor %}
+                                    <option value="DECLINED">Sorry, I cannot make it</option>
+                                {% else %}
+                                    <option value="ATTENDING">Yes, I will be attending</option>
+                                    <option value="DECLINED">Sorry, I cannot make it</option>
+                                {% endif %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <style>
+                        /* Comprehensive fluid mobile fixes for all inputs, selects, and textareas */
+                        input, select, textarea {
+                            max-width: 100% !important;
+                            box-sizing: border-box !important;
+                            -webkit-appearance: none;
+                        }
+                        select[name="phone_prefix"], select[name="status"] {
+                            color: {{ style_body }} !important;
+                            -webkit-text-fill-color: {{ style_body }} !important;
+                            background-color: {{ style_section_bg }} !important;
+                            opacity: 1 !important;
+                            appearance: none !important;
+                            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+                            background-repeat: no-repeat !important;
+                            background-position: right 0.75rem center !important;
+                            background-size: 1rem !important;
+                            width: 100% !important;
+                            max-width: 100% !important;
+                            box-sizing: border-box !important;
+                            padding: 0.625rem 2.5rem 0.625rem 0.875rem !important;
+                            border: 1px solid #cbd5e1 !important;
+                            border-radius: 0.5rem !important;
+                            font-size: 0.875rem !important;
+                            line-height: 1.25rem !important;
+                        }
+                        select[name="phone_prefix"] option, select[name="status"] option {
+                            background-color: {{ style_section_bg }} !important;
+                            color: {{ style_body }} !important;
+                        }
+                        input[name="custom_phone_prefix"] {
+                            background-color: {{ style_section_bg }} !important;
+                            color: {{ style_body }} !important;
+                            width: 100% !important;
+                            max-width: 100% !important;
+                            box-sizing: border-box !important;
+                        }
+                    </style>
+
+                    {% if event.allow_plus_ones and event.max_plus_ones_per_guest > 0 %}
+                        <div class="w-full min-w-0">
+                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">
+                                Number of Additional Guests (Max: {{ event.max_plus_ones_per_guest }})
+                            </label>
+                            <input type="number" name="guest_count" id="id_guest_count_split" min="0" max="{{ event.max_plus_ones_per_guest }}" value="{{ form_data.guest_count|default:'0' }}" 
+                                class="w-full max-w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none custom-guest-input box-border" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">
+                            
+                            {% if form_errors.plus_ones_count %}
+                                <p class="text-xs text-red-600 mt-1">{{ form_errors.plus_ones_count }}</p>
+                            {% endif %}
+                            <p class="text-[11px] mt-1" style="color: {{ style_muted }} !important;">You can bring up to {{ event.max_plus_ones_per_guest }} additional guest(s).</p>
+                        </div>
+
+                        <style>
+                            .custom-guest-input {
+                                color-scheme: light dark; 
+                            }
+                            .custom-guest-input::-webkit-inner-spin-button,
+                            .custom-guest-input::-webkit-outer-spin-button {
+                                background-color: {{ style_section_bg }} !important;
+                                background: {{ style_section_bg }} !important;
+                                opacity: 1 !important;
+                            }
+                        </style>
+
+                        <div id="guest-name-container-split" class="space-y-2 hidden pt-2 border-t border-dashed border-slate-200 w-full"></div>
+                    {% else %}
+                        <input type="hidden" name="guest_count" value="0">
+                    {% endif %}
+
+                    <div class="w-full min-w-0">
+                        <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Dietary Restrictions / Notes</label>
+                        <textarea name="dietary_restrictions" rows="2" placeholder="Dietary notes or special requests..." class="w-full max-w-full px-3.5 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none box-border" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important; border-color: {{ style_muted }}60 !important;"></textarea>
+                    </div>
+
+                    {% if event.allow_guest_messages %}
+                        <div class="space-y-4 pt-4 border-t border-slate-200 w-full">
+                            <div class="w-full min-w-0">
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">A SPECIAL MESSAGE FOR THE CELEBRANT</label>
+                                <textarea name="guest_message" rows="3" placeholder="Write a short message or note..." class="w-full max-w-full px-3.5 py-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none box-border" style="color: {{ style_body }} !important; background-color: {{ style_section_bg }} !important;">{{ form_data.guest_message }}</textarea>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Test-mode payment simulation toggle -->
+                    <!-- <div class="flex items-center gap-2 pt-2">
+                        <input type="checkbox" name="simulate_payment" id="simulate_payment" value="on" checked class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                        <label for="simulate_payment" class="text-xs font-medium cursor-pointer" style="color: {{ style_muted }} !important;">
+                            Simulate payment completion (Dev/Test mode)
+                        </label>
+                    </div> -->
+                    <!-- ========= -->
+                    
+                    {% if not event.is_past %}
+                    <button type="submit" style="background-color: {{ style_primary }} !important;" class="w-full max-w-full py-3.5 text-white font-semibold text-sm rounded-xl shadow-md transition hover:opacity-95 focus:ring-4 focus:ring-blue-200 cursor-pointer box-border">
+                        Confirm RSVP
+                    </button>
+                    {% else %}
+                        <span class="text-xs px-3 py-1.5 bg-slate-800 text-slate-400 rounded-lg border border-slate-700 block text-center w-full box-border">
+                            🔒 Event Concluded (Locked)
+                        </span>
+                    {% endif %}
+                </form>
+
+                <!-- Hidden Input for copyRsvpLink() script target -->
+                <input type="text" id="publicRsvpUrl" value="{{ request.build_absolute_uri }}" class="hidden">
+            </div>
+        </div>
+
+    {% else %}
+        <!-- Optional Hero Section -->
+        <div class="relative w-full overflow-hidden" style="min-height: 70vh; height: 70vh; position: relative;">
+            {% if theme.hero_image_url %}
+                <img src="{{ theme.hero_image_url }}" alt="{{ event.title }}" class="absolute inset-0 w-full h-full object-cover" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;">
+            {% elif event.hero_image_url %}
+                <img src="{{ event.hero_image_url }}" alt="{{ event.title }}" class="absolute inset-0 w-full h-full object-cover" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;">
+            {% else %}
+                <div class="absolute inset-0 bg-gradient-to-r from-stone-950 via-stone-900 to-stone-950 opacity-90" style="position: absolute; inset: 0; background-color: #0c0a09;"></div>
+            {% endif %}
+            
+            <!-- Forced absolute positioning and bottom alignment via inline styles to bypass global CSS resets -->
+            <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(12,10,9,0.95) 0%, rgba(12,10,9,0.4) 50%, transparent 100%); display: flex; flex-direction: column; justify-content: flex-end; padding: 2rem; z-index: 20;">
+                <span style="color: #fbbf24 !important; font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem;">
+                    {% if event.subtitle %}{{ event.subtitle }}{% else %}Immersive Experience & Gathering{% endif %}
+                </span>
+                
+                <h1 style="color: {% if style_heading %}{{ style_heading }}{% else %}#ffffff{% endif %} !important; font-size: 2.25rem; font-weight: 700; line-height: 1.1; max-width: 48rem; margin: 0;">
+                    {{ event.title|default:"Wilderness Acoustic & Storytelling Summit" }}
+                </h1>
+                
+                <p style="color: #d6d3d1 !important; font-size: 1.125rem; margin-top: 0.75rem; margin-bottom: 0;">
+                    {{ event.event_date|date:"F j–Y, Y"|default:"September 24–27, 2026" }} {% if event.location_name %}• {{ event.location_name }}{% endif %}
+                </p>
+            </div>
+        </div>
+
+            <!-- Main Grid Root (Inline Style block handling desktop grid split & spacing without external tags) -->
+            <div class="event-wrapper-root" style="max-width: 64rem; margin-left: auto; margin-right: auto; padding-left: 1.5rem; padding-right: 1.5rem; padding-top: 4rem; padding-bottom: 4rem;">
+                <style>
+                    @media (min-width: 768px) {
+                        .event-wrapper-root {
+                            display: grid !important;
+                            grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) !important;
+                            gap: 3rem !important;
+                            align-items: start !important;
+                        }
+                    }
+                </style>
+                
+                <!-- Left/Main Column: Story, Bio, Gallery, Map, Calendar -->
+                <div class="event-main-content space-y-10" style="min-width: 0;">
+
+                    <!-- The Experience / Story Section -->
+                    <section class="space-y-4">
+                        <h2 class="text-2xl font-bold border-b border-stone-200 pb-2" style="color: {{ style_heading }} !important;">The Experience</h2>
+                        <div class="prose max-w-none text-stone-700 leading-relaxed" style="color: {{ style_body }} !important;">
+                            {% if event.description %}
+                                {{ event.description|linebreaks }}
+                            {% else %}
+                                <p>Join independent creators, visionaries, and community enthusiasts for immersive days of authentic storytelling, intimate sessions, and deep connection inspired by our core narrative structure.</p>
+                            {% endif %}
+                        </div>
+                    </section>
+
+                    <!-- Date, Time & Location Details Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-6 rounded-2xl border border-stone-200 bg-white/50 shadow-sm" style="background-color: {{ style_section_bg }} !important;">
+                        <div>
+                            <strong class="block text-xs uppercase tracking-wider" style="color: {{ style_muted }} !important;">Date & Time</strong>
+                            <p class="mt-0.5 font-medium">{{ event.event_date|date:"l, F j, Y"|default:"September 24, 2026" }} at {{ event.event_date|date:"g:i A"|default:"10:00 AM" }}</p>
+                        </div>
+                        <div>
+                            <strong class="block text-xs uppercase tracking-wider" style="color: {{ style_muted }} !important;">Location</strong>
+                            <p class="mt-1 font-medium">{{ event.location_name|default:"Sequoia National Forest" }}</p>
+                            {% if event.address %}<p class="text-xs mt-0.5 opacity-80">{{ event.address }}</p>{% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Embedded Map Box with Magnify Effect -->
+                    {% if event.address or event.location_name %}
+                    <div class="mt-4 w-full h-48 relative" style="z-index: 99; overflow: visible !important;">
+                        <div
+                            id="event-map-box"
+                            class="w-full h-full rounded-xl border border-stone-200 shadow-sm bg-stone-900"
+                            style="
+                                position: relative;
+                                z-index: 99;
+                                overflow: hidden;
+                                transform: scale(1);
+                                transform-origin: center center;
+                                transition: transform 0.4s ease, box-shadow 0.4s ease;
+                                cursor: zoom-in;
+                            "
+                            onmouseenter="
+                                this.style.transform='scale(1.12)';
+                                this.style.zIndex='9999';
+                                this.style.boxShadow='0 25px 50px rgba(0,0,0,0.35)';
+                            "
+                            onmouseleave="
+                                this.style.transform='scale(1)';
+                                this.style.zIndex='99';
+                                this.style.boxShadow='';
+                            "
+                        >
+                            <iframe
+                                width="100%"
+                                height="100%"
+                                style="border:0; display:block; pointer-events: none;"
+                                loading="lazy"
+                                src="https://www.google.com/maps?q={{ event.address|urlencode|default:event.location_name|urlencode }}&output=embed">
+                            </iframe>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Calendar Sync Actions -->
+                                <div class="calendar-actions mt-4 flex flex-wrap justify-center items-center gap-2 sm:gap-3">
+                                    <!-- Google Calendar Button -->
+                                    <a href="{{ event.google_calendar_url }}" target="_blank" rel="noopener noreferrer" style="background-color: {{ style_card_bg }}; color: {{ style_body }}; border-color: rgba(255,255,255,0.2); transition: all 0.2s ease-in-out;" onmouseover="this.style.filter='brightness(1.15)'; this.style.boxShadow='0 0 12px {{ style_body }}';" onmouseout="this.style.filter='none'; this.style.boxShadow='none';" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-lg border shadow-sm">
+                                        <svg class="w-3.5 h-3.5 flex-shrink-0" style="color: {{ style_body }};" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <span>Add to Google Calendar</span>
+                                    </a>
+
+                                    <!-- Download .ics Button -->
+                                    <a href="{% url 'events:download_ics' event.slug %}" style="background-color: {{ style_card_bg }}; color: {{ style_body }}; border-color: rgba(255,255,255,0.2); transition: all 0.2s ease-in-out;" onmouseover="this.style.filter='brightness(1.15)'; this.style.boxShadow='0 0 12px {{ style_body }}';" onmouseout="this.style.filter='none'; this.style.boxShadow='none';" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider rounded-lg border shadow-sm">
+                                        <svg class="w-3.5 h-3.5 flex-shrink-0" style="color: {{ style_body }};" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                        </svg>
+                                        <span>Download .ics File</span>
+                                    </a>
+                                </div>
+                        <!--  -->
+
+                    <!-- Optional About / Bio Section with Scoped Read More Toggle -->
+                    {% if event.show_about_section and event.about_text %}
+                    <div class="p-6 md:p-8 rounded-2xl border border-stone-200 shadow-sm space-y-4 bio-container" style="background-color: {{ style_section_bg }} !important;">
+                        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; color: {{ style_muted }} !important; display: block;">Background</span>
+                        <h3 class="text-xl font-bold" style="color: {{ style_heading }} !important;">{{ event.about_title|default:"About the Host & Story" }}</h3>
+                        <div class="prose max-w-none text-sm leading-relaxed" style="color: {{ style_body }} !important;">
+                            <div class="bio-short-text" style="display: block;">
+                                {{ event.about_text|truncatewords:45|linebreaks }}
+                            </div>
+                            <div class="bio-full-text" style="display: none;">
+                                {{ event.about_text|linebreaks }}
+                            </div>
+                            {% if event.about_text|wordcount > 45 %}
+                            <button type="button" onclick="toggleBioText(this)" class="mt-3 text-xs font-semibold hover:opacity-80 inline-flex items-center gap-1 cursor-pointer transition" style="color: {{ style_primary }} !important;">
+                                <span>Read More</span>
+                                <svg class="w-3.5 h-3.5 transition-transform duration-200 bio-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Photo Gallery Swiper -->
+                    {% if event.normalized_gallery %}
+                    <div class="p-6 md:p-8 rounded-2xl border border-stone-200 shadow-sm space-y-4" style="background-color: {{ style_section_bg }} !important;">
+                        <h2 class="text-xl font-bold border-b border-stone-100 pb-3" style="color: {{ style_heading }} !important;">Visual Archive</h2>
+                        <div class="swiper gallery-swiper-split rounded-xl overflow-hidden relative aspect-video w-full">
+                            <div class="swiper-wrapper">
+                                {% for item in event.normalized_gallery %}
+                                    <div class="swiper-slide relative bg-stone-900 overflow-hidden rounded-xl">
+                                        <img src="{{ item.url }}" alt="Gallery Image" class="w-full h-full object-cover">
+                                        {% if item.caption %}
+                                            <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 z-20">
+                                                <p class="text-white text-xs sm:text-sm font-medium drop-shadow-sm line-clamp-2">{{ item.caption }}</p>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="swiper-pagination"></div>
+                            <div class="swiper-button-prev text-white bg-black/40 p-3 rounded-full hover:bg-black/60 transition !w-8 !h-8 after:!text-xs"></div>
+                            <div class="swiper-button-next text-white bg-black/40 p-3 rounded-full hover:bg-black/60 transition !w-8 !h-8 after:!text-xs"></div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                </div>
+
+                <!-- Sidebar Column: Action Card (Ticketing / Quick RSVP) + Announcement Card -->
+                <div class="event-sidebar-content space-y-6 mt-8 md:mt-0" style="min-width: 0;">
+
+                    <!-- Ticketed Tiers Card -->
+                    {% if event.is_ticketed and event.ticket_tiers.all %}
+                    <div class="p-6 rounded-2xl border border-stone-200 shadow-sm space-y-4 bg-white" style="background-color: {{ style_section_bg }} !important;">
+                        <div class="flex items-center justify-between border-b border-stone-100 pb-3">
+                            <h3 class="font-bold text-base" style="color: {{ style_heading }} !important;">Ticketing Passes</h3>
+                            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full text-white uppercase tracking-wider" style="background-color: {{ style_primary }} !important;">Ticketed</span>
+                        </div>
+                        <div class="space-y-3">
+                            {% for tier in event.ticket_tiers.all %}
+                            <div class="rounded-xl border border-stone-200 p-3.5 flex flex-col justify-between transition hover:border-stone-300 bg-stone-50/50">
+                                <div class="flex items-center justify-between mb-1">
+                                    <h4 class="text-xs font-bold uppercase tracking-wider" style="color: {{ style_heading }} !important;">{{ tier.name }}</h4>
+                                    <span class="text-base font-extrabold" style="color: {{ style_primary }} !important;">${{ tier.price }}</span>
+                                </div>
+                                {% if tier.description %}
+                                <p class="text-xs mb-2 opacity-80" style="color: {{ style_body }} !important;">{{ tier.description }}</p>
+                                {% endif %}
+                                <div class="text-[10px] opacity-70" style="color: {{ style_muted }} !important;">
+                                    {% if tier.capacity %}Limit: {{ tier.capacity }} seats{% else %}Standard Pass{% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <button onclick="toggleRsvpForm(event)" class="w-full py-3 rounded-xl font-semibold text-white transition text-sm shadow cursor-pointer" style="background-color: {{ style_primary }} !important;">
+                            Secure Ticket Pass
+                        </button>
+                    </div>
+                    {% else %}
+                    <!-- Standard RSVP Summary Card with CTA Button -->
+                    <div class="p-6 rounded-2xl border border-stone-200 shadow-sm bg-white h-fit space-y-4" style="background-color: {{ style_section_bg }} !important;">
+                        <span class="text-xs uppercase tracking-widest font-semibold block" style="color: {{ style_muted }} !important;">Admission</span>
+                        <h3 class="font-bold text-xl" style="color: {{ style_heading }} !important;">{{ event.title|truncatechars:30 }}</h3>
+                        <div class="text-2xl font-extrabold" style="color: {{ style_heading }} !important;">Free RSVP</div>
+                        <p class="text-xs leading-relaxed" style="color: {{ style_body }} !important;">Secure your spot to join us for this unique storytelling gathering.</p>
+                        <button onclick="toggleRsvpForm(event)" class="w-full text-white font-semibold py-3 rounded-xl transition text-sm shadow cursor-pointer" style="background-color: {{ style_primary }} !important;">
+                            Secure RSVP
+                        </button>
+                    </div>
+                    {% endif %}
+
+                    <!-- Little Announcement Card (Moved to Sidebar) -->
+                    <!-- Announcement argument if there's -->
+                    <!-- <div class="p-4 rounded-xl border border-amber-200 bg-amber-50/60 flex items-start gap-3 shadow-sm">
+                        <svg class="w-5 h-5 text-amber-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
+                        </svg>
+                        <div>
+                            <h4 class="text-xs font-bold uppercase tracking-wider mb-0.5" style="color: {{ style_heading }} !important;">Announcement</h4>
+                            <p class="text-sm leading-relaxed" style="color: {{ style_body }} !important;">"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in"</p>
+                        </div>
+                    </div> -->
+                    <!-- Announcement Card -->
+                    {% if event.announcement_text %}
+                    <div class="p-4 rounded-xl border border-amber-200 bg-amber-50/60 flex items-start gap-3 shadow-sm">
+                        <svg class="w-5 h-5 text-amber-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
+                        </svg>
+                        <div>
+                            <h4 class="text-xs font-bold uppercase tracking-wider mb-0.5" style="color: {{ style_heading }} !important;">{{ event.announcement_title|linebreaksbr }}</h4>
+                            <p class="text-sm leading-relaxed" style="color: {{ style_body }} !important;">{{ event.announcement_text|linebreaksbr }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <!-- Announcement argument ends -->
+
+                </div>
+
+            </div>
+
+            <!-- RSVP Form Section -->
+            <div id="rsvpEditorialSection" class="max-w-2xl mx-auto px-6 pb-24 pt-4 hidden">
+                <div class="p-6 md:p-8 rounded-2xl border border-stone-200 shadow-xl bg-white space-y-4" style="background-color: {{ style_section_bg }} !important;">
+                    <h2 class="text-xl font-bold border-b border-stone-100 pb-3" style="color: {{ style_heading }} !important;">
+                        {% if event.is_ticketed %}Select Pass & Complete Reservation{% else %}RSVP For This Experience{% endif %}
+                    </h2>
+                    
+                    <form method="post" action="{% url 'events:submit_rsvp' slug=event.slug %}" class="space-y-4" id="rsvpFormDefault">
+                        {% csrf_token %}
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Full Name *</label>
+                                <input type="text" name="full_name" value="{{ form_data.full_name|default:'' }}" required class="w-full px-3.5 py-2.5 border border-stone-300 rounded-lg text-sm focus:ring-2 focus:ring-stone-900 focus:outline-none" style="color: {{ style_body }} !important; background-color: #ffffff !important;">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Email Address *</label>
+                                <input type="email" name="email" value="{{ form_data.email|default:'' }}" required class="w-full px-3.5 py-2.5 border border-stone-300 rounded-lg text-sm focus:ring-2 focus:ring-stone-900 focus:outline-none" style="color: {{ style_body }} !important; background-color: #ffffff !important;">
+                                {% if form_errors.email %}
+                                    <p class="mt-1 text-xs text-red-600 font-medium">{{ form_errors.email }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 w-full">
+                            <div class="md:col-span-1">
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Prefix</label>
+                                {{ form.phone_prefix }}
+                                {{ form.custom_phone_prefix }}
+                            </div>
+                            <div class="md:col-span-3">
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Phone Number</label>
+                                <input type="tel" name="phone" value="{{ form_data.phone|default:'' }}" placeholder="6 12 34 56 78" class="w-full px-3.5 py-2.5 border border-stone-300 rounded-lg text-sm focus:ring-2 focus:ring-stone-900 focus:outline-none" style="color: {{ style_body }} !important; background-color: #ffffff !important;">
+                            </div>
+                        </div>
+
+                        <div class="w-full pt-1">
+                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Attendance Status & Tier *</label>
+                            <select name="status" required class="w-full px-3.5 py-2.5 border border-stone-300 rounded-lg text-sm focus:ring-2 focus:ring-stone-900 focus:outline-none" style="color: {{ style_body }} !important; background-color: #ffffff !important;">
+                                {% if event.is_ticketed and event.ticket_tiers.all %}
+                                    <option value="" disabled selected>Select a ticket pass...</option>
+                                    {% for tier in event.ticket_tiers.all %}
+                                        <option value="TICKET_{{ tier.id }}">Attending - {{ tier.name }} (${{ tier.price }})</option>
+                                    {% endfor %}
+                                    <option value="DECLINED">Sorry, I cannot make it</option>
+                                {% else %}
+                                    <option value="ATTENDING">Yes, I will be attending</option>
+                                    <option value="DECLINED">Sorry, I cannot make it</option>
+                                {% endif %}
+                            </select>
+                        </div>
+
+                        {% if event.allow_plus_ones and event.max_plus_ones_per_guest > 0 %}
+                            <div>
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">
+                                    Number of Additional Guests (Max: {{ event.max_plus_ones_per_guest }})
+                                </label>
+                                <input type="number" name="guest_count" id="id_guest_count_split" min="0" max="{{ event.max_plus_ones_per_guest }}" value="{{ form_data.guest_count|default:'0' }}" 
+                                    class="w-full px-3.5 py-2.5 border border-stone-300 rounded-lg text-sm focus:ring-2 focus:ring-stone-900 focus:outline-none" style="color: {{ style_body }} !important; background-color: #ffffff !important;">
+                                <p class="text-[11px] mt-1 opacity-70" style="color: {{ style_muted }} !important;">You can bring up to {{ event.max_plus_ones_per_guest }} additional guest(s).</p>
+                            </div>
+                            <div id="guest-name-container-split" class="space-y-2 hidden pt-2 border-t border-dashed border-stone-200"></div>
+                        {% else %}
+                            <input type="hidden" name="guest_count" value="0">
+                        {% endif %}
+
+                        <div>
+                            <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Dietary Restrictions / Notes</label>
+                            <textarea name="dietary_restrictions" rows="2" placeholder="Dietary notes or special requests..." class="w-full px-3.5 py-2.5 border border-stone-300 rounded-lg text-sm focus:ring-2 focus:ring-stone-900 focus:outline-none" style="color: {{ style_body }} !important; background-color: #ffffff !important;"></textarea>
+                        </div>
+
+                        {% if event.allow_guest_messages %}
+                            <div class="space-y-2 pt-2 border-t border-stone-200">
+                                <label class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">A Special Message for the Host</label>
+                                <textarea name="guest_message" rows="3" placeholder="Write a short message or note..." class="w-full px-3.5 py-2.5 border border-stone-300 rounded-lg text-sm focus:ring-2 focus:ring-stone-900 focus:outline-none" style="color: {{ style_body }} !important; background-color: #ffffff !important;">{{ form_data.guest_message }}</textarea>
+                            </div>
+                        {% endif %}
+
+                        <button type="submit" style="background-color: {{ style_primary }} !important;" class="w-full py-3 text-white font-semibold text-sm rounded-xl shadow transition hover:opacity-95 cursor-pointer">Submit Registration</button>
+                    </form>
+                </div>
+            </div>
+
+        {% endif %}
+    <!-- ========================NEW LAYOUTS END====================== -->
 
     <!-- ================= GUEST MESSAGES CAROUSEL ================= -->
     {% if guest_messages %}
-        <div class="max-w-3xl lg:max-w-6xl mx-auto px-4 mt-12">
+        <div class="max-w-3xl lg:max-w-6xl mx-auto px-4 mt-8 sm:mt-12">
             <div class="p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4" style="background-color: {{ style_section_bg }} !important;">
                 <h2 class="text-xl font-bold border-b border-slate-100 pb-3" style="color: {{ style_heading }} !important;">Messages from Guests</h2>
                 
@@ -792,9 +1986,6 @@
             </div>
         </div>
     {% endif %}
-
-    
-
 </div>
 
 {% with contacts=theme.organizer_contacts %}
@@ -805,7 +1996,7 @@
                     Questions or Enquiries?  
                 </p>
                 <p class="font-medium text-sm text-white">
-                   <span class="font-semibold text-slate-200">{{ contacts.name|default:event.host.username|default:"Event Host" }}</span>
+                <span class="font-semibold text-slate-200">{{ contacts.name|default:event.host.username|default:"Event Host" }}</span>
                 </p>
                 <div class="flex justify-center items-center gap-3 pt-1">
                     {% if contacts.phone %}
@@ -834,25 +2025,35 @@
 {% endwith %}
 
 
+
 <script>
-    function toggleBioText() {
-        const shortText = document.getElementById('bio-short-text');
-        const fullText = document.getElementById('bio-full-text');
-        const btn = document.getElementById('bioToggleBtn');
+    function toggleBioText(button) {
+        const container = button.closest('.bio-container');
+        if (!container) return;
+
+        const shortText = container.querySelector('.bio-short-text');
+        const fullText = container.querySelector('.bio-full-text');
+        const span = button.querySelector('span');
+        const arrow = button.querySelector('.bio-arrow');
         
-        if (!shortText || !fullText || !btn) return;
-        
-        if (fullText.classList.contains('hidden')) {
-            shortText.classList.add('hidden');
-            fullText.classList.remove('hidden');
-            btn.querySelector('span').innerText = 'Show Less';
+        if (!shortText || !fullText) return;
+
+        if (fullText.style.display === 'none' || fullText.style.display === '') {
+            shortText.style.setProperty('display', 'none', 'important');
+            fullText.style.setProperty('display', 'block', 'important');
+            if (span) span.innerText = 'Show Less';
+            // Force the arrow to point upward via inline transform style
+            if (arrow) arrow.style.transform = 'rotate(180deg)';
         } else {
-            shortText.classList.remove('hidden');
-            fullText.classList.add('hidden');
-            btn.querySelector('span').innerText = 'Read More';
+            shortText.style.setProperty('display', 'block', 'important');
+            fullText.style.setProperty('display', 'none', 'important');
+            if (span) span.innerText = 'Read More';
+            // Reset the arrow to point downward
+            if (arrow) arrow.style.transform = 'rotate(0deg)';
         }
     }
 
+    /////////////
     function copyRsvpLink() {
         const input = document.getElementById('publicRsvpUrl');
         const btnText = document.getElementById('copyBtnText');
@@ -1010,5 +2211,16 @@
             updatePlusOneInputs(); // Run on load in case of pre-filled or error-reloaded states
         }
     });
+
+    /////////
+    // Helper function required to toggle form visibility upon clicking action buttons safely without touching the master script rules
+    function toggleRsvpForm(event) {
+        event.preventDefault();
+        const rsvpSection = document.getElementById('rsvpEditorialSection');
+        if (rsvpSection) {
+            rsvpSection.classList.remove('hidden');
+            rsvpSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
 </script>
 {% endblock %}

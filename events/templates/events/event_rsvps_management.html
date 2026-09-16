@@ -24,7 +24,6 @@
             {% endfor %}
         </div>
     {% endif %}
-
     <!-- Breadcrumb & Top Header Bar -->
     <nav class="flex items-center text-sm text-[var(--text-muted)] mb-6 space-x-2">
         <a href="{% url 'events:dashboard' %}" class="hover:text-[var(--text-main)] transition">Dashboard</a>
@@ -33,7 +32,6 @@
         <span>/</span>
         <span class="dashboard-badge">RSVP Management</span>
     </nav>
-
     <div class="dashboard-header-bar">
       <div class="dashboard-header-titles">
         <div class="dashboard-eyebrow-wrapper">
@@ -43,7 +41,13 @@
         <h1 class="dashboard-title">RSVP Management</h1>
         <p class="dashboard-subtitle">Review responses, track total headcount, and manage attendee details in real time.</p>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-3 flex-wrap">
+        <a href="{% url 'events:manage_event_tiers' event.slug %}" class="dashboard-action-badge" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem;">
+          🎟️ Manage Ticket Tiers
+        </a>
+        <a href="{% url 'events:export_rsvps_csv' event.slug %}" class="dashboard-action-badge" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem;">
+          📥 Export CSV
+        </a>
         <a href="{% url 'events:door_dashboard' event.slug %}" class="dashboard-clone-btn" style="background-color: rgba(52, 211, 153, 0.12); color: var(--accent-emerald); border-color: rgba(52, 211, 153, 0.3); text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem;">
           🚪 Open Door Dashboard
         </a>
@@ -52,7 +56,6 @@
         </a>
       </div>
     </div>
-
     <!-- Stats Overview Cards -->
     <div class="dashboard-metrics-grid">
       <div class="dashboard-metric-card">
@@ -115,16 +118,16 @@
       <div class="dashboard-card-header">
         <form method="GET" class="flex flex-col sm:flex-row w-full items-center justify-between gap-4">
             <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-                <input type="text" name="q" value="{{ search_query }}" placeholder="Search RSVPs..." class="dashboard-input w-full sm:w-64">
-                
-                <select name="status" class="dashboard-input w-full sm:w-auto">
-                    <option value="">All Statuses</option>
-                    <option value="ATTENDING" {% if status_filter == 'ATTENDING' %}selected{% endif %}>Attending</option>
-                    <option value="DECLINED" {% if status_filter == 'DECLINED' %}selected{% endif %}>Declined</option>
-                    <option value="PENDING" {% if status_filter == 'PENDING' %}selected{% endif %}>Pending</option>
-                </select>
-
-                <button type="submit" class="dashboard-action-badge cursor-pointer w-full sm:w-auto text-center" style="border: none;">Filter Results</button>
+                <input type="text" name="q" value="{{ search_query }}" placeholder="Search RSVPs..."  class="dashboard-input w-full sm:w-auto"  style="width: 400px; max-width: 55vw;" >
+              <select name="status" class="dashboard-action-badge cursor-pointer w-full sm:w-auto min-w-[160px] text-center appearance-none transition-all duration-200 focus:outline-none" style="border: none;">  
+                  <option value="">All Statuses</option>
+                  <option value="ATTENDING" {% if status_filter == 'ATTENDING' %}selected{% endif %}>Attending</option>
+                  <option value="DECLINED" {% if status_filter == 'DECLINED' %}selected{% endif %}>Declined</option>
+                  <option value="PENDING" {% if status_filter == 'PENDING' %}selected{% endif %}>Pending</option>
+              </select>
+              <button type="submit" class="dashboard-action-badge cursor-pointer w-full sm:w-auto text-center transition-all duration-200" style="border: none;">
+                  Filter Results
+              </button>
             </div>
             <span class="dashboard-badge">{{ total_rsvps }} Records</span>
         </form>
@@ -138,6 +141,9 @@
                     <th>Attendee Name / Details</th>
                     <th>Email</th>
                     <th>Status</th>
+                    {% if event.is_ticketed %}
+                    <th>Ticket Pass</th>
+                    {% endif %}
                     <th>Plus-Ones</th>
                     <th class="text-right">Actions</th>
                 </tr>
@@ -157,6 +163,16 @@
                             {{ rsvp.get_status_display|default:rsvp.status|title }}
                         </span>
                     </td>
+                    {% if event.is_ticketed %}
+                    <td class="text-sm">
+                        {% if rsvp.ticket_tier %}
+                            <span class="font-medium text-[var(--text-main)]">{{ rsvp.ticket_tier.name }}</span>
+                            <span class="text-xs text-[var(--text-muted)] block">${{ rsvp.ticket_tier.price }}</span>
+                        {% else %}
+                            <span class="text-xs text-[var(--text-dimmed)] italic">No ticket selected</span>
+                        {% endif %}
+                    </td>
+                    {% endif %}
                     <td class="rsvp-col-plusone">
                         {{ rsvp.plus_ones.count }} 
                         {% if rsvp.plus_ones.all %}
@@ -179,7 +195,7 @@
                 </tr>
                 {% empty %}
                 <tr class="rsvp-empty-row">
-                    <td colspan="5">
+                    <td colspan="{% if event.is_ticketed %}6{% else %}5{% endif %}">
                         <div class="rsvp-empty-title">No RSVPs found</div>
                         <div class="rsvp-empty-desc">No records match your current filter or search criteria.</div>
                     </td>

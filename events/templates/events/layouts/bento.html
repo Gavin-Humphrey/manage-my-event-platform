@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Bento Grid Event Layout</title>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans antialiased p-6 md:p-12">
+
+    <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        <!-- Main Title Card (Spans 2 columns) -->
+        <div class="md:col-span-2 bg-white p-8 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div>
+                <span class="inline-block px-3 py-1 bg-blue-50 text-blue-600 text-xs font-semibold rounded-full mb-4">Tech Meetup #14</span>
+                <h1 class="text-3xl md:text-4xl font-bold tracking-tight mb-3">Django & AI Engineering Summit</h1>
+                <p class="text-slate-600">An evening exploring modern Python architectures, LLM agents, and database optimizations in production.</p>
+            </div>
+            <div class="mt-8 flex items-center gap-4 text-sm text-slate-500">
+                <span>📍 Paris, France</span>
+                <span>•</span>
+                <span>📅 Oct 15, 2026</span>
+            </div>
+        </div>
+
+        <!-- Ticket Tier Card -->
+        <div class="bg-blue-600 text-white p-8 rounded-3xl shadow-sm flex flex-col justify-between">
+            <div>
+                <h3 class="text-lg font-medium text-blue-100">General Admission</h3>
+                <div class="text-4xl font-extrabold mt-2">$30</div>
+                <p class="text-xs text-blue-200 mt-1">Includes open bar & after-party access</p>
+            </div>
+            <button class="w-full mt-6 bg-white text-blue-600 font-semibold py-3 rounded-xl hover:bg-blue-50 transition">
+                Select Ticket
+            </button>
+        </div>
+
+        <!-- Venue & Details Card -->
+        <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div>
+                <h3 class="font-semibold text-slate-800 mb-2">Venue Highlights</h3>
+                <p class="text-sm text-slate-600">Equipped with high-speed fiber Wi-Fi, ergonomic seating, and live streaming setups.</p>
+            </div>
+            <div class="text-xs font-medium text-slate-400 uppercase tracking-wider mt-4">Capacity: 120 Guests</div>
+        </div>
+
+        <!-- Live Attendee Counter Card (Spans 2 columns) -->
+        <div class="md:col-span-2 bg-slate-900 text-white p-8 rounded-3xl shadow-sm flex items-center justify-between">
+            <div>
+                <h3 class="font-semibold text-lg">Join 45+ developers already attending</h3>
+                <p class="text-xs text-slate-400 mt-1">Spots are filling up fast for this session.</p>
+            </div>
+            <div class="flex -space-x-2 overflow-hidden">
+                <div class="inline-block h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-xs font-bold border-2 border-slate-900">EO</div>
+                <div class="inline-block h-10 w-10 rounded-full bg-emerald-500 flex items-center justify-center text-xs font-bold border-2 border-slate-900">SO</div>
+                <div class="inline-block h-10 w-10 rounded-full bg-purple-500 flex items-center justify-center text-xs font-bold border-2 border-slate-900">+42</div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

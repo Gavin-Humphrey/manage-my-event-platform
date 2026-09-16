@@ -1,0 +1,47 @@
+{% extends 'events/landing_base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/css/landing.css' %}">
+<link rel="stylesheet" href="{% static 'events/css/architectures.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="architecture-page-container">
+<div class="vertical-hero">
+<img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1600&q=80" alt="Theme Engines Architecture">
+<div class="vertical-hero-content">
+<h1>Dynamic Theme Engines</h1>
+<div class="architecture-updated">Modular CSS Variable Ingestion & Brand Palette Synthesizers</div>
+</div>
+</div>
+
+<main class="architecture-wrapper">
+<p>Architected for infinite brand adaptability. Our modular Theme Engines parse dynamic asset manifests and inject scoped CSS variables at runtime, enabling event organizers to transition between corporate minimalism and neon festival aesthetics instantly without stylesheet bloat.</p>
+
+<h2>Phase I: Runtime CSS Variable Pipeline</h2>
+<p>By shifting style tokenization from compile-time builds to high-performance runtime injections, event hosts can customize typography curves, surface tints, and glow signatures directly from their dashboard configuration panels.</p>
+
+<div class="feature-matrix">
+<div class="matrix-card">
+<h3>Token Ingestion</h3>
+<p>Real-time translation of hex inputs into dynamic opacity matrices and contrast-safe text colors.</p>
+</div>
+<div class="matrix-card">
+<h3>Scoped Inheritance</h3>
+<p>Isolate distinct branding rules per sub-organization without polluting global application sheets.</p>
+</div>
+<div class="matrix-card">
+<h3>Cache Synchronization</h3>
+<p>Distributed edge caching ensures updated brand tokens propagate globally across all user viewports in milliseconds.</p>
+</div>
+</div>
+
+<h2>Phase II: Contrast Guardian & Accessibility Auditing</h2>
+<p>Maintaining gorgeous visuals should never compromise readability. Our automated contrast engine evaluates background-to-text luminosity ratios in real time, auto-adjusting font weights and gradient stops to guarantee strict WCAG compliance.</p>
+
+<h2>Phase III: Multi-Tenant Skinning Architecture</h2>
+<p>Empower agencies to manage hundreds of client portals simultaneously. Each event inherits base architectural foundations while drawing from unique, isolated style registries.</p>
+</main>
+</div>
+{% endblock %}

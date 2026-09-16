@@ -3,6 +3,8 @@ from django.conf.urls.static import static
 from django.urls import path
 from . import views
 
+from .stripe_utils import stripe_webhook
+
 app_name = 'events'
 
 urlpatterns = [
@@ -33,6 +35,45 @@ urlpatterns = [
     path('event/<slug:slug>/door/', views.event_door_dashboard, name='door_dashboard'),
 
     path('features/', views.features_view, name='features_page'),
+
+
+    path('cookies/', views.event_cookies, name='cookies'),
+    path('privacy/', views.event_privacy, name='privacy'),
+    path('terms/', views.event_terms, name='terms'),
+
+
+    path('conference/', views.conference, name='conference'),
+    path('gig/', views.gig, name='gig'),
+    path('live_stream/', views.live_stream, name='live_stream'),
+    path('private_event/', views.private_event, name='private_event'),
+    path('summit/', views.summit, name='summit'),
+
+    path('theme-engines/', views.architecture_theme_engines, name='theme_engines'),
+    path('split-screen/', views.architecture_split_screen, name='split_screen'),
+    path('dynamic-rsvp/', views.architecture_dynamic_rsvp, name='dynamic_rsvp'),
+    path('glassmorphic-ui/', views.architecture_glassmorphic_ui, name='glassmorphic_ui'),
+    path('changelog-releases/', views.architecture_changelog_releases, name='changelog_releases'),
+
+    path('resources/architect/', views.platform_architecture, name='platform_architecture'),
+    path('resources/api/', views.event_api, name='event_api'),
+    path('resources/security/', views.security_compliance, name='security_compliance'),
+    path('resources/community/', views.organizer_community, name='organizer_community'),
+    path('resources/status/', views.system_status, name='system_status'),
+
+    path('events/<slug:slug>/tiers/', views.manage_event_tiers, name='manage_event_tiers'),
+
+    path('dashboard/events/<slug:slug>/guests/export/', views.export_rsvps_csv, name='export_rsvps_csv'),
+
+    path('webhook/', stripe_webhook, name='stripe_webhook'),
+    path('events/webhook/', stripe_webhook, name='stripe_webhook'),
+
+
+    #################
+    path('view/bento/', views.bento_view, name='bento_view'),
+    path('view/editorial_minimalist_view/', views.editorial_minimalist_view, name='editorial_minimalist_view'),
+    path('view/neon_and_dark_view/', views.neon_and_dark_view, name='neon_and_dark_view'),
+    path('view/split_screen_conference_view/', views.split_screen_conference_view, name='split_screen_conference_view'),
+    path('view/story_teller_view/', views.story_teller_view, name='story_teller_view'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

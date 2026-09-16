@@ -1,0 +1,55 @@
+{% extends 'events/landing_base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/css/landing.css' %}">
+<link rel="stylesheet" href="{% static 'events/css/resources.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="resources-page-container">
+    <div class="resources-hero">
+        <div class="resources-hero-glow"></div>
+        <div class="resources-hero-content">
+            <div class="resources-badge"><span class="pulse-dot"></span> Enterprise Reliability</div>
+            <h1>Platform Architecture & Scale</h1>
+            <p>How Manage My Event handles high-concurrency ticket drops, zero-downtime flash sales, and secure multi-tenant event infrastructure.</p>
+        </div>
+    </div>
+
+    <main class="resources-wrapper">
+        <section class="resources-section animate-fade-up">
+            <h2>High-Concurrency Ticketing Infrastructure</h2>
+            <p class="section-lead">When thousands of attendees rush to book tickets for a major event simultaneously, our distributed queue system prevents server crashes and overselling.</p>
+            
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <div class="card-meta">SYSTEM // 01</div>
+                    <h3>Flash Sale Protection</h3>
+                    <p>Automated virtual waiting rooms and holding queues that manage high-traffic surges and secure cart allocations fairly.</p>
+                </div>
+                <div class="tech-card">
+                    <div class="card-meta">SYSTEM // 02</div>
+                    <h3>Distributed Caching</h3>
+                    <p>Lightning-fast seat selection and inventory tracking that eliminates redundant database lookups during peak checkout.</p>
+                </div>
+                <div class="tech-card">
+                    <div class="card-meta">SYSTEM // 03</div>
+                    <h3>Real-Time Telemetry</h3>
+                    <p>Continuous system monitoring and automated health checks ensuring zero latency across all gate check-in scanners.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="resources-section animate-fade-up">
+            <h2>Data Protection & Secure Transactions</h2>
+            <p>Safeguard sensitive attendee records, corporate payment information, and administrative accounts with strict role-based access control and encrypted financial ledgers.</p>
+        </section>
+
+        <section class="resources-section animate-fade-up">
+            <h2>Global Cloud Redundancy</h2>
+            <p>Deploy across multi-region server clusters designed for seamless automatic failover, guaranteeing 99.99% uptime during your mission-critical events.</p>
+        </section>
+    </main>
+</div>
+{% endblock %}

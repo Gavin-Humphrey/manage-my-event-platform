@@ -1,0 +1,55 @@
+{% extends 'events/landing_base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/css/landing.css' %}">
+<link rel="stylesheet" href="{% static 'events/css/resources.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="resources-page-container">
+    <div class="resources-hero">
+        <div class="resources-hero-glow"></div>
+        <div class="resources-hero-content">
+            <div class="resources-badge"><span class="pulse-dot"></span> Integration Gateway</div>
+            <h1>Event Data APIs & Webhooks</h1>
+            <p>Sync attendee lists, automate badge printing triggers, connect CRM software, and stream real-time ticket sales directly to your tools.</p>
+        </div>
+    </div>
+
+    <main class="resources-wrapper">
+        <section class="resources-section animate-fade-up">
+            <h2>Ticketing & Attendee Sync</h2>
+            <p class="section-lead">Securely connect your event database with external marketing platforms, email automation tools, and mobile gate-scanning apps.</p>
+            
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <div class="card-meta">SYNC // CRM</div>
+                    <h3>Guest List Pipelines</h3>
+                    <p>Automatically sync ticket buyers, VIP registrations, and corporate group bookings straight into your preferred CRM.</p>
+                </div>
+                <div class="tech-card">
+                    <div class="card-meta">SCAN // GATE</div>
+                    <h3>Check-In App Sync</h3>
+                    <p>Real-time bidirectional syncing across all entry gates to prevent duplicate scans and track live venue occupancy.</p>
+                </div>
+                <div class="tech-card">
+                    <div class="card-meta">TEST // SANDBOX</div>
+                    <h3>API Sandbox</h3>
+                    <p>Simulate ticket check-ins, purchase lookups, and seat allocations risk-free in a dedicated test environment.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="resources-section animate-fade-up">
+            <h2>Live Event Webhooks</h2>
+            <p>Trigger instant automated actions—such as sending SMS reminders, issuing digital badges, or updating financial ledgers—the moment a ticket is purchased or scanned.</p>
+        </section>
+
+        <section class="resources-section animate-fade-up">
+            <h2>Pre-Built Integrations</h2>
+            <p>Plug into industry-standard payment processors, virtual streaming rooms, and email marketing workflows with zero complex coding required.</p>
+        </section>
+    </main>
+</div>
+{% endblock %}

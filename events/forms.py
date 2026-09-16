@@ -1,7 +1,8 @@
 import os
 from django import forms
 from django.core.files.storage import default_storage
-from .models import Event, RSVP, RSVPGuest
+from .models import Event, TicketTier, RSVP, RSVPGuest
+from django.forms import inlineformset_factory
 
 
 class MultipleFileInput(forms.ClearableFileInput):
@@ -351,6 +352,9 @@ class EventForm(forms.ModelForm):
             ('centered', 'Centered Hero Card'),
             ('split', 'Split Two-Column Layout'),
             ('minimal', 'Minimalist Clean'),
+
+            ('editorial', 'editorial and minimalist'),
+            ('story', 'story teller festival'),
         ],
         required=False,
         initial='centered'
@@ -392,12 +396,17 @@ class EventForm(forms.ModelForm):
     class Meta:
         model = Event
         fields = [
-            'title', 'event_date', 'location_name', 'address', 'max_capacity', 'show_about_section', 'about_title', 'about_text',
-            'allow_plus_ones', 'max_plus_ones_per_guest', 'allow_guest_messages', 'enable_qr_checkins', 'theme_settings'
+            'title', 'event_date', 'location_name', 'address','is_ticketed',  'max_capacity', 'show_about_section', 'about_title', 'about_text', 
+            'allow_plus_ones', 'max_plus_ones_per_guest', 'allow_guest_messages', 'enable_qr_checkins', 'theme_settings',
+            # Added announcement fields:
+            'announcement_title', 
+            'announcement_text', 
+            'show_announcement',
         ]
         widgets = {
             'event_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
             'address': forms.Textarea(attrs={'rows': 3}),
+            'announcement_text': forms.Textarea(attrs={'rows': 3}), # Optional: clean widget styling for the announcement text
         }
 
     def __init__(self, *args, **kwargs):
@@ -527,6 +536,21 @@ class EventForm(forms.ModelForm):
             if commit:
                 instance.save()
             return instance
+
+# ######
+TicketTierFormSet = inlineformset_factory(
+    Event,
+    TicketTier,
+    fields=['name', 'description', 'price', 'capacity'],
+    extra=1,
+    can_delete=True
+)
+########
+
+class EventTicketingForm(forms.ModelForm):
+    class Meta:
+        model = Event
+        fields = ['is_ticketed']
 
 class RSVPForm(forms.ModelForm):
     PHONE_PREFIX_CHOICES = [

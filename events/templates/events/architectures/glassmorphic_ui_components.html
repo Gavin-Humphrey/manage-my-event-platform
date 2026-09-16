@@ -1,0 +1,47 @@
+{% extends 'events/landing_base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/css/landing.css' %}">
+<link rel="stylesheet" href="{% static 'events/css/architectures.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="architecture-page-container">
+<div class="vertical-hero">
+<img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1600&q=80" alt="Glassmorphic UI Components">
+<div class="vertical-hero-content">
+<h1>Glassmorphic UI Components</h1>
+<div class="architecture-updated">Frosted Glass Surfaces, Backdrop Filters, & Ambient Glow Layers</div>
+</div>
+</div>
+
+<main class="architecture-wrapper">
+<p>Designed for striking visual depth. Our Glassmorphic UI library leverages advanced CSS backdrop filters, semi-transparent surface layers, and subtle border refractions to create ethereal, high-end interfaces that pop against cinematic background imagery.</p>
+
+<h2>Phase I: Advanced Backdrop Blur & Layering</h2>
+<p>Combining `backdrop-filter: blur(16px)` with multi-stop radial lighting gradients to simulate realistic light diffusion across floating navigation bars, modal dialogs, and interactive ticket cards.</p>
+
+<div class="feature-matrix">
+<div class="matrix-card">
+<h3>Frosted Refraction</h3>
+<p>Dynamic light bending effects that adapt dynamically to underlying hero images and ambient background colors.</p>
+</div>
+<div class="matrix-card">
+<h3>Subtle Border Glows</h3>
+<p>Single-pixel gradient borders that simulate inner light sources on hovered card components.</p>
+</div>
+<div class="matrix-card">
+<h3>Hardware Optimized</h3>
+<p>GPU-friendly layer compositing ensuring fluid 60fps scrolling performance on mobile and desktop viewports.</p>
+</div>
+</div>
+
+<h2>Phase II: Ambient Light Interaction</h2>
+<p>Glass surfaces react organically to cursor coordinates, casting soft localized highlights that enhance tactile feedback without resorting to heavy JavaScript event listeners.</p>
+
+<h2>Phase III: Accessibility & Contrast Fallbacks</h2>
+<p>Automatic solid-surface fallbacks for legacy browsers and user accessibility profiles preferring reduced transparency, ensuring consistent legibility across all environments.</p>
+</main>
+</div>
+{% endblock %}

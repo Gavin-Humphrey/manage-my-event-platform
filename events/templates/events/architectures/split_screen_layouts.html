@@ -1,0 +1,47 @@
+{% extends 'events/landing_base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/css/landing.css' %}">
+<link rel="stylesheet" href="{% static 'events/css/architectures.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="architecture-page-container">
+<div class="vertical-hero">
+<img src="https://images.unsplash.com/photo-1607799279861-4dd421887fb3?auto=format&fit=crop&w=1600&q=80" alt="Split-Screen Layouts Architecture">
+<div class="vertical-hero-content">
+<h1>Split-Screen Layout Architectures</h1>
+<div class="architecture-updated">Dual-Pane Asymmetric Grids & Immersive Storytelling Flows</div>
+</div>
+</div>
+
+<main class="architecture-wrapper">
+<p>Engineered for high-impact conversions. Our Split-Screen Layout engine pairs fixed-position media canvases with scroll-locked interactive panels, allowing attendees to explore event schedules and dynamic ticket calculators without losing visual orientation.</p>
+
+<h2>Phase I: Asymmetric Grid Synchronization</h2>
+<p>Using strict CSS Grid fractions and viewport height constraints, our split-screen paradigm keeps high-value imagery locked on one viewport hemisphere while contextual registration forms flow naturally on the other.</p>
+
+<div class="feature-matrix">
+<div class="matrix-card">
+<h3>Scroll-Locked Panes</h3>
+<p>Independent overflow containers keep background galleries stable while users parse dense registration steps.</p>
+</div>
+<div class="matrix-card">
+<h3>Viewport Fluidity</h3>
+<p>Seamless breakpoint transitions collapsing dual columns into stacked vertical cards on handheld devices.</p>
+</div>
+<div class="matrix-card">
+<h3>Hardware Acceleration</h3>
+<p>GPU-accelerated transforms ensuring buttery-smooth pan and zoom movements on immersive preview panels.</p>
+</div>
+</div>
+
+<h2>Phase II: Interactive Media Switching</h2>
+<p>Transform static itineraries into dynamic visual journeys. As attendees hover over agenda items, the adjacent media canvas cross-fades into corresponding stage previews, speaker profiles, or venue layouts.</p>
+
+<h2>Phase III: Responsive Viewport Adaptability</h2>
+<p>Automatic reflow triggers ensure that desktop dual-pane experiences transform into touch-friendly vertical layouts on mobile screens without sacrificing vertical hierarchy or CTA accessibility.</p>
+</main>
+</div>
+{% endblock %}

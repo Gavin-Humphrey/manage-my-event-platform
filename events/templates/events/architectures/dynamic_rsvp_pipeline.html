@@ -1,0 +1,47 @@
+{% extends 'events/landing_base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/css/landing.css' %}">
+<link rel="stylesheet" href="{% static 'events/css/architectures.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="architecture-page-container">
+<div class="vertical-hero">
+<img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1600&q=80" alt="Dynamic RSVP Pipeline">
+<div class="vertical-hero-content">
+<h1>Dynamic RSVP Pipelines</h1>
+<div class="architecture-updated">Real-Time Form Orchestration, Conditional Fields, & Instant QR Dispatch</div>
+</div>
+</div>
+
+<main class="architecture-wrapper">
+<p>Built for zero-latency guest onboarding. Our Dynamic RSVP Pipeline replaces rigid multi-page forms with reactive, state-managed input streams that adapt questions instantly based on ticket tiers, dietary restrictions, and VIP clearance credentials.</p>
+
+<h2>Phase I: Reactive State Management & Validation</h2>
+<p>Integrating robust client-side validation with secure server endpoints. Phone prefix matching, instant email availability checking, and conditional sub-fields execute smoothly without jarring full-page reloads.</p>
+
+<div class="feature-matrix">
+<div class="matrix-card">
+<h3>Conditional Routing</h3>
+<p>Dynamic field rendering that exposes specific workshop selections only when relevant ticket tiers are chosen.</p>
+</div>
+<div class="matrix-card">
+<h3>Prefix Sanitization</h3>
+<p>Automated international phone prefix formatting and validation to ensure seamless SMS notification delivery.</p>
+</div>
+<div class="matrix-card">
+<h3>Instant QR Generation</h3>
+<p>Cryptographic gate passes compiled and dispatched via email and SMS within 300ms of registration completion.</p>
+</div>
+</div>
+
+<h2>Phase II: High-Concurrency Queue Absorbers</h2>
+<p>When high-demand events open registration, our virtualized waiting room queues traffic surges, protecting database clusters from sudden spike loads while maintaining an animated countdown for waiting guests.</p>
+
+<h2>Phase III: Automated Telemetry & Check-In Sync</h2>
+<p>Streamline event day operations with lightning-fast QR scanning apps that sync check-in status across host devices in real time.</p>
+</main>
+</div>
+{% endblock %}

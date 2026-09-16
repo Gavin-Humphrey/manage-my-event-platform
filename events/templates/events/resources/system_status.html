@@ -1,0 +1,55 @@
+{% extends 'events/landing_base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/css/landing.css' %}">
+<link rel="stylesheet" href="{% static 'events/css/resources.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="resources-page-container">
+    <div class="resources-hero">
+        <div class="resources-hero-glow"></div>
+        <div class="resources-hero-content">
+            <div class="resources-badge status-operational"><span class="pulse-dot green"></span> All Systems Operational</div>
+            <h1>System Status & Platform Uptime</h1>
+            <p>Real-time performance metrics for ticket sales, checkout gateways, gate-scanning apps, and scheduled maintenance notices.</p>
+        </div>
+    </div>
+
+    <main class="resources-wrapper">
+        <section class="resources-section animate-fade-up">
+            <h2>Live Service Health</h2>
+            <p class="section-lead">Continuous performance tracking across all core event management tools to ensure flawless execution on your event day.</p>
+            
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <div class="card-meta">STATUS // 99.99%</div>
+                    <h3>Ticketing & Checkout</h3>
+                    <p>Real-time transaction success rates and payment gateway processing speeds during peak ticket drops.</p>
+                </div>
+                <div class="tech-card">
+                    <div class="card-meta">STATUS // 100%</div>
+                    <h3>Gate Check-In Scanners</h3>
+                    <p>Live syncing performance for mobile check-in apps and entry-gate barcode validation hardware.</p>
+                </div>
+                <div class="tech-card">
+                    <div class="card-meta">STATUS // 99.95%</div>
+                    <h3>Organizer Dashboard</h3>
+                    <p>Instantaneous reporting, attendee list exports, and real-time sales analytics loading speeds.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="resources-section animate-fade-up">
+            <h2>Incident History & Maintenance Log</h2>
+            <p>Transparent records of past system maintenance, scheduled upgrades, and rapid resolution reports for any prior platform interruptions.</p>
+        </section>
+
+        <section class="resources-section animate-fade-up">
+            <h2>Instant Alert Subscriptions</h2>
+            <p>Set up automated text message or email notifications to stay instantly informed about scheduled updates or system maintenance windows.</p>
+        </section>
+    </main>
+</div>
+{% endblock %}

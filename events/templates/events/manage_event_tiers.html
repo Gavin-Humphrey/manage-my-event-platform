@@ -1,0 +1,340 @@
+{% extends 'events/landing_base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="dashboard-page-wrapper">
+  <!-- Atmospheric background glow accents -->
+  <div class="dashboard-ambient-glow dashboard-glow-1"></div>
+  <div class="dashboard-ambient-glow dashboard-glow-2"></div>
+
+  <div class="tier-mgmt-container">
+    <!-- Header Navigation -->
+    <div class="tier-mgmt-header">
+        <div>
+            <h1 class="text-2xl font-bold text-[var(--text-main)]">Manage Ticket Tiers</h1>
+            <p class="text-sm text-[var(--text-muted)] mt-1">Configure pricing categories and enable paid entry for <span class="font-semibold text-[var(--text-main)]">{{ event.title }}</span></p>
+        </div>
+        <a href="{% url 'events:event_rsvps_management' event.slug %}" class="dashboard-clone-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem;">
+            &larr; Back to RSVPs
+        </a>
+    </div>
+
+    <!-- Main Management Form -->
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Event Settings Card -->
+        <div class="tier-mgmt-card space-y-4">
+            <h2 class="text-lg font-bold text-[var(--text-main)]">Ticketing Status</h2>
+            
+            <div class="flex items-start gap-3 p-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface-muted)]">
+                <div class="flex items-center h-5 mt-0.5">
+                    {{ form.is_ticketed }}
+                </div>
+                <div>
+                    <label for="{{ form.is_ticketed.id_for_label }}" class="text-sm font-semibold text-[var(--text-main)] cursor-pointer">Enable Paid Ticketing</label>
+                    <p class="text-xs text-[var(--text-muted)] mt-0.5">When enabled, the public page renders pricing cards and switches the RSVP form to a secure Stripe checkout flow.</p>
+                </div>
+            </div>
+            
+            {% if form.is_ticketed.errors %}
+            <p class="text-xs text-rose-400 font-medium">{{ form.is_ticketed.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Ticket Tiers Formset Card -->
+        <div class="tier-mgmt-card space-y-4">
+            <div>
+                <h2 class="text-lg font-bold text-[var(--text-main)]">Tier Categories</h2>
+                <p class="text-xs text-[var(--text-muted)] mt-0.5">Define your pricing tiers (e.g., General Admission, VIP, Early Bird).</p>
+            </div>
+
+            {{ formset.management_form }}
+            
+            <div class="space-y-4">
+                {% for tier_form in formset %}
+                <div class="tier-item-card space-y-4">
+                    <!-- Hidden PK and management fields -->
+                    {% for hidden in tier_form.hidden_fields %}
+                        {{ hidden }}
+                    {% endfor %}
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="tier-field-group">
+                            <label class="tier-label">Tier Name</label>
+                            <div class="tier-input-wrap">
+                                {{ tier_form.name }}
+                            </div>
+                            {% if tier_form.name.errors %}<p class="text-xs text-rose-400 mt-1">{{ tier_form.name.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div class="tier-field-group">
+                            <label class="tier-label">Price ($)</label>
+                            <div class="tier-input-wrap number-stepper-wrapper">
+                                {{ tier_form.price }}
+                                <div class="stepper-btns">
+                                    <button type="button" class="stepper-btn" onclick="const input = this.closest('.tier-input-wrap').querySelector('input'); input.stepUp(); input.dispatchEvent(new Event('input'));">&#9650;</button>
+                                    <button type="button" class="stepper-btn" onclick="const input = this.closest('.tier-input-wrap').querySelector('input'); input.stepDown(); input.dispatchEvent(new Event('input'));">&#9660;</button>
+                                </div>
+                            </div>
+                            {% if tier_form.price.errors %}<p class="text-xs text-rose-400 mt-1">{{ tier_form.price.errors.0 }}</p>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="tier-field-group">
+                            <label class="tier-label">Capacity Limit</label>
+                            <div class="tier-input-wrap number-stepper-wrapper">
+                                {{ tier_form.capacity }}
+                                <div class="stepper-btns">
+                                    <button type="button" class="stepper-btn" onclick="const input = this.closest('.tier-input-wrap').querySelector('input'); input.stepUp(); input.dispatchEvent(new Event('input'));">&#9650;</button>
+                                    <button type="button" class="stepper-btn" onclick="const input = this.closest('.tier-input-wrap').querySelector('input'); input.stepDown(); input.dispatchEvent(new Event('input'));">&#9660;</button>
+                                </div>
+                            </div>
+                            {% if tier_form.capacity.errors %}<p class="text-xs text-rose-400 mt-1">{{ tier_form.capacity.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div class="tier-field-group">
+                            <label class="tier-label">Description (Optional)</label>
+                            <div class="tier-input-wrap">
+                                {{ tier_form.description }}
+                            </div>
+                            {% if tier_form.description.errors %}<p class="text-xs text-rose-400 mt-1">{{ tier_form.description.errors.0 }}</p>{% endif %}
+                        </div>
+                    </div>
+
+                    {% if formset.can_delete %}
+                    <div class="tier-delete-wrapper">
+                        <label class="tier-delete-label">
+                            {{ tier_form.DELETE }}
+                            <span>Delete Tier</span>
+                        </label>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            {% if formset.non_form_errors %}
+            <div class="p-3 bg-rose-500/10 border border-rose-500/20 rounded-lg text-xs text-rose-400">
+                {{ formset.non_form_errors }}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex items-center justify-end gap-3 pt-2">
+            <a href="{% url 'events:event_rsvps_management' event.slug %}" class="dashboard-clone-btn" style="text-decoration: none;">
+                Cancel
+            </a>
+            <button type="submit" class="dashboard-action-badge cursor-pointer" style="border: none;">
+                Save Ticket Configurations
+            </button>
+        </div>
+    </form>
+  </div>
+</div>
+
+<style>
+    .tier-mgmt-container {
+        max-width: 52rem;
+        margin: 0 auto;
+        padding: 2.5rem 1rem;
+        position: relative;
+        z-index: 10;
+    }
+    .tier-mgmt-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        padding-bottom: 1.25rem;
+        border-bottom: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+    }
+    .tier-mgmt-card {
+        background-color: var(--bg-surface, #1e293b);
+        padding: 2rem;
+        border-radius: 1rem;
+        border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        margin-bottom: 1.5rem;
+    }
+    .tier-item-card {
+        padding: 1.5rem;
+        border-radius: 0.875rem;
+        border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.08));
+        background-color: var(--bg-surface-muted, rgba(15, 23, 42, 0.6));
+        position: relative;
+        margin-bottom: 1.25rem;
+        box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
+    }
+    
+    .tier-field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .tier-label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted, #94a3b8);
+    }
+
+    .tier-input-wrap {
+        width: 100% !important;
+        max-width: 100% !important;
+        display: block;
+        position: relative;
+    }
+
+    /* Professional Form Inputs Styling with strict sizing overrides */
+    .tier-mgmt-card input[type="text"],
+    .tier-mgmt-card input[type="number"],
+    .tier-mgmt-card input[type="email"],
+    .tier-mgmt-card textarea,
+    .tier-mgmt-card select {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+        padding: 0.625rem 0.875rem !important;
+        border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12)) !important;
+        border-radius: 0.5rem !important;
+        font-size: 0.875rem !important;
+        color: var(--text-main, #f8fafc) !important;
+        background-color: var(--bg-surface-muted, rgba(15, 23, 42, 0.6));
+        outline: none !important;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease !important;
+    }
+
+    /* Custom Number Input Wrapper with Embedded Increment / Decrement Stepper Buttons */
+    .number-stepper-wrapper {
+        display: flex;
+        align-items: center;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    .number-stepper-wrapper input[type="number"] {
+        padding-right: 2.75rem !important;
+        -moz-appearance: textfield !important;
+    }
+    .number-stepper-wrapper input[type="number"]::-webkit-inner-spin-button,
+    .number-stepper-wrapper input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none !important;
+        margin: 0 !important;
+    }
+    .stepper-btns {
+        position: absolute;
+        right: 0.35rem;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        height: calc(100% - 0.5rem);
+        width: 1.75rem;
+        border-left: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(15, 23, 42, 0.8);
+        border-radius: 0.35rem;
+        overflow: hidden;
+        z-index: 5;
+    }
+    .stepper-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        color: var(--text-muted, #94a3b8);
+        font-size: 0.6rem;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .stepper-btn:hover {
+        background: rgba(99, 102, 241, 0.2);
+        color: var(--text-main, #f8fafc);
+    }
+
+    .tier-mgmt-card input:focus,
+    .tier-mgmt-card textarea:focus,
+    .tier-mgmt-card select:focus {
+        border-color: var(--accent-indigo, #6366f1) !important;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+        background-color: #0b1120 !important;
+        color: var(--text-main, #f8fafc) !important;
+    }
+
+    /* Professional Checkbox and Delete Toggle Design */
+    .tier-mgmt-card input[type="checkbox"] {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 1.15rem;
+        height: 1.15rem;
+        border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.2));
+        border-radius: 0.375rem;
+        background-color: var(--input-bg, #141e35);
+        outline: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s ease;
+        position: relative;
+        vertical-align: middle;
+    }
+    .tier-mgmt-card input[type="checkbox"]:checked {
+        background-color: var(--accent-indigo, #6366f1);
+        border-color: var(--accent-indigo, #6366f1);
+    }
+    .tier-mgmt-card input[type="checkbox"]:checked::after {
+        content: "";
+        width: 0.35rem;
+        height: 0.65rem;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+        position: absolute;
+        top: 1px;
+    }
+
+    /* Specific Delete Toggle Container Styling */
+    .tier-delete-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        padding-top: 1rem;
+        margin-top: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .tier-delete-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #f87171;
+        cursor: pointer;
+        padding: 0.4rem 0.85rem;
+        border-radius: 0.5rem;
+        background-color: rgba(248, 113, 113, 0.08);
+        border: 1px solid rgba(248, 113, 113, 0.2);
+        transition: all 0.15s ease;
+    }
+    .tier-delete-label:hover {
+        background-color: rgba(248, 113, 113, 0.15);
+        border-color: rgba(248, 113, 113, 0.35);
+    }
+
+    /* Autofill fix */
+    .tier-mgmt-card input:-webkit-autofill {
+        -webkit-text-fill-color: var(--text-main, #f8fafc) !important;
+        -webkit-box-shadow: 0 0 0px 1000px #141e35 inset !important;
+    }
+</style>
+{% endblock %}

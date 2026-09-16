@@ -1,0 +1,55 @@
+{% extends 'events/landing_base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'events/css/landing.css' %}">
+<link rel="stylesheet" href="{% static 'events/css/resources.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="resources-page-container">
+    <div class="resources-hero">
+        <div class="resources-hero-glow"></div>
+        <div class="resources-hero-content">
+            <div class="resources-badge"><span class="pulse-dot"></span> Organizer Community</div>
+            <h1>Event Success Hub & Forums</h1>
+            <p>Peer-to-peer event strategy sharing, box-office scaling tactics, crowd management blueprints, and direct Q&A with top event directors.</p>
+        </div>
+    </div>
+
+    <main class="resources-wrapper">
+        <section class="resources-section animate-fade-up">
+            <h2>Strategy Sharing & Playbooks</h2>
+            <p class="section-lead">Engage with a global network of festival producers, conference directors, and venue operators scaling high-capacity ticket sales.</p>
+            
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <div class="card-meta">PLAYBOOK // 01</div>
+                    <h3>Sell-Out Strategies</h3>
+                    <p>Explore field-tested marketing funnels, dynamic pricing models, and early-bird incentive scripts shared by top organizers.</p>
+                </div>
+                <div class="tech-card">
+                    <div class="card-meta">VOTE // ROADMAP</div>
+                    <h3>Feature Voting</h3>
+                    <p>Upvote upcoming platform capabilities—from advanced seating charts to hybrid streaming tools—directly on our public roadmap.</p>
+                </div>
+                <div class="tech-card">
+                    <div class="card-meta">EXPERT // DIRECT</div>
+                    <h3>Verified Support Leads</h3>
+                    <p>Get rapid troubleshooting support and box-office optimization advice from certified event success specialists.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="resources-section animate-fade-up">
+            <h2>Virtual Roundtables & Masterclasses</h2>
+            <p>Participate in recurring monthly virtual masterclasses, crisis management case studies, and organizer roundtables focused on frictionless check-ins and gate security.</p>
+        </section>
+
+        <section class="resources-section animate-fade-up">
+            <h2>Organizer Guidelines & Best Practices</h2>
+            <p>Review our comprehensive compliance standards, payout scheduling timelines, and venue safety protocols to ensure seamless event execution.</p>
+        </section>
+    </main>
+</div>
+{% endblock %}

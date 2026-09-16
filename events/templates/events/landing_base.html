@@ -144,11 +144,11 @@
                     <div class="footer-col">
                         <h4 class="footer-heading">Architecture</h4>
                         <ul class="footer-links">
-                            <li><a href="#features" class="footer-link">Theme Engines</a></li>
-                            <li><a href="#experience" class="footer-link">Split-Screen Layouts</a></li>
-                            <li><a href="#pricing" class="footer-link">Dynamic RSVP Pipeline</a></li>
-                            <li><a href="#" class="footer-link">Glassmorphic UI Components</a></li>
-                            <li><a href="#" class="footer-link">Changelog & Releases</a></li>
+                            <li><a href="{% url 'events:theme_engines' %}" class="footer-link">Theme Engines</a></li>
+                            <li><a href="{% url 'events:split_screen' %}" class="footer-link">Split-Screen Layouts</a></li>
+                            <li><a href="{% url 'events:dynamic_rsvp' %}" class="footer-link">Dynamic RSVP Pipeline</a></li>
+                            <li><a href="{% url 'events:glassmorphic_ui' %}" class="footer-link">Glassmorphic UI Components</a></li>
+                            <li><a href="{% url 'events:changelog_releases' %}" class="footer-link">Changelog & Releases</a></li>
                         </ul>
                     </div>
 
@@ -156,11 +156,11 @@
                     <div class="footer-col">
                         <h4 class="footer-heading">Solutions</h4>
                         <ul class="footer-links">
-                            <li><a href="{% url 'gig' %}" class="footer-link">Music Festivals & Gigs</a></li>
-                            <li><a href="{% url 'summit' %}" class="footer-link">Corporate Summits</a></li>
-                            <li><a href="{% url 'private_event' %}" class="footer-link">Private Galas & Events</a></li>
-                            <li><a href="{% url 'conference' %}" class="footer-link">Academic Conferences</a></li>
-                            <li><a href="{% url 'live_stream' %}" class="footer-link">Hybrid Live Streams</a></li>
+                            <li><a href="{% url 'events:gig' %}" class="footer-link">Music Festivals & Gigs</a></li>
+                            <li><a href="{% url 'events:summit' %}" class="footer-link">Corporate Summits</a></li>
+                            <li><a href="{% url 'events:private_event' %}" class="footer-link">Private Galas & Events</a></li>
+                            <li><a href="{% url 'events:conference' %}" class="footer-link">Academic Conferences</a></li>
+                            <li><a href="{% url 'events:live_stream' %}" class="footer-link">Hybrid Live Streams</a></li>
                         </ul>
                     </div>
 
@@ -168,11 +168,11 @@
                     <div class="footer-col">
                         <h4 class="footer-heading">Resources</h4>
                         <ul class="footer-links">
-                            <li><a href="#" class="footer-link">Django 6.1 Documentation</a></li>
-                            <li><a href="#" class="footer-link">REST API Endpoints</a></li>
-                            <li><a href="#" class="footer-link">Security & Compliance</a></li>
-                            <li><a href="#" class="footer-link">Community Forums</a></li>
-                            <li><a href="#" class="footer-link">System Status</a></li>
+                            <li><a href="{% url 'events:platform_architecture' %}" class="footer-link">Platform Architecture & Scale</a></li>
+                            <li><a href="{% url 'events:event_api' %}" class="footer-link">Event Data APIs & Webhooks</a></li>
+                            <li><a href="{% url 'events:security_compliance' %}" class="footer-link">Security & Attendee Compliance</a></li>
+                            <li><a href="{% url 'events:organizer_community' %}" class="footer-link">Organizer Community Hub</a></li>
+                            <li><a href="{% url 'events:system_status' %}" class="footer-link">System Status & Uptime</a></li>
                         </ul>
                     </div>
 
@@ -196,9 +196,9 @@
                         &copy; 2026 Nexus Meridian Group LLC &amp; Manage My Event. All rights reserved.
                     </p>
                     <div class="footer-legal-links">
-                        <a href="{% url 'privacy' %}" class="footer-legal-link">Privacy Policy</a>
-                        <a href="{% url 'terms' %}" class="footer-legal-link">Terms of Service</a>
-                        <a href="{% url 'cookies' %}" class="footer-legal-link">Cookie Settings</a>
+                        <a href="{% url 'events:privacy' %}" class="footer-legal-link">Privacy Policy</a>
+                        <a href="{% url 'events:terms' %}" class="footer-legal-link">Terms of Service</a>
+                        <a href="{% url 'events:cookies' %}" class="footer-legal-link">Cookie Settings</a>
                     </div>
                 </div>
 

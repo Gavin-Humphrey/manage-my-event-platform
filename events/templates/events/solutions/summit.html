@@ -3,20 +3,20 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'events/css/landing.css' %}">
-
+<link rel="stylesheet" href="{% static 'events/css/solutions.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="legal-page-container">
-    <main class="legal-wrapper" style="max-width: 1050px;">
-        <div class="vertical-hero">
-            <img src="https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=1600&q=80" alt="Corporate Summits">
-            <div class="vertical-hero-content">
-                <h1>Corporate Summits & Enterprise Keynotes</h1>
-                <div class="legal-updated">Executive Governance, Precision Security, & C-Suite Orchestration</div>
-            </div>
+<div class="solutions-page-container">
+    <div class="vertical-hero">
+        <img src="https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=1600&q=80" alt="Corporate Summits">
+        <div class="vertical-hero-content">
+            <h1>Corporate Summits & Enterprise Keynotes</h1>
+            <div class="solutions-updated">Executive Governance, Precision Security, & C-Suite Orchestration</div>
         </div>
+    </div>
 
+    <main class="solutions-wrapper">
         <p>Tailored for high-stakes enterprise summits, board retreats, and global shareholder conferences. Our architecture delivers enterprise-grade access control, strict NDA enforcement interfaces, and bespoke branding matching your corporate identity standards.</p>
 
         <h2>Phase I: Enterprise Identity Validation & Domain Filtering</h2>
@@ -44,5 +44,4 @@
         <p>Generate certified attendance manifests, security clearance logs, and engagement audit reports formatted to satisfy corporate governance and regulatory compliance frameworks.</p>
     </main>
 </div>
-
 {% endblock %}
