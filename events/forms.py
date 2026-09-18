@@ -1,7 +1,7 @@
 import os
 from django import forms
 from django.core.files.storage import default_storage
-from .models import Event, TicketTier, RSVP, RSVPGuest
+from .models import Event, TicketTier, GalleryImage, RSVP, RSVPGuest
 from django.forms import inlineformset_factory
 
 
@@ -299,7 +299,7 @@ class EventForm(forms.ModelForm):
         widget=forms.FileInput(attrs={'accept': 'image/*'})
     )
     
-    gallery_files = MultipleFileField(required=False)
+    #gallery_files = MultipleFileField(required=False)
 
     theme_color = forms.CharField(
         required=False,
@@ -440,7 +440,8 @@ class EventForm(forms.ModelForm):
         file_classes = 'block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer'
 
         for name, field in self.fields.items():
-            if name in ['hero_image', 'gallery_files']:
+            #if name in ['hero_image', 'gallery_files']:
+            if name == 'hero_image':
                 field.widget.attrs.update({'class': file_classes})
             elif name == 'theme_color':
                 field.widget.attrs.update({'class': 'h-10 w-20 p-1 border border-slate-300 rounded-lg cursor-pointer'})
@@ -451,68 +452,18 @@ class EventForm(forms.ModelForm):
             else:
                 field.widget.attrs.update({'class': 'w-full px-3.5 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'})
 
-    def clean_gallery_files(self):
-        """Validate max photo count and individual file sizes."""
-        uploaded_files = self.cleaned_data.get('gallery_files') or []
-        if not isinstance(uploaded_files, (list, tuple)):
-            uploaded_files = [uploaded_files] if uploaded_files else []
-
-        existing_gallery = []
-        if self.instance and self.instance.pk and self.instance.theme_settings:
-            existing_gallery = self.instance.theme_settings.get('gallery_images', [])
-
-        total_photos = len(existing_gallery) + len(uploaded_files)
-        if total_photos > 10:
-            raise forms.ValidationError(
-                f"You can have a maximum of 10 gallery photos. You currently have {len(existing_gallery)} and tried to upload {len(uploaded_files)}."
-            )
-
-        max_size_bytes = 5 * 1024 * 1024
-        for f in uploaded_files:
-            if hasattr(f, 'size') and f.size > max_size_bytes:
-                raise forms.ValidationError(f"File '{f.name}' exceeds the maximum allowed size of 5MB.")
-
-        return uploaded_files
 
     def save(self, commit=True):
             instance = super().save(commit=False)
             theme = instance.theme_settings or {}
             
-            existing_gallery_urls = list(theme.get('gallery_images', []))
+            #existing_gallery_urls = list(theme.get('gallery_images', []))
 
             hero_file = self.cleaned_data.get('hero_image')
             if hero_file:
                 path = default_storage.save(f"event_heroes/{hero_file.name}", hero_file)
                 theme['hero_image_url'] = f"/media/{path}"
 
-            uploaded_gallery_files = self.cleaned_data.get('gallery_files') or []
-            if not isinstance(uploaded_gallery_files, (list, tuple)):
-                uploaded_gallery_files = [uploaded_gallery_files]
-
-            for gallery_file in uploaded_gallery_files:
-                if gallery_file:
-                    path = default_storage.save(f"event_galleries/{gallery_file.name}", gallery_file)
-                    media_path = f"/media/{path}"
-                    if media_path not in existing_gallery_urls:
-                        existing_gallery_urls.append(media_path)
-
-            gallery_slides = []
-            for index, url in enumerate(existing_gallery_urls):
-                desc = ""
-                if hasattr(self, 'data') and self.data:
-                    desc = self.data.get(f'gallery_desc_{index}', '')
-                else:
-                    old_slides = theme.get('gallery_slides', [])
-                    if index < len(old_slides):
-                        desc = old_slides[index].get('description', '')
-
-                gallery_slides.append({
-                    'url': url,
-                    'description': desc
-                })
-
-            theme['gallery_images'] = existing_gallery_urls
-            theme['gallery_slides'] = gallery_slides
             theme['primary_color'] = self.cleaned_data.get('theme_color', '#3b82f6')
             theme['page_bg_color'] = self.cleaned_data.get('page_bg_color', '#f8fafc')
             theme['section_bg_color'] = self.cleaned_data.get('section_bg_color', '#ffffff')
@@ -537,7 +488,25 @@ class EventForm(forms.ModelForm):
                 instance.save()
             return instance
 
-# ######
+
+class GalleryImageForm(forms.ModelForm):
+    class Meta:
+        model = GalleryImage
+        fields = ['image', 'description', 'order']
+        widgets = {
+            'image': forms.ClearableFileInput(attrs={
+                'class': 'block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100'
+            }),
+            'description': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none',
+                'placeholder': 'Enter photo description or caption...'
+            }),
+            'order': forms.NumberInput(attrs={
+                'class': 'w-full px-3 py-1.5 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none',
+                'placeholder': '0'
+            }),
+        }
+
 TicketTierFormSet = inlineformset_factory(
     Event,
     TicketTier,
@@ -545,7 +514,6 @@ TicketTierFormSet = inlineformset_factory(
     extra=1,
     can_delete=True
 )
-########
 
 class EventTicketingForm(forms.ModelForm):
     class Meta:

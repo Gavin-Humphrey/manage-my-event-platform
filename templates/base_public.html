@@ -1,9 +1,33 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}RSVP{% endblock %}</title>
+    
+    <!-- Open Graph / Social Sharing Meta Tags -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:title" content="{{ event.title }} | Manage My Event">
+    <meta property="og:description" content="{{ event.description|default:'You are invited to this event! Click to view details and RSVP.'|truncatechars:150 }}">
+    
+    {% with theme=event.theme_settings %}
+        {% if theme.hero_image_url %}
+            <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ theme.hero_image_url }}">
+        {% else %}
+            <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/default-event-banner.png' %}">
+        {% endif %}
+    {% endwith %}
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ event.title }}">
+    <meta name="twitter:description" content="{{ event.description|default:'You are invited to this event!'|truncatechars:150 }}">
+    {% if event.theme_settings.hero_image_url %}
+        <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ event.theme_settings.hero_image_url }}">
+    {% endif %}
+
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50 text-slate-900 antialiased min-h-screen">

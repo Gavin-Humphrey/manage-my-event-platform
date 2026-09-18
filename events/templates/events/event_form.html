@@ -54,26 +54,25 @@
                     {% if form.address.errors %}<p class="text-xs text-red-600 mt-1">{{ form.address.errors.0 }}</p>{% endif %}
                 </div>
             </div>
-            <!--  -->
-            <div class="flex items-start gap-3 p-4 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface-muted)]">
+
+            <!-- Ticketing Option -->
+            <div class="flex items-start gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50">
                 <div class="flex items-center h-5 mt-0.5">
-                    {{ form.is_ticketed|attr:"class:h-4 w-4 rounded border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--accent-indigo)] focus:ring-0 focus:ring-offset-0 cursor-pointer" }}
+                    {{ form.is_ticketed }}
                 </div>
                 <div>
-                    <h2 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3">1.5. Enable Paid Ticketing</h2>
-                    <label for="{{ form.is_ticketed.id_for_label }}" class="text-sm font-semibold text-[var(--text-main)] cursor-pointer"></label>
-                    
-                    <p class="text-xs text-[var(--text-muted)] mt-0.5"> When enabled, the public page renders pricing cards and switches the RSVP form to a secure Stripe checkout flow.</p>
+                    <h2 class="text-base font-bold text-slate-800 pb-1">1.5. Enable Paid Ticketing</h2>
+                    <label for="{{ form.is_ticketed.id_for_label }}" class="text-sm font-semibold text-slate-700 cursor-pointer"></label>
+                    <p class="text-xs text-slate-500 mt-0.5">When enabled, the public page renders pricing cards and switches the RSVP form to a secure Stripe checkout flow.</p>
                 </div>
             </div>
-            <!--  -->
 
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                 <h2 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3">2. Maximum Venue Capacity</h2>
                 <div>
-                    <label for="{{ form.max_capacity.id_for_label }}" class="block text-xs font-semibold uppercase mb-1" style="color: {{ style_muted }} !important;">Maximum Venue Capacity (Optional)</label>
+                    <label for="{{ form.max_capacity.id_for_label }}" class="block text-xs font-semibold uppercase mb-1 text-slate-700">Maximum Venue Capacity (Optional)</label>
                     {{ form.max_capacity }}
-                    <p class="text-[11px] mt-1" style="color: {{ style_muted }} !important;">Leave blank for unlimited venue capacity.</p>
+                    <p class="text-[11px] mt-1 text-slate-400">Leave blank for unlimited venue capacity.</p>
                     {% if form.max_capacity.errors %}<p class="text-xs text-red-600 mt-1">{{ form.max_capacity.errors.0 }}</p>{% endif %}
                 </div>
             </div>
@@ -123,12 +122,11 @@
                 <p class="text-[11px] text-slate-400 mt-1 pl-7">Enables a dedicated text field on your public RSVP form for personal notes, displayed via a scrolling carousel on your event dashboard.</p>
             </div>
 
-            <!-- ///////////////////////// -->
             <!-- Section: Announcement Banner Controls -->
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                 <h2 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3">4. Live Announcement Banner</h2>
 
-                <!-- Show Announcement Checkbox (Draft Toggle) -->
+                <!-- Show Announcement Checkbox -->
                 <div class="flex items-center space-x-3">
                     {{ form.show_announcement }}
                     <label for="{{ form.show_announcement.id_for_label }}" class="text-sm font-semibold text-slate-700 select-none cursor-pointer">
@@ -163,10 +161,10 @@
                     {% endif %}
                 </div>
             </div>
-            <!-- ///////////////////////// -->
 
-            <!-- Enable QR Check-ins Checkbox -->
-                <div class="flex items-center space-x-3 mt-4">
+            <!-- QR Check-ins Checkbox -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                <div class="flex items-center space-x-3">
                     {{ form.enable_qr_checkins }}
                     <label for="{{ form.enable_qr_checkins.id_for_label }}" class="text-sm font-semibold text-slate-700 select-none cursor-pointer">
                         Enable digital ticket QR codes and door scanner interface
@@ -175,8 +173,8 @@
                         <p class="text-xs text-red-600 mt-1">{{ form.enable_qr_checkins.errors.0 }}</p>
                     {% endif %}
                 </div>
-                <p class="text-[11px] text-slate-400 mt-1 pl-7">Generates a unique QR pass for every attendee and provides hosts with a live check-in dashboard at the door.</p>
-            <!-- /////////// -->
+                <p class="text-[11px] text-slate-400 pl-7">Generates a unique QR pass for every attendee and provides hosts with a live check-in dashboard at the door.</p>
+            </div>
 
             <!-- Section 3: Visual Customization & Theme -->
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
@@ -184,96 +182,144 @@
                     3.5. Theme & Custom Design Options
                 </h2>
 
-                <!-- Hero Image Upload -->
-                <div class="space-y-1">
-                    <label for="{{ form.hero_image.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">
-                        Upload Hero Header Image
-                    </label>
-                    {{ form.hero_image }}
-                    {% if form.hero_image.errors %}
-                        <p class="text-xs text-red-600 mt-1">{{ form.hero_image.errors.0 }}</p>
-                    {% endif %}
-
-                    {% if form.instance.pk and form.instance.theme_settings.hero_image_url %}
-                        <div class="mt-2 flex items-center gap-3 p-2.5 bg-slate-50 rounded-xl border border-slate-200">
-                            <img src="{{ form.instance.theme_settings.hero_image_url }}" alt="Hero Preview" class="w-10 h-10 rounded-md object-cover border border-slate-200 flex-shrink-0">
-                            <div class="truncate">
-                                <span class="block text-[10px] font-bold text-slate-500 uppercase">Current Hero Header</span>
-                                <span class="font-mono text-[11px] text-slate-700 truncate block" title="{{ form.instance.theme_settings.hero_image_url }}">
-                                    {{ form.instance.theme_settings.hero_image_url }}
-                                </span>
-                            </div>
-                        </div>
-                    {% endif %}
-                </div>
-
-                <!-- Host Bio / About Section Configuration -->
-                <div class="space-y-3 pt-4 border-t border-slate-100">
-                    <span class="block text-xs font-bold text-slate-600 uppercase tracking-wide">Host / Celebrant Bio & Gallery Card</span>
-                    
-                    <div class="flex items-center space-x-3">
-                        {{ form.show_about_section }}
-                        <label for="{{ form.show_about_section.id_for_label }}" class="text-sm font-semibold text-slate-700 select-none cursor-pointer">
-                            Include "About the Host / Celebrant" & Photo Gallery section
-                        </label>
-                    </div>
-
-                    <!-- Toggleable wrapper container for About fields & Gallery uploads -->
-                    <div id="aboutSectionFieldsContainer" class="space-y-4 pt-2">
-                        <div class="space-y-3">
-                            <div>
-                                <label for="{{ form.about_title.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">Section Title</label>
-                                {{ form.about_title }}
-                            </div>
-                            <div>
-                                <label for="{{ form.about_text.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">Bio Description</label>
-                                {{ form.about_text }}
-                                <p class="text-[11px] text-slate-400 mt-1">Long text will automatically truncate with an expandable "Read More" toggle.</p>
-                            </div>
-                        </div>
-
-                        <!-- Photo Gallery Upload & Slide Captions -->
-                        <div class="space-y-3 pt-3 border-t border-slate-100">
-                            <label for="{{ form.gallery_files.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">
-                                Upload Photo Gallery Images
+                <!-- Host Bio & About Section Master Toggle -->
+                <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <label for="{{ form.show_about_section.id_for_label }}" class="text-sm font-bold text-slate-800 cursor-pointer block">
+                                Enable Host Bio / About Section
                             </label>
-                            
-                            {{ form.gallery_files }}
-                            <p class="text-[11px] text-slate-400 mt-1">Select up to 10 photos total (max 5MB per file).</p>
-
-                            {% if form.gallery_files.errors %}
-                                <p class="text-xs text-red-600 mt-1">{{ form.gallery_files.errors.0 }}</p>
-                            {% endif %}
-
-                            {% if form.instance.pk and form.instance.theme_settings.gallery_slides %}
-                                <div class="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
-                                    <span class="block text-xs font-bold text-slate-700 uppercase tracking-wide">
-                                        Configure Slide Descriptions
-                                    </span>
-                                    
-                                    <div class="space-y-3">
-                                        {% for slide in form.instance.theme_settings.gallery_slides %}
-                                            <div class="flex items-center gap-3 p-2 bg-white rounded-lg border border-slate-200">
-                                                <img src="{{ slide.url }}" alt="Gallery Item" class="w-12 h-12 rounded object-cover flex-shrink-0 border border-slate-100">
-                                                <div class="flex-1">
-                                                    <label class="block text-[10px] font-bold text-slate-400 uppercase">Slide {{ forloop.counter }} Description Overlay</label>
-                                                    <input type="text" name="gallery_desc_{{ forloop.counter0 }}" value="{{ slide.description }}" placeholder="Enter base description for this photo..." class="w-full mt-1 px-3 py-1.5 border border-slate-300 rounded text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                                                </div>
-                                            </div>
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            {% endif %}
-
-                            <div id="newly-selected-files-container" class="mt-3 p-3 bg-blue-50/70 rounded-xl border border-blue-200 space-y-2 hidden">
-                                <span class="block text-xs font-bold text-blue-900 uppercase tracking-wide">
-                                    Files Ready to Upload:
-                                </span>
-                                <ul id="newly-selected-files-list" class="space-y-1 text-xs text-blue-800 font-mono text-[11px]"></ul>
-                            </div>
+                            <p class="text-xs text-slate-500 mt-0.5">Allows rendering the about section and photo gallery on your event details page.</p>
+                        </div>
+                        <div class="flex items-center h-5">
+                            {{ form.show_about_section }}
                         </div>
                     </div>
+                    {% if form.show_about_section.errors %}
+                        <p class="text-xs text-red-600 mt-1">{{ form.show_about_section.errors.0 }}</p>
+                    {% endif %}
                 </div>
+
+                <!-- WRAPPER CONTROLLED BY JS (Hides/Shows based on checkbox) -->
+                <div id="aboutSectionFieldsContainer" class="space-y-6 pt-2" style="display: none;">
+                    
+                    <!-- Host Bio Fields -->
+                    <div class="p-4 rounded-xl border border-slate-200 bg-white space-y-3">
+                        <div>
+                            <label for="{{ form.about_title.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">About Section Title</label>
+                            {{ form.about_title }}
+                            {% if form.about_title.errors %}<p class="text-xs text-red-600 mt-1">{{ form.about_title.errors.0 }}</p>{% endif %}
+                        </div>
+                        <div>
+                            <label for="{{ form.about_text.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">Host Bio / About Text</label>
+                            {{ form.about_text }}
+                            {% if form.about_text.errors %}<p class="text-xs text-red-600 mt-1">{{ form.about_text.errors.0 }}</p>{% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Hero Image Upload -->
+                    <div class="space-y-1">
+                        <label for="{{ form.hero_image.id_for_label }}" class="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                            Upload Hero Header Image
+                        </label>
+                        {{ form.hero_image }}
+                        {% if form.hero_image.errors %}
+                            <p class="text-xs text-red-600 mt-1">{{ form.hero_image.errors.0 }}</p>
+                        {% endif %}
+
+                        {% if form.instance.pk and form.instance.theme_settings.hero_image_url %}
+                            <div class="mt-2 flex items-center gap-3 p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+                                <img src="{{ form.instance.theme_settings.hero_image_url }}" alt="Hero Preview" class="w-10 h-10 rounded-md object-cover border border-slate-200 flex-shrink-0">
+                                <div class="truncate">
+                                    <span class="block text-[10px] font-bold text-slate-500 uppercase">Current Hero Header</span>
+                                    <span class="font-mono text-[11px] text-slate-700 truncate block" title="{{ form.instance.theme_settings.hero_image_url }}">
+                                        {{ form.instance.theme_settings.hero_image_url }}
+                                    </span>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Photo Gallery Formset Section -->
+                    <div class="space-y-4 pt-4 border-t border-slate-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase">
+                                    Event Gallery Images & Descriptions
+                                </label>
+                                <span class="text-[11px] text-slate-400">Manage existing slides or add new ones (Max 5 total)</span>
+                            </div>
+                            
+                            <!-- Professional "+ Add Image" Button -->
+                            <button type="button" id="add-gallery-row" class="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-semibold rounded-lg transition-colors border border-blue-200 flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                Add Image
+                            </button>
+                        </div>
+
+                        <!-- Required Django Formset Management Fields -->
+                        {{ formset.management_form }}
+
+                        {% if formset.non_form_errors %}
+                            <div class="p-2 bg-red-50 text-red-600 text-xs rounded-lg">
+                                {{ formset.non_form_errors }}
+                            </div>
+                        {% endif %}
+
+                        <!-- Container holding all gallery rows -->
+                        <div id="gallery-form-container" class="space-y-3">
+                            {% for form in formset %}
+                                <div class="gallery-row flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                    <!-- Hidden primary key & management fields -->
+                                    {{ form.id }}
+
+                                    <!-- Thumbnail preview if image already exists -->
+                                    {% if form.instance.pk and form.instance.image %}
+                                        <div class="w-12 h-12 rounded-lg overflow-hidden bg-slate-200 shrink-0 border border-slate-200">
+                                            <img src="{{ form.instance.image.url }}" alt="Gallery Preview" class="w-full h-full object-cover">
+                                        </div>
+                                    {% endif %}
+
+                                    <div class="flex-1 w-full space-y-2">
+                                        <div class="flex flex-col sm:flex-row gap-2">
+                                            <!-- Image Upload Field -->
+                                            <div class="flex-1">
+                                                {{ form.image }}
+                                                {% if form.image.errors %}
+                                                    <p class="text-xs text-red-600 mt-1">{{ form.image.errors.0 }}</p>
+                                                {% endif %}
+                                            </div>
+                                            <!-- Order Sequence Field -->
+                                            <div class="w-24">
+                                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Order</label>
+                                                {{ form.order }}
+                                            </div>
+                                        </div>
+
+                                        <!-- Description / Caption Field -->
+                                        <div>
+                                            {{ form.description }}
+                                            {% if form.description.errors %}
+                                                <p class="text-xs text-red-600 mt-1">{{ form.description.errors.0 }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <!-- Delete Checkbox (Only appears for existing items) -->
+                                    {% if form.instance.pk %}
+                                        <div class="flex items-center gap-1.5 text-xs text-red-600 self-end sm:self-center bg-white px-3 py-2 rounded-lg border border-slate-200">
+                                            {{ form.DELETE }} 
+                                            <label class="cursor-pointer text-[11px] font-medium">Delete</label>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                </div> <!-- End of aboutSectionFieldsContainer -->
 
                 <!-- Color Palette & Background Controls -->
                 <div class="space-y-3 pt-4 border-t border-slate-100">
@@ -429,36 +475,29 @@
                         {% endif %}
                     </div>
                 </div>
-            </div>
+            </div> <!-- End of Section 3 Wrapper -->
 
-            <!--  -->
             <!-- Organizer Contact Footer Configuration -->
-            <div class="space-y-3 pt-4 border-t border-slate-100">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                 <span class="block text-xs font-bold text-slate-600 uppercase tracking-wide">Questions or Enquiries?</span>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <!-- <div>
-                        <label class="block text-xs font-medium text-slate-700 mb-1">Organizer Name</label>
-                        <input type="text" name="organizer_name" value="{{ form.instance.theme_settings.organizer_contacts.name }}" placeholder="e.g. Jane Doe" class="w-full px-3 py-1.5 border rounded-lg text-sm bg-white">
-                    </div> -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-medium text-slate-700 mb-1">Phone Number</label>
-                        <input type="text" name="organizer_phone" value="{{ form.instance.theme_settings.organizer_contacts.phone }}" placeholder="+33 6 00 00 00 00" class="w-full px-3 py-1.5 border rounded-lg text-sm bg-white">
+                        <input type="text" name="organizer_phone" value="{{ form.instance.theme_settings.organizer_contacts.phone }}" placeholder="+33 6 00 00 00 00" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-slate-700 mb-1">WhatsApp Number</label>
-                        <input type="text" name="organizer_whatsapp" value="{{ form.instance.theme_settings.organizer_contacts.whatsapp }}" placeholder="+33600000000" class="w-full px-3 py-1.5 border rounded-lg text-sm bg-white">
+                        <input type="text" name="organizer_whatsapp" value="{{ form.instance.theme_settings.organizer_contacts.whatsapp }}" placeholder="+33600000000" class="w-full px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white">
                     </div>
                 </div>
             </div>
-            <!--  -->
 
-                <!-- Submit Button -->
-                <button type="submit" class="w-full py-3.5 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition cursor-pointer">
-                    {% if form.instance.pk %}Update Event Details{% else %}Save Event & Publish Page{% endif %}
-                </button>
-            </form>
+            <!-- Submit Button -->
+            <button type="submit" class="w-full py-3.5 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition cursor-pointer">
+                {% if form.instance.pk %}Update Event Details{% else %}Save Event & Publish Page{% endif %}
+            </button>
+        </form>
 
-    
         <!-- Footer / Navigation -->
         <div class="mt-6 pt-4 border-t border-slate-100 text-center">
             <a href="{% url 'events:dashboard' %}" class="inline-flex items-center text-sm font-semibold text-slate-600 hover:text-blue-600 transition">
@@ -469,11 +508,34 @@
     </div>
 </div>
 
+<!-- Hidden Empty Form Template for JavaScript Dynamic Cloning -->
+<div id="empty-form-template" class="hidden">
+    <div class="gallery-row flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 bg-blue-50/40 rounded-xl border border-blue-200">
+        <div class="flex-1 w-full space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-blue-600">New Slide Upload</span>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2">
+                <div class="flex-1">
+                    {{ formset.empty_form.image }}
+                </div>
+                <div class="w-24">
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Order</label>
+                    {{ formset.empty_form.order }}
+                </div>
+            </div>
+            <div>
+                {{ formset.empty_form.description }}
+            </div>
+        </div>
+        <button type="button" class="remove-new-row text-xs text-red-600 bg-white px-3 py-2 rounded-lg border border-slate-200 hover:bg-red-50 self-end sm:self-center">
+            Remove
+        </button>
+    </div>
+</div>
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const galleryInput = document.querySelector('input[name="gallery_files"]');
-        const container = document.getElementById('newly-selected-files-container');
-        const fileList = document.getElementById('newly-selected-files-list');
         const colorInput = document.querySelector('input[name="theme_color"]');
         const hexDisplay = document.getElementById('theme_color_hex_display');
         
@@ -522,84 +584,49 @@
             });
         }
 
-        // Use DataTransfer to hold files across multiple selections
-        let dataTransfer = new DataTransfer();
+        // ==========================================
+        // DYNAMIC GALLERY FORMSET ADD/REMOVE HANDLER
+        // ==========================================
+        const addButton = document.getElementById('add-gallery-row');
+        const container = document.getElementById('gallery-form-container');
+        const totalFormsInput = document.querySelector('#id_gallery_images-TOTAL_FORMS');
+        const maxLimit = 5;
 
-        if (galleryInput) {
-            galleryInput.addEventListener('change', function (event) {
-                const newFiles = Array.from(event.target.files);
+        if (addButton && container && totalFormsInput) {
+            addButton.addEventListener('click', function() {
+                const currentRows = container.querySelectorAll('.gallery-row').length;
+                
+                // Enforce maximum 5 images limit
+                if (currentRows >= maxLimit) {
+                    alert('You can upload a maximum of 5 gallery images.');
+                    return;
+                }
 
-                newFiles.forEach(file => {
-                    const exists = Array.from(dataTransfer.files).some(
-                        f => f.name === file.name && f.size === file.size
-                    );
-                    if (!exists) {
-                        dataTransfer.items.add(file);
-                    }
-                });
-
-                galleryInput.files = dataTransfer.files;
-                renderFileList();
+                const formIndex = parseInt(totalFormsInput.value);
+                const templateHtml = document.getElementById('empty-form-template').innerHTML;
+                
+                // Replace Django's __prefix__ placeholder with the correct index counter
+                const newRowHtml = templateHtml.replace(/__prefix__/g, formIndex);
+                
+                // Append the new row slot to the container
+                container.insertAdjacentHTML('beforeend', newRowHtml);
+                
+                // Increment Django's TOTAL_FORMS count so backend formset validation passes
+                totalFormsInput.value = formIndex + 1;
             });
-        }
 
-        function renderFileList() {
-            fileList.innerHTML = '';
-            const files = Array.from(dataTransfer.files);
-
-            if (files.length > 0) {
-                container.classList.remove('hidden');
-
-                files.forEach((file, index) => {
-                    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-                    const isOverSize = file.size > 5 * 1024 * 1024;
-                    
-                    const li = document.createElement('li');
-                    li.className = 'flex items-center justify-between gap-2 py-1 border-b border-blue-100 last:border-0';
-                    li.innerHTML = `
-                        <div class="flex items-center gap-1.5 truncate">
-                            <span class="${isOverSize ? 'text-red-500' : 'text-blue-500'}">📁</span>
-                            <span class="truncate font-medium ${isOverSize ? 'text-red-600' : ''}">
-                                ${file.name}
-                            </span>
-                        </div>
-                        <div class="flex items-center gap-2 flex-shrink-0">
-                            <span class="text-[10px] ${isOverSize ? 'text-red-600 font-bold' : 'text-blue-600'}">
-                                (${fileSizeMB} MB) ${isOverSize ? '⚠️ Exceeds 5MB' : ''}
-                            </span>
-                            <button type="button" data-index="${index}" class="remove-file text-red-500 hover:text-red-700 font-bold px-1">✕</button>
-                        </div>
-                    `;
-                    fileList.appendChild(li);
-                });
-
-                document.querySelectorAll('.remove-file').forEach(btn => {
-                    btn.addEventListener('click', function () {
-                        const idx = parseInt(this.getAttribute('data-index'));
-                        const dt = new DataTransfer();
-                        const currentFiles = Array.from(dataTransfer.files);
-                        
-                        currentFiles.forEach((file, i) => {
-                            if (i !== idx) dt.items.add(file);
-                        });
-
-                        dataTransfer = dt;
-                        galleryInput.files = dataTransfer.files;
-                        renderFileList();
-
-                        if (dataTransfer.files.length === 0) {
-                            container.classList.add('hidden');
-                        }
-                    });
-                });
-
-            } else {
-                container.classList.add('hidden');
-            }
+            // Delegate remove/delete click for newly added rows
+            container.addEventListener('click', function(e) {
+                if (e.target.classList.contains('remove-new-row')) {
+                    e.target.closest('.gallery-row').remove();
+                    // Decrement total forms count
+                    totalFormsInput.value = parseInt(totalFormsInput.value) - 1;
+                }
+            });
         }
     });
 
-    ////CUSTOM COLOR PALLETE
+    //// CUSTOM COLOR PALETTE
     function toggleColorPicker(btn) {
         const wrapper = btn.closest('.space-y-1');
         const popup = wrapper.querySelector('.custom-palette-popup');

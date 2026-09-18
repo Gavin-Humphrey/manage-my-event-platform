@@ -1,18 +1,22 @@
 from django.contrib import admin
-from .models import Event, RSVP, RSVPGuest
+from .models import Event, GalleryImage, RSVP, RSVPGuest
 
 
 class GuestInline(admin.TabularInline):
     model = RSVP
     extra = 1
 
+class GalleryImageInline(admin.TabularInline):
+    model = GalleryImage
+    extra = 1
+    fields = ['image', 'description', 'order']
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
     list_display = ('title', 'host', 'event_date', 'slug', 'created_at')
     search_fields = ('title', 'host__username', 'slug')
     prepopulated_fields = {'slug': ('title',)}
-    inlines = [GuestInline]
+    inlines = [GuestInline, GalleryImageInline]
 
 @admin.register(RSVP)
 class GuestAdmin(admin.ModelAdmin):

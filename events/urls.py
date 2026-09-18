@@ -67,13 +67,11 @@ urlpatterns = [
     path('webhook/', stripe_webhook, name='stripe_webhook'),
     path('events/webhook/', stripe_webhook, name='stripe_webhook'),
 
-
-    #################
-    path('view/bento/', views.bento_view, name='bento_view'),
-    path('view/editorial_minimalist_view/', views.editorial_minimalist_view, name='editorial_minimalist_view'),
-    path('view/neon_and_dark_view/', views.neon_and_dark_view, name='neon_and_dark_view'),
-    path('view/split_screen_conference_view/', views.split_screen_conference_view, name='split_screen_conference_view'),
-    path('view/story_teller_view/', views.story_teller_view, name='story_teller_view'),
+    # path('view/bento/', views.bento_view, name='bento_view'),
+    # path('view/editorial_minimalist_view/', views.editorial_minimalist_view, name='editorial_minimalist_view'),
+    # path('view/neon_and_dark_view/', views.neon_and_dark_view, name='neon_and_dark_view'),
+    # path('view/split_screen_conference_view/', views.split_screen_conference_view, name='split_screen_conference_view'),
+    # path('view/story_teller_view/', views.story_teller_view, name='story_teller_view'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

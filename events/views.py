@@ -13,6 +13,7 @@ from django.utils.text import slugify
 from django.db.models import Q, Value, Sum
 from django.db.models.functions import Concat
 
+import csv
 from .utils import send_rsvp_confirmation
 from .stripe_utils import create_checkout_session
 import stripe
@@ -164,26 +165,86 @@ def dashboard(request):
     return render(request, 'events/dashboard.html', context)
 
 
+# @login_required
+# def create_event(request):
+#     if request.method == 'POST':
+#         form = EventForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             event = form.save(commit=False)
+#             event.host = request.user
+#             event.save()
+#             messages.success(request, f"Event '{event.title}' created successfully!")
+#             return redirect('events:dashboard')
+#     else:
+#         form = EventForm()
+#     return render(request, 'events/event_form.html', {'form': form, 'action': 'Create'})
+
+
+from django.forms import inlineformset_factory
+from .models import Event, GalleryImage
+
 @login_required
 def create_event(request):
+    GalleryFormSet = inlineformset_factory(
+        Event, 
+        GalleryImage, 
+        fields=['image', 'description', 'order'], 
+        extra=0, 
+        can_delete=True
+    )
+
     if request.method == 'POST':
         form = EventForm(request.POST, request.FILES)
-        if form.is_valid():
+        formset = GalleryFormSet(request.POST, request.FILES, prefix='gallery_images')
+        
+        if form.is_valid() and formset.is_valid():
             event = form.save(commit=False)
             event.host = request.user
             event.save()
+            
+            formset.instance = event
+            formset.save()
+            
             messages.success(request, f"Event '{event.title}' created successfully!")
             return redirect('events:dashboard')
     else:
         form = EventForm()
-    return render(request, 'events/event_form.html', {'form': form, 'action': 'Create'})
+        formset = GalleryFormSet(prefix='gallery_images')
 
+    return render(request, 'events/event_form.html', {
+        'form': form, 
+        'formset': formset, 
+        'action': 'Create'
+    })
+
+# @login_required
+# def edit_event(request, slug=None):
+#     event = get_object_or_404(Event, slug=slug)
+
+#     # Security check: ensure only the host can edit this event
+#     if event.host != request.user:
+#         messages.error(request, "You do not have permission to edit this event.")
+#         return redirect('events:dashboard')
+
+#     if event.is_past:
+#         messages.error(request, "Past events cannot be edited.")
+#         return redirect('events:event_detail', slug=event.slug)
+
+#     if request.method == 'POST':
+#         form = EventForm(request.POST, request.FILES, instance=event)
+#         if form.is_valid():
+#             saved_event = form.save()
+#             messages.success(request, f"Event '{saved_event.title}' updated successfully!")
+#             return redirect('events:event_detail', slug=saved_event.slug)
+#     else:
+#         form = EventForm(instance=event)
+
+#     return render(request, 'events/event_form.html', {'form': form, 'action': 'Edit'})
 
 @login_required
 def edit_event(request, slug=None):
     event = get_object_or_404(Event, slug=slug)
 
-    # Security check: ensure only the host can edit this event
     if event.host != request.user:
         messages.error(request, "You do not have permission to edit this event.")
         return redirect('events:dashboard')
@@ -192,16 +253,34 @@ def edit_event(request, slug=None):
         messages.error(request, "Past events cannot be edited.")
         return redirect('events:event_detail', slug=event.slug)
 
+    GalleryFormSet = inlineformset_factory(
+        Event, 
+        GalleryImage, 
+        fields=['image', 'description', 'order'], 
+        extra=0,  
+        can_delete=True
+    )
+
     if request.method == 'POST':
         form = EventForm(request.POST, request.FILES, instance=event)
-        if form.is_valid():
+        formset = GalleryFormSet(request.POST, request.FILES, instance=event, queryset=event.gallery_images.all(), prefix='gallery_images')
+        
+        if form.is_valid() and formset.is_valid():
             saved_event = form.save()
+            formset.save()  
+            
             messages.success(request, f"Event '{saved_event.title}' updated successfully!")
             return redirect('events:event_detail', slug=saved_event.slug)
     else:
         form = EventForm(instance=event)
+        formset = GalleryFormSet(instance=event, queryset=event.gallery_images.all(), prefix='gallery_images')
 
-    return render(request, 'events/event_form.html', {'form': form, 'action': 'Edit'})
+    return render(request, 'events/event_form.html', {
+        'form': form, 
+        'formset': formset, 
+        'action': 'Edit'
+    })
+
 
 def event_form_view(request, pk=None):
     # Fetch existing instance if editing; otherwise, create a new one (None)
@@ -295,278 +374,6 @@ def public_rsvp(request, slug):
     return render(request, 'events/public_rsvp.html', context)
 
 
-# def submit_rsvp(request, slug):
-#     event = get_object_or_404(Event, slug=slug)
-
-#     if event.is_past:
-#         messages.error(request, "This event has concluded. RSVPs are closed.")
-#         return redirect('events:public_rsvp', slug=event.slug)
-    
-#     if request.method == 'POST':
-#         email = request.POST.get('email', '').strip().lower()
-#         full_name = request.POST.get('full_name', '').strip()
-#         first_name = request.POST.get('first_name') or (full_name.split(' ', 1)[0] if full_name else '')
-#         last_name = request.POST.get('last_name') or (full_name.split(' ', 1)[1] if len(full_name.split(' ', 1)) > 1 else '')
-        
-#         phone_prefix = request.POST.get('phone_prefix', '').strip()
-#         custom_prefix = request.POST.get('custom_phone_prefix', '').strip()
-#         raw_phone = request.POST.get('phone', '').strip()
-
-#         active_prefix = custom_prefix if phone_prefix == 'OTHER' and custom_prefix else phone_prefix
-#         phone = f"{active_prefix} {raw_phone}".strip() if raw_phone else ''
-
-#         status = request.POST.get('status', 'ATTENDING').upper()
-#         guest_message = request.POST.get('guest_message', '').strip()
-#         dietary = request.POST.get('dietary_restrictions', '').strip()
-
-#         try:
-#             plus_ones_count = int(request.POST.get('plus_ones_count') or request.POST.get('guest_count', 0))
-#             if event.allow_plus_ones:
-#                 plus_ones_count = min(plus_ones_count, event.max_plus_ones_per_guest)
-#             else:
-#                 plus_ones_count = 0
-#         except ValueError:
-#             plus_ones_count = 0
-
-#         errors = {}
-
-#         if not email:
-#             errors['email'] = "Email is required."
-#         elif RSVP.objects.filter(event=event, email=email).exists():
-#             errors['email'] = "This email address has already been used to RSVP for this event."
-
-#         if not first_name and not full_name:
-#             errors['full_name'] = "Full name is required."
-
-#         # Maximum venue capacity validation check
-#         if not errors and event.max_capacity and status == 'ATTENDING':
-#             incoming_headcount = 1 + plus_ones_count
-            
-#             current_headcount = event.rsvps.filter(status='ATTENDING').aggregate(
-#                 total=Sum('plus_ones_count')
-#             )['total'] or 0
-#             current_primary_count = event.rsvps.filter(status='ATTENDING').count()
-#             total_current_attendees = current_primary_count + current_headcount
-
-#             if (total_current_attendees + incoming_headcount) > event.max_capacity:
-#                 remaining_spots = max(0, event.max_capacity - total_current_attendees)
-#                 errors['plus_ones_count'] = f"Sorry, this event has reached its maximum venue capacity of {event.max_capacity} guests. Only {remaining_spots} spot(s) remaining."
-
-#         # If there are errors, re-render the template with the user's input intact
-#         if errors:
-#             raw_theme = event.theme_settings() if callable(getattr(event, 'theme_settings', None)) else getattr(event, 'theme_settings', None)
-#             theme = raw_theme.copy() if isinstance(raw_theme, dict) else (raw_theme or {})
-#             if isinstance(theme, dict):
-#                 theme['theme_color'] = theme.get('theme_color') or theme.get('primary_color') or '#3b82f6'
-
-#             raw_gallery = theme.get('gallery_slides') or theme.get('gallery_images', [])
-#             normalized_gallery = []
-#             for item in raw_gallery:
-#                 if isinstance(item, str):
-#                     normalized_gallery.append({'url': item, 'caption': ''})
-#                 elif isinstance(item, dict):
-#                     url = item.get('url') or item.get('image') or ''
-#                     caption = item.get('description') or item.get('caption') or item.get('text') or ''
-#                     if url:
-#                         normalized_gallery.append({'url': url, 'caption': caption})
-
-#             context = {
-#                 'event': event,
-#                 'theme': theme,
-#                 'guest_messages': event.rsvps.exclude(guest_message__isnull=True).exclude(guest_message__exact=''),
-#                 'normalized_gallery': normalized_gallery,
-#                 'form_data': request.POST,  
-#                 'form_errors': errors,      
-#             }
-#             return render(request, 'events/public_rsvp.html', context)
-
-#         rsvp = RSVP.objects.create(
-#             event=event,
-#             email=email,
-#             first_name=first_name,
-#             last_name=last_name,
-#             phone=phone,
-#             status=status,
-#             plus_ones_allowed=getattr(event, 'max_plus_ones_per_guest', 0),
-#             plus_ones_count=plus_ones_count,
-#             guest_message=guest_message,
-#             dietary_restrictions=dietary,
-#         )
-
-#         if status == 'ATTENDING' and event.allow_plus_ones:
-#             for i in range(1, plus_ones_count + 1):
-#                 guest_name = request.POST.get(f'guest_name_{i}')
-#                 if guest_name:
-#                     RSVPGuest.objects.create(rsvp=rsvp, full_name=guest_name)
-
-#         try:
-#             send_rsvp_confirmation(rsvp)
-#         except Exception as e:
-#             print(f"Email delivery error: {e}")
-        
-#         messages.success(request, "Your RSVP has been recorded successfully!")
-#         return redirect('events:rsvp_confirmed', pk=rsvp.pk)
-
-#     return redirect('events:public_rsvp', slug=slug)
-
-
-# def submit_rsvp(request, slug):
-#     event = get_object_or_404(Event, slug=slug)
-
-#     if event.is_past:
-#         messages.error(request, "This event has concluded. RSVPs are closed.")
-#         return redirect('events:public_rsvp', slug=event.slug)
-    
-#     if request.method == 'POST':
-#         email = request.POST.get('email', '').strip().lower()
-#         full_name = request.POST.get('full_name', '').strip()
-#         first_name = request.POST.get('first_name') or (full_name.split(' ', 1)[0] if full_name else '')
-#         last_name = request.POST.get('last_name') or (full_name.split(' ', 1)[1] if len(full_name.split(' ', 1)) > 1 else '')
-        
-#         phone_prefix = request.POST.get('phone_prefix', '').strip()
-#         custom_prefix = request.POST.get('custom_phone_prefix', '').strip()
-#         raw_phone = request.POST.get('phone', '').strip()
-
-#         active_prefix = custom_prefix if phone_prefix == 'OTHER' and custom_prefix else phone_prefix
-#         phone = f"{active_prefix} {raw_phone}".strip() if raw_phone else ''
-
-#         raw_status = request.POST.get('status', 'ATTENDING').upper()
-#         guest_message = request.POST.get('guest_message', '').strip()
-#         dietary = request.POST.get('dietary_restrictions', '').strip()
-
-#         # Parse ticket selection from dropdown if event is ticketed
-#         selected_tier = None
-#         status = 'ATTENDING'
-        
-#         if raw_status == 'DECLINED':
-#             status = 'DECLINED'
-#         elif raw_status.startswith('TICKET_'):
-#             try:
-#                 tier_id = int(raw_status.split('_')[1])
-#                 selected_tier = TicketTier.objects.get(id=tier_id, event=event)
-#                 status = 'ATTENDING'
-#             except (IndexError, ValueError, TicketTier.DoesNotExist):
-#                 selected_tier = None
-#         else:
-#             status = raw_status
-
-#         try:
-#             plus_ones_count = int(request.POST.get('plus_ones_count') or request.POST.get('guest_count', 0))
-#             if event.allow_plus_ones:
-#                 plus_ones_count = min(plus_ones_count, event.max_plus_ones_per_guest)
-#             else:
-#                 plus_ones_count = 0
-#         except ValueError:
-#             plus_ones_count = 0
-
-#         errors = {}
-
-#         if not email:
-#             errors['email'] = "Email is required."
-#         elif RSVP.objects.filter(event=event, email=email).exists():
-#             errors['email'] = "This email address has already been used to RSVP for this event."
-
-#         if not first_name and not full_name:
-#             errors['full_name'] = "Full name is required."
-
-#         # Validate ticket tier capacity if a ticket was chosen
-#         if not errors and selected_tier:
-#             if selected_tier.sold_count >= selected_tier.capacity:
-#                 errors['email'] = f"Sorry, the '{selected_tier.name}' pass is completely sold out."
-
-#         # Maximum venue capacity validation check
-#         if not errors and event.max_capacity and status == 'ATTENDING':
-#             incoming_headcount = 1 + plus_ones_count
-            
-#             current_headcount = event.rsvps.filter(status='ATTENDING').aggregate(
-#                 total=Sum('plus_ones_count')
-#             )['total'] or 0
-#             current_primary_count = event.rsvps.filter(status='ATTENDING').count()
-#             total_current_attendees = current_primary_count + current_headcount
-
-#             if (total_current_attendees + incoming_headcount) > event.max_capacity:
-#                 remaining_spots = max(0, event.max_capacity - total_current_attendees)
-#                 errors['plus_ones_count'] = f"Sorry, this event has reached its maximum venue capacity of {event.max_capacity} guests. Only {remaining_spots} spot(s) remaining."
-
-#         # If there are errors, re-render template with user input intact
-#         if errors:
-#             raw_theme = event.theme_settings() if callable(getattr(event, 'theme_settings', None)) else getattr(event, 'theme_settings', None)
-#             theme = raw_theme.copy() if isinstance(raw_theme, dict) else (raw_theme or {})
-#             if isinstance(theme, dict):
-#                 theme['theme_color'] = theme.get('theme_color') or theme.get('primary_color') or '#3b82f6'
-
-#             raw_gallery = theme.get('gallery_slides') or theme.get('gallery_images', [])
-#             normalized_gallery = []
-#             for item in raw_gallery:
-#                 if isinstance(item, str):
-#                     normalized_gallery.append({'url': item, 'caption': ''})
-#                 elif isinstance(item, dict):
-#                     url = item.get('url') or item.get('image') or ''
-#                     caption = item.get('description') or item.get('caption') or item.get('text') or ''
-#                     if url:
-#                         normalized_gallery.append({'url': url, 'caption': caption})
-
-#             context = {
-#                 'event': event,
-#                 'theme': theme,
-#                 'guest_messages': event.rsvps.exclude(guest_message__isnull=True).exclude(guest_message__exact=''),
-#                 'normalized_gallery': normalized_gallery,
-#                 'form_data': request.POST,  
-#                 'form_errors': errors,      
-#             }
-#             return render(request, 'events/public_rsvp.html', context)
-
-#         # Determine payment status based on ticket price and test simulation toggle
-#         is_simulated = request.POST.get('simulate_payment') == 'on'
-#         is_paid = False
-
-#         if selected_tier and selected_tier.price == 0:
-#             is_paid = True
-#         elif selected_tier and selected_tier.price > 0 and is_simulated:
-#             is_paid = True
-
-#         # Create RSVP record and attach ticket tier & payment flag
-#         rsvp = RSVP.objects.create(
-#             event=event,
-#             ticket_tier=selected_tier,
-#             is_paid=is_paid,
-#             email=email,
-#             first_name=first_name,
-#             last_name=last_name,
-#             phone=phone,
-#             status=status,
-#             plus_ones_allowed=getattr(event, 'max_plus_ones_per_guest', 0),
-#             plus_ones_count=plus_ones_count,
-#             guest_message=guest_message,
-#             dietary_restrictions=dietary,
-#         )
-
-#         if status == 'ATTENDING' and event.allow_plus_ones:
-#             for i in range(1, plus_ones_count + 1):
-#                 guest_name = request.POST.get(f'guest_name_{i}')
-#                 if guest_name:
-#                     RSVPGuest.objects.create(rsvp=rsvp, full_name=guest_name)
-
-#         # Increment sold count if ticketed and paid/simulated
-#         if selected_tier and is_paid:
-#             selected_tier.sold_count += 1
-#             selected_tier.save()
-
-#         # Stripe integration hook (active when live keys are configured and not simulating)
-#         stripe_is_configured = False  
-#         if selected_tier and selected_tier.price > 0 and stripe_is_configured and not is_simulated:
-#             return redirect('events:create_stripe_checkout', rsvp_id=rsvp.pk)
-
-#         try:
-#             send_rsvp_confirmation(rsvp)
-#         except Exception as e:
-#             print(f"Email delivery error: {e}")
-        
-#         messages.success(request, "Your RSVP and ticket selection have been recorded successfully!")
-#         return redirect('events:rsvp_confirmed', pk=rsvp.pk)
-
-#     return redirect('events:public_rsvp', slug=slug)
-##############
 def submit_rsvp(request, slug):
     event = get_object_or_404(Event, slug=slug)
 
@@ -719,9 +526,6 @@ def submit_rsvp(request, slug):
 
     return redirect('events:public_rsvp', slug=slug)
 
-#########
-
-
 @login_required
 def event_rsvps_management(request, slug):
     event = get_object_or_404(Event, slug=slug, host=request.user)
@@ -835,7 +639,6 @@ def edit_rsvp(request, slug, pk):
         'form': form,
     }
     return render(request, 'events/edit_rsvp.html', context)
-
 
 # CLONE EXISTING EVENT
 @login_required
@@ -1035,8 +838,6 @@ def organizer_community(request):
 def system_status(request):
     return render(request, 'events/resources/system_status.html')
 
-
-
 @login_required
 def manage_event_tiers(request, slug):
     event = get_object_or_404(Event, slug=slug, host=request.user)
@@ -1065,13 +866,6 @@ def manage_event_tiers(request, slug):
     }
     return render(request, 'events/manage_event_tiers.html', context)
 
-
-
-
-import csv
-from django.http import HttpResponse
-
-
 @login_required
 def export_rsvps_csv(request, slug):
     event = get_object_or_404(Event, slug=slug, host=request.user)
@@ -1094,21 +888,17 @@ def export_rsvps_csv(request, slug):
 
     return response
 
+# def bento_view(request):
+#     return render(request, 'events/layouts/bento.html')
 
-############################
+# def editorial_minimalist_view(request):
+#     return render(request, 'events/layouts/editorial_and_minimalist.html')
 
+# def neon_and_dark_view(request):
+#     return render(request, 'events/layouts/immersive_neon_and_dark_mode.html')
 
-def bento_view(request):
-    return render(request, 'events/layouts/bento.html')
+# def split_screen_conference_view(request):
+#     return render(request, 'events/layouts/split_screen_conference.html')
 
-def editorial_minimalist_view(request):
-    return render(request, 'events/layouts/editorial_and_minimalist.html')
-
-def neon_and_dark_view(request):
-    return render(request, 'events/layouts/immersive_neon_and_dark_mode.html')
-
-def split_screen_conference_view(request):
-    return render(request, 'events/layouts/split_screen_conference.html')
-
-def story_teller_view(request):
-    return render(request, 'events/layouts/story_teller_festival.html')
+# def story_teller_view(request):
+#     return render(request, 'events/layouts/story_teller_festival.html')

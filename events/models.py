@@ -64,52 +64,14 @@ class Event(models.Model):
         default=False, 
         help_text="Allow guests to leave a special message for the celebrant"
     )
-    #################
     announcement_title = models.CharField(max_length=150, blank=True, null=True, default="Announcement")
     announcement_text = models.TextField(blank=True, null=True)
     show_announcement = models.BooleanField(default=False)
-    ################
 
     enable_qr_checkins = models.BooleanField(
         default=False,
         help_text="Enable digital ticket QR codes and door scanner interface"
     )
-
-    @property
-    def normalized_gallery(self):
-        gallery = self.theme_settings.get('gallery_images', [])
-        normalized = []
-        for item in gallery:
-            if isinstance(item, str):
-                normalized.append({'url': item, 'caption': ''})
-            elif isinstance(item, dict):
-                # Find URL from common keys
-                url = item.get('url') or item.get('image') or item.get('file') or item.get('src') or ''
-                if not url and len(item) > 0:
-                    # Fallback: grab the first value that looks like a URL/path
-                    for v in item.values():
-                        if isinstance(v, str) and ('/' in v or '.' in v):
-                            url = v
-                            break
-
-                # Find caption/description from ANY key matching text fields
-                caption = ''
-                for k, v in item.items():
-                    if any(key_word in k.lower() for key_word in ['caption', 'desc', 'text', 'title', 'note', 'comment']):
-                        if v and isinstance(v, str):
-                            caption = v
-                            break
-                
-                # Ultimate fallback if no specific key matched
-                if not caption:
-                    for v in item.values():
-                        if isinstance(v, str) and v != url and len(v.strip()) > 0:
-                            caption = v
-                            break
-
-                if url:
-                    normalized.append({'url': url, 'caption': caption})
-        return normalized
 
     @property
     def is_past(self):
@@ -140,6 +102,20 @@ class Event(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.host.username})"
+
+
+class GalleryImage(models.Model):
+    event = models.ForeignKey('events.Event', related_name='gallery_images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='slide_gallery/')
+    description = models.CharField(max_length=200, blank=True, null=True, help_text="Image description (max 200 chars)")
+    order = models.PositiveIntegerField(default=0, help_text="Display order sequence")
+
+    class Meta:
+        ordering = ['order', '-id']
+
+    def __str__(self):
+        return self.description or f"Gallery Image {self.pk}"
+
 
 class TicketTier(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='ticket_tiers')
